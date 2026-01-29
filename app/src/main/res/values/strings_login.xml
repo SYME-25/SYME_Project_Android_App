@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login_label">Login</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Password</string>
+    <string name="login_forget_password">forget password ?</string>
+    <string name="login_password_error">Password is required</string>
+    <string name="login_email_error">Email is required</string>
+    <string name="login_not_member">Not a member ?</string>
+    <string name="login_sign_in">Sign in now !</string>
+</resources>

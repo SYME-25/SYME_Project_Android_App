@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="register_label">Create an account</string>
+    <string name="register_name">Name</string>
+    <string name="register_email">Email</string>
+    <string name="register_password">Password</string>
+    <string name="register_confirm_password">Confirm Password</string>
+    <string name="register_forget_password">forget password ?</string>
+    <string name="register_password_error">Password is required</string>
+    <string name="register_confirm_password_required">Confirm password is required</string>
+    <string name="register_confirm_password_error">Passwords do not match</string>
+    <string name="register_email_error">Email is required</string>
+    <string name="register_invalid_email_error">Enter a valid email</string>
+    <string name="register_name_error">Name is required</string>
+    <string name="register_not_member">Not a member ?</string>
+    <string name="register_sign_in">Sign in now !</string>
+    <string name="register_enter_details">Please enter your details</string>
+    <string name="register_already_account">Already have an account ?</string>
+</resources>
