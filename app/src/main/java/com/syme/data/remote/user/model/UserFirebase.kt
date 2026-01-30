@@ -1,6 +1,8 @@
-package com.syme.domain.model
+package com.syme.data.remote.user.model
 
-data class User(
+import com.syme.domain.model.Traceability
+
+data class UserFirebase(
     val userId: String = "",
     val firstName: String = "",
     val lastName: String = "",
@@ -9,7 +11,7 @@ data class User(
     val email: String = "",
     val phone: String = "",
     val address: String = "",
-    val roles: Map<String, Boolean>? = null,
-    val metadata: Map<String, Any>? = null,
+    val roles: Map<String, Boolean> = mapOf("USER" to true),
+    val metadata: Map<String, Any> = emptyMap(),
     val trace: Traceability = Traceability()
 )

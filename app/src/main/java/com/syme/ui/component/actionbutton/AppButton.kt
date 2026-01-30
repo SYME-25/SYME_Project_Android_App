@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AppButton(
     text: String,
-    onClick: () -> Unit,
+    onClick: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
