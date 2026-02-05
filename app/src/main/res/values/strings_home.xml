@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_welcome_message">Hi %s ! \nWelcome to your home !</string>
+    <string name="home_section_header_see_all">See all</string>
+    <string name="home_installation_type">Installation type</string>
+    <string name="home_installation_filter_residential">Residential</string>
+    <string name="home_installation_filter_industrial">Industrial</string>
+    <string name="home_installation_filter_commercial">Commercial</string>
+    <string name="home_installation_filter_agricultural">Agricultural</string>
+    <string name="home_installation_filter_public">Public</string>
+    <string name="home_installation_filter_other">Other</string>
+    <string name="home_installation_filter_all">All</string>
+    <string name="home_installation">Installation</string>
+    <string name="home_installation_electrical">electrical installation</string>
+    <string name="home_installation_power">Power: %s Watt/J</string>
+    <string name="home_your_installations">Your installations</string>
+    <string name="home_no_installations_found">No installations found</string>
+    <string name="installation_residential_desc">
+        Home or apartment installation for monitoring household electricity consumption.
+    </string>
+
+    <string name="installation_commercial_desc">
+        Installation designed for shops and offices to analyze and optimize energy usage.
+    </string>
+
+    <string name="installation_industrial_desc">
+        Installation for factories and industrial sites with advanced circuit monitoring.
+    </string>
+
+    <string name="installation_agricultural_desc">
+        Agricultural installation for monitoring energy usage in farms and livestock facilities.
+    </string>
+
+    <string name="installation_public_desc">
+        Installation for schools, hospitals, and public buildings to track energy consumption.
+    </string>
+
+    <string name="installation_other_desc">
+        Custom installation for specific or non-standard energy monitoring needs.
+    </string>
+
+    <!-- Installation state -->
+    <string name="installation_not_ready_title">Installation not ready</string>
+
+    <!-- Address -->
+    <string name="installation_address_not_defined">Address not defined</string>
+
+    <!-- Stats labels -->
+    <string name="installation_power_label">Power</string>
+    <string name="installation_energy_label">Energy</string>
+    <string name="installation_energy_placeholder">Not available</string>
+    <string name="installation_rating_label">Rating</string>
+
+    <!-- Actions -->
+    <string name="installation_configure_button">Continue configuration</string>
+    <string name="installation_configure_later_button">Configure later</string>
+
+    <!-- Name -->
+    <string name="installation_name_label">Installation name</string>
+    <string name="installation_name_error">Installation name is required</string>
+
+    <string name="installation_address_label">Installation address</string>
+    <string name="installation_address_error">Installation address is required</string>
+
+    <!-- State -->
+    <string name="installation_not_ready_message">
+        This installation is not yet active. You will need to add a meter and complete its configuration.
+    </string>
+
+    <!-- Actions -->
+    <string name="installation_create_button">Create installation</string>
+</resources>

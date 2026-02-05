@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.syme" />
+                  <option name="mobileSdkAppId" value="1:607572699197:android:16111bf35f678c3d7de254" />
+                  <option name="projectId" value="syme-859df025" />
+                  <option name="projectNumber" value="607572699197" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

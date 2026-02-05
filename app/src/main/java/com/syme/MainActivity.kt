@@ -5,16 +5,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.syme.ui.theme.SYMETheme
-import com.syme.viewmodel.SplashScreenViewModel
+import com.syme.ui.viewmodel.SplashViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val splashScreenViewModel : SplashScreenViewModel by viewModels()
+    private val splashScreenViewModel : SplashViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -29,8 +29,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SYMETheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    App(paddingValues = innerPadding)
+                Scaffold { paddingValues ->
+                    App(paddingValues = paddingValues)
                 }
             }
         }

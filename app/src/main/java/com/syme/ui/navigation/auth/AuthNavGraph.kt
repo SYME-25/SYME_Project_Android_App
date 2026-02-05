@@ -8,13 +8,19 @@ import com.syme.ui.screen.auth.LoginScreen
 import com.syme.ui.screen.auth.RegisterScreen
 import com.syme.ui.screen.auth.ResetPasswordStep1Screen
 import com.syme.ui.screen.auth.ResetPasswordStep2Screen
+import com.syme.ui.viewmodel.LoginViewModel
+import com.syme.ui.viewmodel.RegisterViewModel
 
-fun NavGraphBuilder.authNavGraph(navController: NavHostController, paddingValues: PaddingValues) {
+fun NavGraphBuilder.authNavGraph(
+    navController: NavHostController,
+    registerViewModel: RegisterViewModel,
+    loginViewModel: LoginViewModel
+) {
 
     composable(AuthRoute.Login.route) {
         LoginScreen(
+            viewModel = loginViewModel,
             navController = navController,
-            paddingValues = paddingValues,
             onNavigateToRegister = { navController.navigate(AuthRoute.Register.route) },
             onNavigateToResetPassword = { navController.navigate(AuthRoute.ResetPasswordStep1.route) }
         )
@@ -22,8 +28,8 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, paddingValues
 
     composable(AuthRoute.Register.route) {
         RegisterScreen(
+            viewModel = registerViewModel,
             navController = navController,
-            paddingValues = paddingValues,
             onNavigateBack = { navController.popBackStack() },
             onRegistrationSuccess = {
                 navController.navigate("main/home") {
@@ -36,7 +42,6 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, paddingValues
     composable(AuthRoute.ResetPasswordStep1.route) {
         ResetPasswordStep1Screen(
             navController = navController,
-            paddingValues = paddingValues,
             onBackToLogin = { navController.popBackStack() },
             onNextStep = { navController.navigate(AuthRoute.ResetPasswordStep2.route) }
         )
@@ -45,7 +50,6 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController, paddingValues
     composable(AuthRoute.ResetPasswordStep2.route) {
         ResetPasswordStep2Screen(
             navController = navController,
-            paddingValues = paddingValues,
             onResetComplete = { navController.popBackStack(AuthRoute.Login.route, false) }
         )
     }

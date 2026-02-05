@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -49,7 +50,7 @@ fun AppSwitch(
     ) {
         if (label.isNotEmpty()) {
             Text(text = label, style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(16.dp))
         }
 
         Switch(

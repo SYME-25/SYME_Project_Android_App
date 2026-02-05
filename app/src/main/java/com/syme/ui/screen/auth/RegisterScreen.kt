@@ -1,13 +1,22 @@
 package com.syme.ui.screen.auth
 
 import android.app.DatePickerDialog
-import android.widget.Toast
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -15,32 +24,37 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.syme.R
 import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.actionbutton.AppCheckbox
 import com.syme.ui.component.actionbutton.AppTextButton
 import com.syme.ui.component.animation.Animation
-import com.syme.ui.component.field.*
-import com.syme.ui.theme.SYMETheme
+import com.syme.ui.component.field.DateField
+import com.syme.ui.component.field.DropdownField
+import com.syme.ui.component.field.EmailField
+import com.syme.ui.component.field.NameField
+import com.syme.ui.component.field.NumberField
+import com.syme.ui.component.field.PasswordField
+import com.syme.ui.navigation.auth.AuthRoute
+import com.syme.ui.snapshot.MessageAction
+import com.syme.ui.snapshot.MessageType
+import com.syme.ui.snapshot.globalMessageManager
+import com.syme.ui.state.UiState
+import com.syme.ui.viewmodel.RegisterViewModel
 import com.syme.utils.TimeUtils
-import com.syme.viewmodel.RegisterViewModel
-import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
 
 @Composable
 fun RegisterScreen(
+    viewModel: RegisterViewModel,
     navController: NavController,
     onNavigateBack: () -> Unit = {},
     onRegistrationSuccess: () -> Unit = {},
-    paddingValues: PaddingValues
 ) {
     val context = LocalContext.current
-    val viewModel: RegisterViewModel = viewModel()
 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -70,9 +84,40 @@ fun RegisterScreen(
     var acceptPolicy by remember { mutableStateOf(false) }
     var acceptPolicyError by remember { mutableStateOf("") }
 
+    val registerMsg = stringResource(R.string.register_label)
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is UiState.Success -> {
+                globalMessageManager.showMessage(
+                    item = registerMsg,
+                    action = MessageAction.CREATE,
+                    type = MessageType.SUCCESS
+                )
+                navController.navigate(AuthRoute.Login)
+                viewModel.resetState()
+            }
+
+            is UiState.Error -> {
+                globalMessageManager.showMessage(
+                    item = registerMsg,
+                    action = MessageAction.CREATE,
+                    type = MessageType.ERROR,
+                    customText = (uiState as UiState.Error).message
+                )
+                viewModel.resetState()
+            }
+
+            else -> Unit
+        }
+    }
+
     val genderItems = listOf(
         stringResource(R.string.register_gender_male),
-        stringResource(R.string.register_gender_female))
+        stringResource(R.string.register_gender_female)
+    )
 
     val dateFormatter = TimeUtils.dateFormat
 
@@ -88,12 +133,27 @@ fun RegisterScreen(
         2000, 0, 1
     )
 
+    //Strings
+    val firstNameErrorMsg = stringResource(R.string.register_firstname_error)
+    val lastNameErrorMsg = stringResource(R.string.register_lastname_error)
+    val birthdayErrorMsg = stringResource(R.string.register_birthday_error)
+    val genderErrorMsg = stringResource(R.string.register_gender_error)
+    val phoneErrorMsg = stringResource(R.string.register_phone_error)
+    val addressErrorMsg = stringResource(R.string.register_address_error)
+    val emailErrorMsg = stringResource(R.string.register_email_error)
+    val invalidEmailErrorMsg = stringResource(R.string.register_invalid_email_error)
+    val passwordErrorMsg = stringResource(R.string.register_password_error)
+    val confirmPasswordRequiredMsg = stringResource(R.string.register_confirm_password_required)
+    val confirmPasswordErrorMsg = stringResource(R.string.register_confirm_password_error)
+    val acceptPolicyErrorMsg = stringResource(R.string.register_accept_policy_error)
+
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        item { Spacer(modifier = Modifier.height(24.dp)) }
 
         item { Animation(R.raw.registration_animation) }
 
@@ -121,28 +181,19 @@ fun RegisterScreen(
             )
         }
 
-        item { NameField(firstName, { firstName = it }, stringResource(R.string.register_firstname), firstNameError) }
-        item { NameField(lastName, { lastName = it }, stringResource(R.string.register_lastname), lastNameError) }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        item { NameField(value = firstName, onValueChange = { firstName = it }, label = stringResource(R.string.register_firstname), error = firstNameError) }
+        item { NameField(value = lastName, onValueChange = { lastName = it }, label = stringResource(R.string.register_lastname), error = lastNameError) }
 
         item {
             DateField(
                 value = birthday,
-                onValueChange = {},
                 label = stringResource(R.string.register_birthday),
-                error = birthdayError
-            )
-            LaunchedEffect(Unit) {
-                // clickable overlay
-            }
-        }
-
-        item {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .height(60.dp)
-                    .clickable { datePickerDialog.show() }
+                error = birthdayError,
+                onClick = { datePickerDialog.show() }
             )
         }
 
@@ -185,14 +236,29 @@ fun RegisterScreen(
         }
 
         item {
-            AppCheckbox(
-                checked = acceptPolicy,
-                onCheckedChange = { acceptPolicy = it },
-                label = stringResource(R.string.register_accept_policy),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            )
+            Column() {
+                AppCheckbox(
+                    checked = acceptPolicy,
+                    onCheckedChange = { acceptPolicy = it },
+                    label = stringResource(R.string.register_accept_policy),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
+
+                AppTextButton(
+                    text = stringResource(R.string.register_privacy_policy_read),
+                    onClick = {
+                        //navController.navigate("privacy_policy")
+                    },
+                    modifier = Modifier
+                        .padding(start = 20.dp)
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         if (acceptPolicyError.isNotEmpty()) {
@@ -227,24 +293,24 @@ fun RegisterScreen(
                     Icon(painterResource(R.drawable.outline_send_24), null)
                 },
                 onClick = {
-                    firstNameError = if (firstName.isBlank()) stringResource(R.string.register_firstname_error) else ""
-                    lastNameError = if (lastName.isBlank()) stringResource(R.string.register_lastname_error) else ""
-                    birthdayError = if (birthdayTimestamp == null) stringResource(R.string.register_birthday_error) else ""
-                    genderError = if (gender.isBlank()) stringResource(R.string.register_gender_error) else ""
-                    phoneError = if (phone.isBlank()) stringResource(R.string.register_phone_error) else ""
-                    addressError = if (address.isBlank()) stringResource(R.string.register_address_error) else ""
+                    firstNameError = if (firstName.isBlank()) firstNameErrorMsg else ""
+                    lastNameError = if (lastName.isBlank()) lastNameErrorMsg else ""
+                    birthdayError = if (birthdayTimestamp == null) birthdayErrorMsg else ""
+                    genderError = if (gender.isBlank()) genderErrorMsg else ""
+                    phoneError = if (phone.isBlank()) phoneErrorMsg else ""
+                    addressError = if (address.isBlank()) addressErrorMsg else ""
                     emailError =
-                        if (email.isBlank()) stringResource(R.string.register_email_error)
+                        if (email.isBlank()) emailErrorMsg
                         else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches())
-                            stringResource(R.string.register_invalid_email_error)
+                            invalidEmailErrorMsg
                         else ""
-                    passwordError = if (password.isBlank()) stringResource(R.string.register_password_error) else ""
+                    passwordError = if (password.isBlank()) passwordErrorMsg else ""
                     confirmPasswordError =
-                        if (confirmPassword.isBlank()) stringResource(R.string.register_confirm_password_required)
-                        else if (password != confirmPassword) stringResource(R.string.register_confirm_password_error)
+                        if (confirmPassword.isBlank()) confirmPasswordRequiredMsg
+                        else if (password != confirmPassword) confirmPasswordErrorMsg
                         else ""
                     acceptPolicyError =
-                        if (!acceptPolicy) stringResource(R.string.register_accept_policy_error) else ""
+                        if (!acceptPolicy) acceptPolicyErrorMsg else ""
 
                     if (
                         firstNameError.isEmpty() &&
@@ -267,10 +333,7 @@ fun RegisterScreen(
                             address = address,
                             email = email,
                             password = password,
-                            onSuccess = { onRegistrationSuccess() },
-                            onError = { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
                         )
-
                     }
                 }
             )
@@ -282,16 +345,9 @@ fun RegisterScreen(
                 onClick = onNavigateBack
             )
         }
-    }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-    SYMETheme {
-        RegisterScreen(
-            navController = NavController(LocalContext.current),
-            paddingValues = PaddingValues(0.dp)
-        )
+        item {
+            Spacer(modifier = Modifier.height(44.dp))
+        }
     }
 }

@@ -1,21 +1,14 @@
 package com.syme.ui.screen.auth
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,14 +23,20 @@ import com.syme.ui.component.field.EmailField
 import com.syme.ui.component.field.PasswordField
 import com.syme.ui.component.link.LoginLinksRow
 import com.syme.ui.navigation.RootRoute
+import com.syme.ui.snapshot.MessageAction
+import com.syme.ui.snapshot.MessageType
+import com.syme.ui.snapshot.globalMessageManager
+import com.syme.ui.state.UiState
 import com.syme.ui.theme.SYMETheme
+import com.syme.ui.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
+    viewModel: LoginViewModel,
     navController: NavController,
-    onNavigateToRegister : () -> Unit = {},
-    onNavigateToResetPassword : () -> Unit = {},
-    paddingValues: PaddingValues) {
+    onNavigateToRegister: () -> Unit = {},
+    onNavigateToResetPassword: () -> Unit = {}
+) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -55,10 +54,39 @@ fun LoginScreen(
     val loginNotMemberText = stringResource(R.string.login_not_member)
     val loginSignInText = stringResource(R.string.login_sign_in)
 
+    val uiState by viewModel.uiState.collectAsState()
+
+    // 🎯 Réaction aux changements d'état
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is UiState.Success -> {
+                globalMessageManager.showMessage(
+                    item = loginLabelText,
+                    action = MessageAction.UPDATE,
+                    type = MessageType.SUCCESS
+                )
+                navController.navigate(RootRoute.Main) {
+                    popUpTo(RootRoute.Auth) { inclusive = true }
+                }
+                viewModel.resetState()
+            }
+
+            is UiState.Error -> {
+                globalMessageManager.showMessage(
+                    item = loginLabelText,
+                    action = MessageAction.UPDATE,
+                    type = MessageType.ERROR,
+                    customText = (uiState as UiState.Error).message
+                )
+                viewModel.resetState()
+            }
+
+            else -> Unit
+        }
+    }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -97,12 +125,9 @@ fun LoginScreen(
             onClick = {
                 emailError = if (email.isBlank()) emailErrorText else ""
                 passwordError = if (password.isBlank()) passwordErrorText else ""
+
                 if (emailError.isEmpty() && passwordError.isEmpty()) {
-                    //onLoginSuccess = {
-                        navController.navigate(RootRoute.Main) {
-                            popUpTo(RootRoute.Auth) { inclusive = true } // supprime le stack auth
-                       // }
-                    }
+                    viewModel.login(email, password)
                 }
             },
             leadingIcon = {
@@ -128,8 +153,7 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    val navController = NavController(LocalContext.current)
     SYMETheme {
-        LoginScreen(navController = navController, paddingValues = PaddingValues())
+        // Preview sans vrai ViewModel
     }
 }

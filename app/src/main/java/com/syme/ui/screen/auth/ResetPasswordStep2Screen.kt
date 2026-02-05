@@ -36,8 +36,7 @@ import com.syme.ui.theme.SYMETheme
 @Composable
 fun ResetPasswordStep2Screen(
     navController: NavController,
-    onResetComplete : () -> Unit = {},
-    paddingValues: PaddingValues
+    onResetComplete : () -> Unit = {}
 ) {
 
     var password by remember { mutableStateOf("") }
@@ -60,8 +59,7 @@ fun ResetPasswordStep2Screen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -128,6 +126,6 @@ fun ResetPasswordStep2Screen(
 fun ResetPassword_Step_2_ScreenPreview() {
     val navController = NavController(LocalContext.current)
     SYMETheme() {
-        ResetPasswordStep2Screen(navController = navController, paddingValues = PaddingValues())
+        ResetPasswordStep2Screen(navController = navController)
     }
 }

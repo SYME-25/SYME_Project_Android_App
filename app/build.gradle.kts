@@ -1,6 +1,9 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.android.application) // Obligatoire pour Hilt
+    alias(libs.plugins.kotlin.compose)      // Compose
+    alias(libs.plugins.ksp)
+    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -52,6 +55,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.filament.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -61,9 +65,20 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     //Pour l'animation au login
     implementation(libs.lottie.compose)
+
+    //Pour le chargement d'image
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    //Librairie de serialisation JSON
+    implementation(libs.gson)
+
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
 
     // ---- DataStore ----
     implementation(libs.androidx.datastore.preferences)

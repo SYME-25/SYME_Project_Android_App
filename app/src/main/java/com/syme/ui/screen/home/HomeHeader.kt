@@ -22,9 +22,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.utils.TimeUtils
 
 @Composable
 fun HomeHeader(){
+
+    val currentUser = LocalCurrentUserSession.current
+
+    val initials = listOfNotNull(currentUser?.firstName, currentUser?.lastName)
+        .filter { it.isNotBlank() }
+        .take(2).joinToString("") { it.trim().first().toString() }
+        .uppercase()
 
     Row(
         modifier = Modifier
@@ -39,7 +48,7 @@ fun HomeHeader(){
                 .weight(1f)
         ) {
             Text(
-                text = "Today Date",
+                text = TimeUtils.getDate(),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -64,7 +73,7 @@ fun HomeHeader(){
                     .clip(CircleShape)
                     .background(Color.Red),
             ) {
-                Text(text = "YS", fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.align(Alignment.Center))
+                Text(text = initials, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.align(Alignment.Center))
             }
         }
     }

@@ -9,12 +9,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppTextButton(
     text: String,
     onClick: () -> Unit,
+    textColor: Color = MaterialTheme.colorScheme.primary,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null
@@ -34,7 +36,8 @@ fun AppTextButton(
 
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge,
+                color = textColor
             )
         }
     }

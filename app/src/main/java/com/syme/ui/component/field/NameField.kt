@@ -21,7 +21,10 @@ fun NameField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    error: String
+    error: String,
+    icon: @Composable (() -> Unit)? = {
+        Icon(Icons.Rounded.Person, contentDescription = "")
+    }
 ) {
     TextField(
         modifier = Modifier
@@ -40,7 +43,7 @@ fun NameField(
             )
         },
         leadingIcon = {
-            Icon(Icons.Rounded.Person, contentDescription = "")
+            icon?.invoke()
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text

@@ -36,8 +36,7 @@ import com.syme.ui.theme.SYMETheme
 fun ResetPasswordStep1Screen(
     navController: NavController,
     onBackToLogin : () -> Unit = {},
-    onNextStep : () -> Unit = {},
-    paddingValues: PaddingValues
+    onNextStep : () -> Unit = {}
 ) {
 
     var email by remember { mutableStateOf("") }
@@ -52,8 +51,7 @@ fun ResetPasswordStep1Screen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -113,6 +111,6 @@ fun ResetPasswordStep1Screen(
 fun ResetPasswordStepStep1ScreenPreview() {
     val navController = NavController(LocalContext.current)
     SYMETheme() {
-        ResetPasswordStep1Screen(navController = navController, paddingValues = PaddingValues())
+        ResetPasswordStep1Screen(navController = navController)
     }
 }

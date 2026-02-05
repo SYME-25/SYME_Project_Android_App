@@ -44,5 +44,6 @@
     <string name="register_accept_policy">I accept the privacy policy</string>
     <string name="register_accept_policy_error">You must accept the privacy policy</string>
     <string name="register_privacy_policy">Privacy policy</string>
+    <string name="register_privacy_policy_read">Read our privacy policy</string>
 
 </resources>

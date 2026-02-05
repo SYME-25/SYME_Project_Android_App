@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="bottom_title_home">Home</string>
-    <string name="bottom_title_consumption">Consumption</string>
+    <string name="bottom_title_planning">Planning</string>
     <string name="bottom_title_analysis">Analysis</string>
     <string name="bottom_title_bill">Bill</string>
     <string name="bottom_title_settings">Settings</string>
