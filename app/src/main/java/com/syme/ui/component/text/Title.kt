@@ -13,10 +13,10 @@ import androidx.compose.ui.unit.sp
 import com.syme.R
 
 @Composable
-fun Title(title: String) {
+fun Title(title: String, fontSize: Int = 24) {
     Text(
         text = title,
-        fontSize = 24.sp,
+        fontSize = fontSize.sp,
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 25.dp, top = 15.dp),

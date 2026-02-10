@@ -14,9 +14,12 @@ class InstallationRepository @Inject constructor(
 ) {
 
     private fun collection(ownerId: String) =
-        firestore.collection("users")
-            .document(ownerId)
-            .collection("installations")
+        require(ownerId.isNotBlank()) { "ownerId is blank!" }
+            .let {
+                firestore.collection("users")
+                    .document(ownerId)
+                    .collection("installations")
+            }
 
     // 🔁 OBSERVE (temps réel)
     fun observeAll(ownerId: String): Flow<List<Installation>> = callbackFlow {

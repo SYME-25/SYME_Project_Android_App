@@ -39,7 +39,7 @@ fun AppCheckbox(
             colors = CheckboxDefaults.colors(
                 checkedColor = checkedColor,
                 uncheckedColor = uncheckedColor,
-                checkmarkColor = MaterialTheme.colorScheme.onSurface
+                checkmarkColor = MaterialTheme.colorScheme.onPrimary
             )
         )
         if (label.isNotEmpty()) {

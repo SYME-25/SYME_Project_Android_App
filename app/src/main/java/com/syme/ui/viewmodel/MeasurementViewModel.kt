@@ -18,17 +18,17 @@ class MeasurementViewModel @Inject constructor(
     private val _measurements = MutableStateFlow<List<Measurement>>(emptyList())
     val measurements: StateFlow<List<Measurement>> = _measurements
 
-    fun observeRealtime(userId: String, meterId: String) {
+    fun observeRealtime(userId: String, installationId: String, meterId: String) {
         viewModelScope.launch {
-            repository.observeRealtime(userId, meterId).collect { list ->
-                _measurements.value = list
-            }
+            repository.observeRealtime(userId, installationId, meterId)
+                .collect { list -> _measurements.value = list }
         }
     }
 
-    fun loadHistorical(userId: String, meterId: String, limit: Int = 100) {
+    fun loadHistorical(userId: String, installationId: String, meterId: String, limit: Int = 100) {
         viewModelScope.launch {
-            _measurements.value = repository.getHistorical(userId, meterId, limit)
+            _measurements.value = repository.getHistorical(userId, installationId, meterId, limit)
         }
     }
+
 }

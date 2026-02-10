@@ -17,10 +17,10 @@ import com.syme.R
 import com.syme.domain.mapper.labelResId
 import com.syme.domain.model.enumeration.InstallationType
 import com.syme.ui.component.actionbutton.FilterChipItem
+import com.syme.ui.component.text.Title
 
 @Composable
 fun InstallationTypeFilterByType(
-    title: String,
     selectedType: InstallationType?,
     onTypeSelected: (InstallationType?) -> Unit   // 👈 nullable pour "Tous"
 ) {
@@ -31,13 +31,6 @@ fun InstallationTypeFilterByType(
             .fillMaxWidth()
             .padding(start = 16.dp, top = 24.dp, end = 16.dp)
     ) {
-        Text(
-            text = title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
         LazyRow {
             item {
                 FilterChipItem(

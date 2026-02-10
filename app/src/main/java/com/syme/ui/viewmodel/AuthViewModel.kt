@@ -36,13 +36,16 @@ class AuthViewModel @Inject constructor(
                 _currentSession.value = null
             } else {
                 viewModelScope.launch {
-                    val snapshot = firestore
+                    val querySnapshot = firestore
                         .collection("users")
-                        .document(firebaseUser.uid)
+                        .whereEqualTo("metadata.firebaseUid", firebaseUser.uid)
+                        .limit(1)
                         .get()
                         .await()
 
-                    val userFirebase = snapshot.toObject(UserFirebase::class.java)
+                    val userFirebase = querySnapshot.documents
+                        .firstOrNull()
+                        ?.toObject(UserFirebase::class.java)
 
                     _currentSession.value = userFirebase?.toDomain()
                 }

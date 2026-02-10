@@ -5,7 +5,7 @@ import com.syme.domain.model.enumeration.MeterType
 
 data class Meter(
     val meterId: String = "",
-    val householdId: String = "",
+    val installationId: String = "",
     val meterType: MeterType = MeterType.SLAVE,           //Slave or Master
     val status: MeterStatus = MeterStatus.ACTIVE,
     val relays: List<Relay> = emptyList(),

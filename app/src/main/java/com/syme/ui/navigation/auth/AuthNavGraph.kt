@@ -1,6 +1,5 @@
 package com.syme.ui.navigation.auth
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
@@ -30,12 +29,7 @@ fun NavGraphBuilder.authNavGraph(
         RegisterScreen(
             viewModel = registerViewModel,
             navController = navController,
-            onNavigateBack = { navController.popBackStack() },
-            onRegistrationSuccess = {
-                navController.navigate("main/home") {
-                    popUpTo("auth") { inclusive = true } // supprime le stack auth
-                }
-            }
+            onNavigateBack = { navController.popBackStack() }
         )
     }
 

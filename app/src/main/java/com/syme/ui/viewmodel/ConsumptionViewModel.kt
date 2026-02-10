@@ -18,29 +18,29 @@ class ConsumptionViewModel @Inject constructor(
     private val _consumptions = MutableStateFlow<List<Consumption>>(emptyList())
     val consumptions: StateFlow<List<Consumption>> = _consumptions
 
-    fun observeAll(userId: String) {
+    fun observeAll(userId: String, installationId: String) {
         viewModelScope.launch {
-            repository.observeAll(userId).collect { list ->
+            repository.observeAll(userId, installationId).collect { list ->
                 _consumptions.value = list
             }
         }
     }
 
-    fun addConsumption(userId: String, consumption: Consumption) {
+    fun addConsumption(userId: String, installationId: String, consumption: Consumption) {
         viewModelScope.launch {
-            repository.insert(userId, consumption)
+            repository.insert(userId, installationId, consumption)
         }
     }
 
-    fun updateConsumption(userId: String, consumption: Consumption) {
+    fun updateConsumption(userId: String, installationId: String, consumption: Consumption) {
         viewModelScope.launch {
-            repository.update(userId, consumption)
+            repository.update(userId, installationId, consumption)
         }
     }
 
-    fun deleteConsumption(userId: String, consumptionId: String) {
+    fun deleteConsumption(userId: String, installationId: String, consumptionId: String) {
         viewModelScope.launch {
-            repository.delete(userId, consumptionId)
+            repository.delete(userId, installationId, consumptionId)
         }
     }
 }

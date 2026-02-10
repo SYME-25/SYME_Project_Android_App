@@ -8,7 +8,7 @@ data class Consumption (
     val meterId: String? = null,                     // Linked meter
     val periodStart: Long = 0L,                      // Start of measurement period (epoch ms)
     val periodEnd: Long = 0L,                        // End of measurement period (epoch ms)
-    val totalEnergy_kWh: Double = 0.0,               // Energy consumed in kWh
+    val totalEnergy_kWh: Int = 0,               // Energy consumed in kWh
     val totalEnergy_kWhConsummed: Double = 0.0,      // Energy consumed in kWh
     val consumptionState: ConsumptionStateType = ConsumptionStateType.WAITING,
     val onDemand: Boolean = false,                   // True if consumption was manually triggered

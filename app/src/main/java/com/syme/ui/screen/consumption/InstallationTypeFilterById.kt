@@ -8,10 +8,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
+import com.syme.R
 import com.syme.ui.component.actionbutton.FilterChipItem
 
 @Composable
@@ -37,34 +40,29 @@ fun InstallationFilterById(
             )
         }
 
-        LazyRow {
-            // 🔹 "All" chip
-            item {
-                FilterChipItem(
-                    text = "All",
-                    selected = selectedInstallationId == null,
-                    onClick = { onInstallationSelected(null) },
-                    selectedBackgroundColor = colors.secondaryContainer,
-                    selectedBorderColor = colors.secondary,
-                    selectedTextColor = colors.onSecondaryContainer,
-                    unselectedBackgroundColor = colors.surface,
-                    unselectedTextColor = colors.onSurface
-                )
+        if (installationIds.isNotEmpty()) {
+            LazyRow {
+                // 🔹 Chips pour chaque installation
+                items(installationIds) { id ->
+                    FilterChipItem(
+                        text = id,
+                        selected = id == selectedInstallationId,
+                        onClick = { onInstallationSelected(id) },
+                        selectedBackgroundColor = colors.secondaryContainer,
+                        selectedBorderColor = colors.secondary,
+                        selectedTextColor = colors.onSecondaryContainer,
+                        unselectedBackgroundColor = colors.surface,
+                        unselectedTextColor = colors.onSurface
+                    )
+                }
             }
-
-            // 🔹 Chips pour chaque installation
-            items(installationIds) { id ->
-                FilterChipItem(
-                    text = id,
-                    selected = id == selectedInstallationId,
-                    onClick = { onInstallationSelected(id) },
-                    selectedBackgroundColor = colors.secondaryContainer,
-                    selectedBorderColor = colors.secondary,
-                    selectedTextColor = colors.onSecondaryContainer,
-                    unselectedBackgroundColor = colors.surface,
-                    unselectedTextColor = colors.onSurface
-                )
-            }
+        }
+        else {
+            Text(
+                text = stringResource(R.string.home_no_installations_found),
+                fontSize = 16.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
         }
     }
 }

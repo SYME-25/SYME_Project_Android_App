@@ -18,7 +18,7 @@ val InstallationType.imageResId: Int
         InstallationType.OTHER -> R.drawable.building_town_svgrepo_com
         InstallationType.RESIDENTIAL -> R.drawable.maison
         InstallationType.COMMERCIAL -> R.drawable.boutique
-        InstallationType.INDUSTRIAL -> R.drawable.factory_svgrepo_com
-        InstallationType.AGRICULTURAL -> R.drawable.barn_svgrepo_com
-        InstallationType.PUBLIC -> R.drawable.immeuble_de_bureaux
+        InstallationType.INDUSTRIAL -> R.drawable.factory_building
+        InstallationType.AGRICULTURAL -> R.drawable.farm_house
+        InstallationType.PUBLIC -> R.drawable.skyscraper
     }

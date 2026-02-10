@@ -2,16 +2,17 @@ package com.syme.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.syme.R
 import com.syme.data.remote.model.UserFirebase
 import com.syme.data.remote.repository.AuthRepository
+import com.syme.domain.model.RegisterEvent
 import com.syme.domain.model.Traceability
-import com.syme.ui.state.UiState
 import com.syme.utils.TimeUtils
 import com.syme.utils.buildTraceability
 import com.syme.utils.generateId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,8 +21,8 @@ class RegisterViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
-    val uiState: StateFlow<UiState<Unit>> = _uiState
+    private val _registerEvent = MutableSharedFlow<RegisterEvent>()
+    val registerEvent: SharedFlow<RegisterEvent> = _registerEvent
 
     fun register(
         firstName: String,
@@ -34,7 +35,6 @@ class RegisterViewModel @Inject constructor(
         password: String
     ) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
             try {
                 val userId = generateId()
 
@@ -71,15 +71,18 @@ class RegisterViewModel @Inject constructor(
                     user = user
                 )
 
-                _uiState.value = UiState.Success(Unit)
+                _registerEvent.emit(
+                    RegisterEvent.Success(R.string.register_success)
+                )
+
             } catch (e: Exception) {
-                _uiState.value =
-                    UiState.Error(e.message ?: "Registration failed")
+                _registerEvent.emit(
+                    RegisterEvent.Error(
+                        R.string.register_error_with_message,
+                        e.message ?: "Unknown error"
+                    )
+                )
             }
         }
-    }
-
-    fun resetState() {
-        _uiState.value = UiState.Idle
     }
 }

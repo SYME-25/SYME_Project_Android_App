@@ -13,14 +13,16 @@ class ConsumptionRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
 
-    private fun collection(userId: String) =
+    private fun collection(ownerId: String, installationId: String) =
         firestore.collection("users")
-            .document(userId)
+            .document(ownerId)
+            .collection("installations")
+            .document(installationId)
             .collection("consumptions")
 
-    // 🔁 Observe consumptions in real-time
-    fun observeAll(userId: String): Flow<List<Consumption>> = callbackFlow {
-        val listener = collection(userId)
+    // 🔁 OBSERVE
+    fun observeAll(ownerId: String, installationId: String): Flow<List<Consumption>> = callbackFlow {
+        val listener = collection(ownerId, installationId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
@@ -37,29 +39,33 @@ class ConsumptionRepository @Inject constructor(
         awaitClose { listener.remove() }
     }
 
-    // 📥 Get once
-    suspend fun getAllOnce(userId: String): List<Consumption> =
-        collection(userId).get().await().documents.mapNotNull { it.toObject<Consumption>() }
+    // 📥 GET ONCE
+    suspend fun getAllOnce(ownerId: String, installationId: String): List<Consumption> =
+        collection(ownerId, installationId)
+            .get()
+            .await()
+            .documents
+            .mapNotNull { it.toObject<Consumption>() }
 
-    // ➕ Insert
-    suspend fun insert(userId: String, consumption: Consumption) {
-        collection(userId)
+    // ➕ INSERT
+    suspend fun insert(ownerId: String, installationId: String, consumption: Consumption) {
+        collection(ownerId, installationId)
             .document(consumption.consumptionId)
             .set(consumption)
             .await()
     }
 
-    // ✏️ Update
-    suspend fun update(userId: String, consumption: Consumption) {
-        collection(userId)
+    // ✏️ UPDATE
+    suspend fun update(ownerId: String, installationId: String, consumption: Consumption) {
+        collection(ownerId, installationId)
             .document(consumption.consumptionId)
             .set(consumption)
             .await()
     }
 
-    // ❌ Delete
-    suspend fun delete(userId: String, consumptionId: String) {
-        collection(userId)
+    // ❌ DELETE
+    suspend fun delete(ownerId: String, installationId: String, consumptionId: String) {
+        collection(ownerId, installationId)
             .document(consumptionId)
             .delete()
             .await()

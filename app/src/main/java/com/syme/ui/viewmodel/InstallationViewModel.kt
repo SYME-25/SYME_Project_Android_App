@@ -27,6 +27,7 @@ class InstallationViewModel @Inject constructor(
 
     // 👁 OBSERVE USER INSTALLATIONS
     fun observe(ownerId: String) {
+        if (ownerId.isBlank()) return
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
             _state.value = UiState.Loading

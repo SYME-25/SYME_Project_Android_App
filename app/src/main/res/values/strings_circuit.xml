@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Circuit Form Labels -->
+    <string name="circuit_title">Add Circuit</string>
+    <string name="circuit_label_meter">Meter</string>
+    <string name="circuit_label_relay">Relay Channel</string>
+    <string name="circuit_label_name">Circuit Name</string>
+    <string name="circuit_label_priority">Priority</string>
+    <string name="circuit_label_protected">Critical Circuit</string>
+
+    <!-- Circuit Form Errors -->
+    <string name="circuit_error_meter_required">Please select a meter</string>
+    <string name="circuit_error_relay_required">Please select a relay channel</string>
+    <string name="circuit_error_name_required">Please enter a circuit name</string>
+    <string name="circuit_error_priority_required">Please select a priority</string>
+
+    <!-- Circuit Form Button -->
+    <string name="circuit_button_submit">Save Circuit</string>
+
+    <!-- Other circuit-related strings -->
+    <string name="home_circuit_protected">Circuit Protected</string>
+    <string name="home_circuit_unprotected">Circuit Unprotected</string>
+    <string name="relay_channel">Relay Channel: %1$s</string>
+    <string name="circuit_state">State: %1$s</string>
+</resources>

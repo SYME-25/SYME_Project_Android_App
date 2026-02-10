@@ -14,22 +14,25 @@ class MeasurementRepository @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
 
-    private fun collection(userId: String) =
+    // Collection des measurements pour un meter spécifique
+    private fun collection(userId: String, installationId: String, meterId: String) =
         firestore.collection("users")
             .document(userId)
+            .collection("installations")
+            .document(installationId)
+            .collection("meters")
+            .document(meterId)
             .collection("measurements")
 
-    // 🔁 Observe real-time measurements for meter
-    fun observeRealtime(userId: String, meterId: String): Flow<List<Measurement>> = callbackFlow {
-        val listener = collection(userId)
-            .whereEqualTo("meterId", meterId)
+    // Observe les mesures en temps réel pour un meter
+    fun observeRealtime(userId: String, installationId: String, meterId: String): Flow<List<Measurement>> = callbackFlow {
+        val listener = collection(userId, installationId, meterId)
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
                     return@addSnapshotListener
                 }
-
                 val list = snapshot?.documents?.mapNotNull { it.toObject<Measurement>() } ?: emptyList()
                 trySend(list)
             }
@@ -37,10 +40,9 @@ class MeasurementRepository @Inject constructor(
         awaitClose { listener.remove() }
     }
 
-    // 📥 Get historical data once
-    suspend fun getHistorical(userId: String, meterId: String, limit: Int = 100): List<Measurement> =
-        collection(userId)
-            .whereEqualTo("meterId", meterId)
+    // Récupération historique
+    suspend fun getHistorical(userId: String, installationId: String, meterId: String, limit: Int = 100): List<Measurement> =
+        collection(userId, installationId, meterId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .limit(limit.toLong())
             .get()

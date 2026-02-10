@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="consumption_label">My consumption</string>
+    <string name="consumption_filter_by_installation">"Select installation"</string>
     <string name="consumption_label_day">Day</string>
     <string name="consumption_label_month">Month</string>
     <string name="consumption_label_year">Year</string>
@@ -17,13 +18,17 @@
     <string name="consumption_energy_result">Energy obtained: %1$d %2$s</string>
 
     <string name="consumption_button_submit">Create subscription</string>
+    <string name="consumption_button_add">Add Subscription</string>
 
     <!-- Errors -->
     <string name="consumption_error_installation_required">Choose an installation</string>
     <string name="consumption_error_start_date_invalid">Start date must be today or later</string>
     <string name="consumption_error_start_after_last">Must be after last subscription end</string>
     <string name="consumption_error_end_date_invalid">End date must be after start date</string>
+    <string name="consumption_error_start_date_overlap">The start date must be after: %1$s.</string>
 
     <string name="consumption_label_kWh">kWh</string>
+
+    <string name="no_subscriptions_found">No subscriptions found</string>
 
 </resources>

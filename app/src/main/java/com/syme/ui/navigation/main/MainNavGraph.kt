@@ -6,14 +6,19 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.syme.ui.navigation.extensions.navigateToApplianceDetail
 import com.syme.ui.navigation.extensions.navigateToInstallationDetail
+import com.syme.ui.navigation.extensions.navigateToUserInstallationDetail
 import com.syme.ui.screen.analysis.AnalysisScreen
+import com.syme.ui.screen.appliance.ApplianceDetailScreen
 import com.syme.ui.screen.bill.BillScreen
 import com.syme.ui.screen.consumption.ConsumptionScreen
 import com.syme.ui.screen.home.HomeScreen
 import com.syme.ui.screen.installation.InstallationDetailScreen
+import com.syme.ui.screen.installation.UserInstallationDetailScreen
 import com.syme.ui.screen.profile.ProfileScreen
 import com.syme.ui.screen.settings.SettingsScreen
+import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.MeasurementViewModel
@@ -25,7 +30,8 @@ fun NavGraphBuilder.mainNavGraph(
     paddingValues: PaddingValues,
     installationViewModel: InstallationViewModel,
     consumptionViewModel: ConsumptionViewModel,
-    measurementViewModel: MeasurementViewModel
+    measurementViewModel: MeasurementViewModel,
+    applianceViewModel: ApplianceViewModel
     ) {
 
     composable (MainRoute.AnalysisScreen.route) {
@@ -47,9 +53,11 @@ fun NavGraphBuilder.mainNavGraph(
     composable (MainRoute.HomeScreen.route) {
         HomeScreen(
             installationViewModel = installationViewModel,
-            ownerId = "1",
             onNavigateToInstallationDetail = { installation ->
                 navController.navigateToInstallationDetail(installation)
+            },
+            onNavigateToUserInstallationDetail = { installation ->
+                navController.navigateToUserInstallationDetail(installation)
             }
         )
     }
@@ -78,4 +86,43 @@ fun NavGraphBuilder.mainNavGraph(
         }
     }
 
+    composable(MainRoute.UserInstallationDetailScreen.route){ backStackEntry ->
+
+        val installationId =
+            backStackEntry.arguments?.getString("installationId")
+
+        if (installationId == null) {
+            navController.popBackStack()
+        } else {
+            UserInstallationDetailScreen(
+                installationId = installationId,
+                installationViewModel = installationViewModel,
+                applianceViewModel = applianceViewModel,
+                onApplianceClick = { appliance ->
+                    navController.navigateToApplianceDetail(appliance, installationId)
+                }
+            )
+        }
+    }
+
+    composable(MainRoute.ApplianceDetailScreen.route) { backStackEntry ->
+
+        val applianceId =
+            backStackEntry.arguments?.getString("applianceId")
+
+        val installationId =
+            backStackEntry.arguments?.getString("installationId")
+
+        if (applianceId == null) {
+            navController.popBackStack()
+        } else {
+            ApplianceDetailScreen(
+                applianceId = applianceId,
+                installationId = installationId,
+                circuits = emptyList(),
+                applianceViewModel = applianceViewModel,
+                onBack = { navController.popBackStack() },
+            )
+        }
+    }
 }

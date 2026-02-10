@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.syme.domain.mapper.imageResId
-import com.syme.domain.model.Installation
+import com.syme.ui.component.animation.ItemDetailHeader
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.viewmodel.InstallationViewModel
 
@@ -45,7 +45,7 @@ fun InstallationDetailScreen(
             .verticalScroll(rememberScrollState())
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            InstallationDetailHeader(
+            ItemDetailHeader(
                 id = installation.type.imageResId,
                 onBack = onBack
             )

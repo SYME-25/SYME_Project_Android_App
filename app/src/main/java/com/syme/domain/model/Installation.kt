@@ -13,8 +13,8 @@ data class Installation(
     val location: Location = Location(),
     val address: String = "",
 
-    //Power by day
-    val powerWatt: Double = 0.0,
+    //Energy by day
+    val energyWh: Double = 0.0,
 
     // Production locale
     val hasSolarPanels: Boolean = false,

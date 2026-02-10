@@ -8,7 +8,7 @@ data class Appliance(
     val circuitId: String = "",
     val name: String = "",
     val type: ApplianceType = ApplianceType.OTHER,
-    val heatType: ApplianceHeatType = ApplianceHeatType.NON_HEATING,
+    val heatType: ApplianceHeatType = ApplianceHeatType.NON_THERMAL,
     val isSmart: Boolean = false,
     val powerWatt: Float = 0f,           // Puissance en watts
     val powerFactor: Float = 0f,        // Facteur de puissance

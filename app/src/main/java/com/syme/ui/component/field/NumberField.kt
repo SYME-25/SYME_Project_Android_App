@@ -26,8 +26,15 @@ fun NumberField(
             .padding(vertical = 4.dp, horizontal = 20.dp),
         value = value,
         onValueChange = { newValue ->
-            if (newValue.all { it.isDigit() }) {
-                onValueChange(newValue)
+            // Autorise chiffres + une seule virgule ou un seul point
+            val filtered = newValue
+                .replace(',', '.')   // unifie en point
+                .let { text ->
+                    if (text.count { it == '.' } <= 1) text else value
+                }
+
+            if (filtered.all { it.isDigit() || it == '.' }) {
+                onValueChange(filtered)
             }
         },
         label = {
@@ -37,7 +44,7 @@ fun NumberField(
             )
         },
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number
+            keyboardType = KeyboardType.Decimal
         ),
         shape = RoundedCornerShape(8.dp),
         colors = TextFieldDefaults.colors(

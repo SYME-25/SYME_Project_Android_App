@@ -129,7 +129,7 @@ fun InstallationRow(
                         if(contentAction != null) {
 
                             TextWithBackground(
-                                text = stringResource(id = R.string.home_installation_power, item.powerWatt),
+                                text = stringResource(id = R.string.home_installation_power, item.energyWh),
                                 color = MaterialTheme.colorScheme.primary
                             )
 

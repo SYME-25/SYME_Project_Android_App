@@ -34,7 +34,7 @@ fun ConsumptionPlanningForm(
     kWhPrice: Float = 49f,
     moneyUnit: String = "FCFA",
     energyUnit: String = "kWh",
-    onSubmit: (installation: String, start: Long, end: Long, amount: Double) -> Unit
+    onSubmit: (installation: String, start: Long, end: Long, energyWh: Double) -> Unit
 ) {
     var selectedInstallation by remember { mutableStateOf("") }
     var startDate by remember { mutableStateOf("") }
@@ -47,11 +47,19 @@ fun ConsumptionPlanningForm(
 
     val context = LocalContext.current
     val sdf = remember { TimeUtils.dateFormat }
-    val today = remember { TimeUtils.currentTimestamp }
+    val today = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
 
     // Erreurs
     val installationErrorMsg = stringResource(R.string.consumption_error_installation_required)
     val startDateErrorMsg = stringResource(R.string.consumption_error_start_date_invalid)
+    val startErrorOverlapMsg = stringResource(R.string.consumption_error_start_date_overlap)
     val endDateErrorMsg = stringResource(R.string.consumption_error_end_date_invalid)
 
     fun parseDate(value: String): Long? =
@@ -106,9 +114,14 @@ fun ConsumptionPlanningForm(
             valid = false
         }
 
+        // Vérification chevauchement avec dernière consommation
         val lastEnd = lastSubscriptions[selectedInstallation]
-        if (start != null && lastEnd != null && start < lastEnd) {
-            startDateError = startDateErrorMsg
+        if (start != null && lastEnd != null && start <= lastEnd) {
+            val formattedLastEnd = sdf.format(Date(lastEnd)) // transforme en texte lisible
+            startDateError = context.getString(
+                R.string.consumption_error_start_date_overlap,
+                formattedLastEnd
+            )
             valid = false
         }
 
@@ -125,18 +138,10 @@ fun ConsumptionPlanningForm(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .shadow(6.dp, RoundedCornerShape(16.dp))
             .background(
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(16.dp)
-            )
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .padding(12.dp),
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -238,7 +243,7 @@ fun ConsumptionPlanningForm(
                             selectedInstallation,
                             parseDate(startDate)!!,
                             parseDate(endDate)!!,
-                            amountValue
+                            energyValue
                         )
                     }
                 }

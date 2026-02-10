@@ -1,5 +1,6 @@
 package com.syme.ui.snapshot
 
+import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
@@ -9,11 +10,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.syme.R
 
 /**
  * Gestion centralisée des messages.
  */
-class GlobalMessageManager {
+class GlobalMessageManager(private val context: Context) {
 
     private val _message: MutableState<Message?> = mutableStateOf(null)
     val message: State<Message?> = _message
@@ -27,24 +29,24 @@ class GlobalMessageManager {
         isSystemMessage: Boolean = false
     ) {
         val text = customText ?: when {
-            isSystemMessage -> item ?: "System Message"
+            isSystemMessage -> item ?: context.getString(R.string.system_message)
 
             else -> when (type) {
                 MessageType.SUCCESS -> when (action) {
-                    MessageAction.CREATE -> "$item created successfully"
-                    MessageAction.UPDATE -> "$item updated successfully"
-                    MessageAction.DELETE -> "$item deleted successfully"
-                    null -> item ?: "Success"
+                    MessageAction.CREATE -> context.getString(R.string.created_success, item)
+                    MessageAction.UPDATE -> context.getString(R.string.updated_success, item)
+                    MessageAction.DELETE -> context.getString(R.string.deleted_success, item)
+                    null -> item ?: context.getString(R.string.success)
                 }
 
                 MessageType.ERROR -> when (action) {
-                    MessageAction.CREATE -> "$item failed to create"
-                    MessageAction.UPDATE -> "$item failed to update"
-                    MessageAction.DELETE -> "$item failed to delete"
-                    null -> item ?: "Error"
+                    MessageAction.CREATE -> context.getString(R.string.create_failed, item)
+                    MessageAction.UPDATE -> context.getString(R.string.update_failed, item)
+                    MessageAction.DELETE -> context.getString(R.string.delete_failed, item)
+                    null -> item ?: context.getString(R.string.error)
                 }
 
-                MessageType.INFO -> item ?: "Information"
+                MessageType.INFO -> item ?: context.getString(R.string.information)
             }
         }
 
@@ -69,5 +71,10 @@ class GlobalMessageManager {
     }
 }
 
-// Singleton accessible globalement
-val globalMessageManager = GlobalMessageManager()
+/* ✅ CONTEXTE GLOBAL */
+lateinit var appContext: Context
+
+/* ✅ SINGLETON */
+val globalMessageManager: GlobalMessageManager by lazy {
+    GlobalMessageManager(appContext)
+}

@@ -3,13 +3,14 @@ package com.syme.utils
 import com.syme.domain.model.Installation
 import com.syme.domain.model.enumeration.InstallationType
 import com.syme.R
+import java.util.Locale
 
 val installationCatalog = listOf(
     Installation(
         installationId = "residential",
         name = "Residential",
         type = InstallationType.RESIDENTIAL,
-        powerWatt = 1000.0,
+        energyWh = 1000.0,
         metadata = mapOf(
             "description" to R.string.installation_residential_desc
         )
@@ -19,7 +20,7 @@ val installationCatalog = listOf(
         installationId = "commercial",
         name = "Commercial",
         type = InstallationType.COMMERCIAL,
-        powerWatt = 2000.0,
+        energyWh = 2000.0,
         metadata = mapOf(
             "description" to R.string.installation_commercial_desc
         )
@@ -29,7 +30,7 @@ val installationCatalog = listOf(
         installationId = "industrial",
         name = "Industrial",
         type = InstallationType.INDUSTRIAL,
-        powerWatt = 3000.0,
+        energyWh = 3000.0,
         metadata = mapOf(
             "description" to R.string.installation_industrial_desc
         )
@@ -39,7 +40,7 @@ val installationCatalog = listOf(
         installationId = "agricultural",
         name = "Agricultural",
         type = InstallationType.AGRICULTURAL,
-        powerWatt = 4000.0,
+        energyWh = 4000.0,
         metadata = mapOf(
             "description" to R.string.installation_agricultural_desc
         )
@@ -49,7 +50,7 @@ val installationCatalog = listOf(
         installationId = "public",
         name = "Public Building",
         type = InstallationType.PUBLIC,
-        powerWatt = 5000.0,
+        energyWh = 5000.0,
         metadata = mapOf(
             "description" to R.string.installation_public_desc
         )
@@ -59,9 +60,9 @@ val installationCatalog = listOf(
         installationId = "other",
         name = "Other",
         type = InstallationType.OTHER,
-        powerWatt = 6000.0,
+        energyWh = 6000.0,
         metadata = mapOf(
             "description" to R.string.installation_other_desc
         )
     )
-)
+).sortedBy { it.installationId.lowercase(Locale.getDefault()) }

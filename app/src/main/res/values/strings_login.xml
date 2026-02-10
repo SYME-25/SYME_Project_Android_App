@@ -8,4 +8,7 @@
     <string name="login_email_error">Email is required</string>
     <string name="login_not_member">Not a member ?</string>
     <string name="login_sign_in">Sign in now !</string>
+    <string name="login_success">Login successful !</string>
+    <string name="login_failed">Login failed</string>
+    <string name="login_error_with_message">Error : %1$s</string>
 </resources>

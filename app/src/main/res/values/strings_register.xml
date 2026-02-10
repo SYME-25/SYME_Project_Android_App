@@ -20,10 +20,12 @@
 
     <string name="register_phone">Phone</string>
     <string name="register_phone_error">Phone is required</string>
+    <string name="register_phone_invalid_format">Invalid phone format</string>
 
     <string name="register_email">Email</string>
     <string name="register_email_error">Email is required</string>
     <string name="register_invalid_email_error">Enter a valid email</string>
+    <string name="register_email_invalid_format">Invalid email format</string>
 
     <string name="register_address">Address</string>
     <string name="register_address_error">Address is required</string>
@@ -45,5 +47,8 @@
     <string name="register_accept_policy_error">You must accept the privacy policy</string>
     <string name="register_privacy_policy">Privacy policy</string>
     <string name="register_privacy_policy_read">Read our privacy policy</string>
+
+    <string name="register_success">Account created successfully</string>
+    <string name="register_error_with_message">Error : %1$s</string>
 
 </resources>

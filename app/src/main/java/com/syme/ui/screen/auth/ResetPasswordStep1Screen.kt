@@ -30,6 +30,7 @@ import com.syme.ui.component.actionbutton.AppTextButton
 import com.syme.ui.component.animation.Animation
 import com.syme.ui.component.field.EmailField
 import com.syme.ui.navigation.auth.AuthRoute
+import com.syme.ui.snapshot.GlobalMessageSnapshot
 import com.syme.ui.theme.SYMETheme
 
 @Composable
@@ -104,6 +105,8 @@ fun ResetPasswordStep1Screen(
             }
         )
     }
+
+    GlobalMessageSnapshot()
 }
 
 @Preview(showBackground = true)

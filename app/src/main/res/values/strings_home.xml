@@ -12,9 +12,10 @@
     <string name="home_installation_filter_all">All</string>
     <string name="home_installation">Installation</string>
     <string name="home_installation_electrical">electrical installation</string>
-    <string name="home_installation_power">Power: %s Watt/J</string>
+    <string name="home_installation_power">Energy: %s Wh/J</string>
     <string name="home_your_installations">Your installations</string>
     <string name="home_no_installations_found">No installations found</string>
+    <string name="installation_use_my_location">Use current location</string>
     <string name="installation_residential_desc">
         Home or apartment installation for monitoring household electricity consumption.
     </string>
@@ -69,4 +70,12 @@
 
     <!-- Actions -->
     <string name="installation_create_button">Create installation</string>
+
+    <string name="installation_error_loading_installations">Error loading installations</string>
+
+    <string name="installation_location_card_title">House location</string>
+    <string name="installation_location_card_description">
+    This location will be used as the position of your house for energy analysis and recommendations.
+    </string>
+
 </resources>

@@ -17,16 +17,17 @@ class MainActivity : ComponentActivity() {
     private val splashScreenViewModel : SplashViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-        //Pour la splash screen
+        // 🔹 Splash screen
         installSplashScreen().apply {
             setKeepOnScreenCondition {
                 splashScreenViewModel.isSplashScreenVisible.value
             }
         }
 
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             SYMETheme {
                 Scaffold { paddingValues ->

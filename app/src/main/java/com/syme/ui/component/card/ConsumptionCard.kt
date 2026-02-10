@@ -1,6 +1,5 @@
 package com.syme.ui.component.card
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,7 +11,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -26,7 +24,6 @@ import com.syme.domain.model.enumeration.ConsumptionStateType
 import com.syme.ui.component.actionbutton.AppSwitch
 import com.syme.ui.component.tank.TankLevelIndicator
 import com.syme.R
-import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.actionbutton.AppTextButton
 import com.syme.ui.component.text.TextWithBackground
 import com.syme.ui.theme.GreenTank
@@ -44,6 +41,7 @@ fun ConsumptionCard(
     modifier: Modifier = Modifier,
     cardWidth: Dp = Dp.Unspecified,
     cardHeight: Dp = Dp.Unspecified,
+    energyUnit: String = "kWh",
     onPauseToggle: (Boolean) -> Unit
 ) {
     val currentTime = System.currentTimeMillis()
@@ -125,7 +123,7 @@ fun ConsumptionCard(
                 ) {
 
                     Text(
-                        text = "$totalEnergy_kWhRemaining kWh",
+                        text = "$totalEnergy_kWhRemaining $energyUnit",
                         fontWeight = FontWeight.Bold,
                         color = energyColor
                     )
@@ -260,25 +258,39 @@ fun CountdownTimer(endTime: Long, textColor: Color) {
 }
 
 @Composable
-fun ConsumptionColumn(
+fun ConsumptionRow(
     consumptions: List<Consumption>,
     onPauseToggle: (Consumption, Boolean) -> Unit,
-    cardWidth: Dp = Dp.Unspecified,
-    cardHeight: Dp = Dp.Unspecified
+    cardWidth: Dp = 360.dp, // 🔹 largeur fixe
+    cardHeight: Dp = 350.dp, // 🔹 hauteur fixe
+    maxItems: Int = 30
 ) {
+    val limitedList = remember(consumptions) {
+        consumptions.take(maxItems)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = if (cardHeight != Dp.Unspecified) cardHeight else 300.dp)
+            .heightIn(min = 200.dp, max = 500.dp) // 🔒 hauteur fixe pour le row horizontal
     ) {
-        if (consumptions.isEmpty()) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else {
-            LazyColumn (
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+        if (limitedList.isEmpty()) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(consumptions) { cons ->
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = stringResource(R.string.no_subscriptions_found))
+            }
+        } else {
+            LazyRow(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(limitedList, key = { it.consumptionId }) { cons ->
                     ConsumptionCard(
                         consumption = cons,
                         cardWidth = cardWidth,
@@ -292,6 +304,7 @@ fun ConsumptionColumn(
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -307,7 +320,7 @@ fun ConsumptionCardStatesPreview() {
             meterId = "M001",
             periodStart = now + oneHour,
             periodEnd = now + 2 * oneHour,
-            totalEnergy_kWh = 100.0,
+            totalEnergy_kWh = 100,
             totalEnergy_kWhConsummed = 100.0,
             consumptionState = ConsumptionStateType.WAITING
         ),
@@ -318,7 +331,7 @@ fun ConsumptionCardStatesPreview() {
             meterId = "M002",
             periodStart = now - oneHour,
             periodEnd = now + oneHour,
-            totalEnergy_kWh = 100.0,
+            totalEnergy_kWh = 100,
             totalEnergy_kWhConsummed = 60.0,
             consumptionState = ConsumptionStateType.RUNNING
         ),
@@ -329,7 +342,7 @@ fun ConsumptionCardStatesPreview() {
             meterId = "M003",
             periodStart = now - 3 * oneHour,
             periodEnd = now - 2 * oneHour,
-            totalEnergy_kWh = 100.0,
+            totalEnergy_kWh = 100,
             totalEnergy_kWhConsummed = 0.0,
             consumptionState = ConsumptionStateType.COMPLETED
         ),
@@ -340,7 +353,7 @@ fun ConsumptionCardStatesPreview() {
             meterId = "M004",
             periodStart = now - oneHour,
             periodEnd = now + oneHour,
-            totalEnergy_kWh = 100.0,
+            totalEnergy_kWh = 100,
             totalEnergy_kWhConsummed = 40.0,
             consumptionState = ConsumptionStateType.PAUSED
         ),
@@ -351,7 +364,7 @@ fun ConsumptionCardStatesPreview() {
             meterId = "M005",
             periodStart = now - oneHour,
             periodEnd = now + oneHour,
-            totalEnergy_kWh = 100.0,
+            totalEnergy_kWh = 100,
             totalEnergy_kWhConsummed = 20.0,
             consumptionState = ConsumptionStateType.ERROR
         )

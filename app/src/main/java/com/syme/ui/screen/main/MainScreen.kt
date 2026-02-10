@@ -22,6 +22,7 @@ import com.syme.ui.screen.home.HomeBottomBar
 import com.syme.ui.screen.home.HomeHeader
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
+import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.MeasurementViewModel
@@ -33,39 +34,14 @@ import kotlinx.coroutines.delay
 fun MainScreen(
     installationViewModel: InstallationViewModel,
     consumptionViewModel: ConsumptionViewModel,
-    measurementViewModel: MeasurementViewModel
+    measurementViewModel: MeasurementViewModel,
+    applianceViewModel: ApplianceViewModel
     ) {
 
     val mainNavController = rememberNavController()
 
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-    val context = LocalContext.current
-    val isOnline by connectivityFlow(context).collectAsState(initial = true)
-
-    LaunchedEffect(isOnline) {
-        if (!isOnline) {
-            globalMessageManager.showMessage(
-                item = "Connectivity",
-                type = MessageType.ERROR,
-                isSystemMessage = true,
-                customText = "No internet connection",
-                customIcon = Icons.Default.WifiOff
-            )
-        } else {
-            globalMessageManager.showMessage(
-                type = MessageType.SUCCESS,
-                isSystemMessage = true,
-                customText = "Connection restored",
-                customIcon = Icons.Default.Wifi
-            )
-            delay(2500)
-            if (globalMessageManager.message.value?.isSystemMessage == true) {
-                globalMessageManager.clearMessage()
-            }
-        }
-    }
 
     Scaffold(
         topBar = { HomeHeader() },
@@ -94,7 +70,8 @@ fun MainScreen(
                 paddingValues = padding,
                 installationViewModel = installationViewModel,
                 consumptionViewModel = consumptionViewModel,
-                measurementViewModel = measurementViewModel
+                measurementViewModel = measurementViewModel,
+                applianceViewModel = applianceViewModel
             )
         }
     }

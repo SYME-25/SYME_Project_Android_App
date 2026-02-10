@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Messages système -->
+    <string name="system_message">System Message</string>
+
+    <!-- Success messages -->
+    <string name="success">%1$s</string>
+    <string name="created_success">%1$s created successfully</string>
+    <string name="updated_success">%1$s updated successfully</string>
+    <string name="deleted_success">%1$s deleted successfully</string>
+
+    <!-- Error messages -->
+    <string name="error">%1$s</string>
+    <string name="create_failed">%1$s failed to create</string>
+    <string name="update_failed">%1$s failed to update</string>
+    <string name="delete_failed">%1$s failed to delete</string>
+
+    <!-- Info messages -->
+    <string name="information">%1$s</string>
+
+    <!-- Messages système -->
+    <string name="system_no_internet">No internet connection</string>
+    <string name="system_connection_restored">Connection restored</string>
+
+    <!-- Actions pour la preview -->
+    <string name="preview_item_room">Room</string>
+
+    <!-- Actions pour la wifi state -->
+    <string name="No_internet_connection">No internet connection</string>
+    <string name="Connection_restored">Connection restored</string>
+</resources>
