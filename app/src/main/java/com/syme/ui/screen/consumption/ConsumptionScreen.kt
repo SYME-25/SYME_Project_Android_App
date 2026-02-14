@@ -185,17 +185,24 @@ fun ConsumptionScreen(
             )
         }
 
-        item { Spacer(modifier = Modifier.height(16.dp)) }
+        item { Spacer(modifier = Modifier.height(8.dp)) }
         item {
             HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
         }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
+        item { Spacer(modifier = Modifier.height(8.dp)) }
 
         // 🔹 Bouton ajout
         item {
             AppTextButton(
                 text = stringResource(R.string.consumption_button_add),
                 onClick = { showFormDialog = true }
+            )
+        }
+
+        item {
+            Title(
+                title = stringResource(R.string.your_consumption_planning),
+                fontSize = 18
             )
         }
 

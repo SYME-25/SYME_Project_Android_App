@@ -22,4 +22,9 @@
     <string name="home_circuit_unprotected">Circuit Unprotected</string>
     <string name="relay_channel">Relay Channel: %1$s</string>
     <string name="circuit_state">State: %1$s</string>
+
+    <string name="your_circuits">Your Circuits</string>
+    <string name="add_circuit">Add Circuit</string>
+    <string name="no_circuit_found">No circuits found</string>
+
 </resources>

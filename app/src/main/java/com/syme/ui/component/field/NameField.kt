@@ -32,9 +32,7 @@ fun NameField(
             .padding(vertical = 4.dp, horizontal = 20.dp),
         value = value,
         onValueChange = { newValue ->
-            if (newValue.all { it.isLetter() || it.isWhitespace() }) {
-                onValueChange(newValue)
-            }
+            onValueChange(newValue)
         },
         label = {
             Text(

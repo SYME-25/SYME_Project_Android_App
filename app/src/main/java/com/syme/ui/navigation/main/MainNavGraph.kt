@@ -19,9 +19,11 @@ import com.syme.ui.screen.installation.UserInstallationDetailScreen
 import com.syme.ui.screen.profile.ProfileScreen
 import com.syme.ui.screen.settings.SettingsScreen
 import com.syme.ui.viewmodel.ApplianceViewModel
+import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.MeasurementViewModel
+import com.syme.ui.viewmodel.MeterViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -31,7 +33,9 @@ fun NavGraphBuilder.mainNavGraph(
     installationViewModel: InstallationViewModel,
     consumptionViewModel: ConsumptionViewModel,
     measurementViewModel: MeasurementViewModel,
-    applianceViewModel: ApplianceViewModel
+    meterViewModel: MeterViewModel,
+    applianceViewModel: ApplianceViewModel,
+    circuitViewModel: CircuitViewModel
     ) {
 
     composable (MainRoute.AnalysisScreen.route) {
@@ -98,6 +102,8 @@ fun NavGraphBuilder.mainNavGraph(
                 installationId = installationId,
                 installationViewModel = installationViewModel,
                 applianceViewModel = applianceViewModel,
+                meterViewModel = meterViewModel,
+                circuitViewModel = circuitViewModel,
                 onApplianceClick = { appliance ->
                     navController.navigateToApplianceDetail(appliance, installationId)
                 }

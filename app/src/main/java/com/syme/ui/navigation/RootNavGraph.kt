@@ -30,11 +30,13 @@ import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
 import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.ui.viewmodel.AuthViewModel
+import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConnectivityViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.LoginViewModel
 import com.syme.ui.viewmodel.MeasurementViewModel
+import com.syme.ui.viewmodel.MeterViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
 import com.syme.utils.connectivityFlow
 import kotlinx.coroutines.delay
@@ -62,6 +64,8 @@ fun RootNavGraph(
     val session by authViewModel.currentSession.collectAsState()
     val connectivityViewModel: ConnectivityViewModel = hiltViewModel()
     val applianceViewModel : ApplianceViewModel = hiltViewModel()
+    val meterViewModel: MeterViewModel = hiltViewModel()
+    val circuitViewModel: CircuitViewModel = hiltViewModel()
 
     val isOnline by connectivityViewModel.isOnline.collectAsState()
 
@@ -110,7 +114,9 @@ fun RootNavGraph(
                     installationViewModel = installationViewModel,
                     consumptionViewModel = consumptionViewModel,
                     measurementViewModel = measurementViewModel,
-                    applianceViewModel = applianceViewModel
+                    meterViewModel = meterViewModel,
+                    applianceViewModel = applianceViewModel,
+                    circuitViewModel = circuitViewModel
                 )
             }
         }

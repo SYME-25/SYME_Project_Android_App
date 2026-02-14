@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,21 +36,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.syme.R
-import com.syme.domain.model.Circuit
-import com.syme.domain.model.enumeration.CircuitState
+import com.syme.domain.mapper.imageResId
+import com.syme.domain.mapper.labelResId
+import com.syme.domain.model.Appliance
+import com.syme.domain.model.Meter
+import com.syme.domain.model.enumeration.ApplianceType
+import com.syme.domain.model.enumeration.MeterStatus
 import com.syme.ui.component.text.TextWithBackground
-import com.syme.ui.component.text.Title
 
 @Composable
-fun CircuitCard(
-    item: Circuit,
-    relayState: String,
-    onClick: () -> Unit
+fun MeterListItemCard(
+    item: Meter,
+    onClick: () -> Unit,
+    contentAction: (@Composable () -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .size(width = 190.dp, height = 280.dp),
+            .size(width = 190.dp, height = 270.dp),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(
@@ -64,7 +68,6 @@ fun CircuitCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // IMAGE
             Box(
                 modifier = Modifier
                     .size(165.dp)
@@ -73,7 +76,7 @@ fun CircuitCard(
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
-                    model = R.drawable.power_socket,
+                    model = R.drawable.electric_meter,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit
@@ -82,65 +85,39 @@ fun CircuitCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ZONE TEXTE (corrigée)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Text(
+                text = item.meterId,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-                Text(
-                    text = item.name,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Spacer(modifier = Modifier.height(4.dp))
 
-                Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(id = item.meterType.labelResId),
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp
+            )
 
-                Text(
-                    text = if (item.isProtected)
-                        stringResource(id = R.string.home_circuit_protected)
-                    else
-                        stringResource(id = R.string.home_circuit_unprotected),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Spacer(modifier = Modifier.height(4.dp))
 
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Text(
-                    text = stringResource(
-                        id = R.string.relay_channel,
-                        item.relayChannel.toString()
-                    ),
-                    fontSize = 12.sp,
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                TextWithBackground(
-                    text = stringResource(
-                        id = R.string.circuit_state,
-                        relayState
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            TextWithBackground(
+                text = stringResource(
+                    item.status.labelResId
+                ),
+                textStyle = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
 
 @Composable
-fun CircuitRow(
-    items: List<Circuit>,
-    onClick: (Circuit) -> Unit,
+fun MeterListItemRow(
+    items: List<Meter>,
+    onClick: (Meter) -> Unit,
 ) {
     Box(
         Modifier
@@ -154,10 +131,9 @@ fun CircuitRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
             ) {
                 items(items) { item ->
-                    CircuitCard(
+                    MeterListItemCard(
                         item = item,
-                        relayState = "OFF",
-                        onClick = { onClick(item) }
+                        onClick = { onClick(item) },
                     )
                 }
             }
@@ -167,14 +143,11 @@ fun CircuitRow(
 
 @Preview
 @Composable
-fun CircuitCardPreview() {
-    val item = Circuit(
-        circuitId = "1",
-        name = "Climatisation très longue pour tester overflow",
-        relayChannel = 1,
-        currentState = CircuitState.ON,
-        isProtected = true,
+fun MeterListItemPreview() {
+    val item = Meter(
+        meterId = "1",
+        status = MeterStatus.ACTIVE,
     )
 
-    CircuitCard(item, relayState = "OFF", onClick = {})
+    MeterListItemCard(item, onClick = {}, contentAction = {})
 }

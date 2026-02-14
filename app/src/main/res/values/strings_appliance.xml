@@ -160,7 +160,7 @@
 
     <string name="home_your_appliances">Your appliances</string>
     <string name="home_no_appliances_found">No appliances found</string>
-    <string name="home_appliance_power">Power: %s Watt</string>
+    <string name="home_appliance_power">Power: %s W</string>
 
     <string name="appliance_filter_type">Filter by installation type</string>
     <string name="appliance_filter_heat_type">Filter by heat type</string>

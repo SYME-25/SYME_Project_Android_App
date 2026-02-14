@@ -71,6 +71,14 @@ fun HomeScreen(
             )
         }
 
+        // 🧱 TITRE SYSTEM (catalog)
+        item {
+            Title(
+                title = stringResource(R.string.installation_add_title),
+                fontSize = 18
+            )
+        }
+
         // 🧱 SYSTEM (filtré) on y touche pas
         item {
             val filteredCatalog =

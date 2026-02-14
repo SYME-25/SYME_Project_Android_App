@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="power">Power</string>
+    <string name="energy">Energy</string>
+    <string name="voltage">Voltage</string>
+    <string name="current">Current</string>
+    <string name="amount_to_pay">Amount to Pay</string>
+    <string name="currency_unit">FCFA</string>
+    <string name="relays">Relays</string>
+    <string name="unit_watt">W</string>
+    <string name="unit_wh">Wh</string>
+    <string name="unit_v">V</string>
+    <string name="unit_a">A</string>
+
+    <!-- Titles -->
+    <string name="meter_add_title">Add Meter</string>
+
+    <!-- Labels -->
+    <string name="meter_id_label">Meter ID</string>
+    <string name="meter_security_code_label">Security Code</string>
+
+    <!-- Errors -->
+    <string name="meter_id_required_error">Meter ID is required</string>
+    <string name="meter_security_code_required_error">Security code is required</string>
+
+    <!-- Button -->
+    <string name="meter_add_button">Add Meter</string>
+
+    <string name="meter_type_master">MASTER</string>
+    <string name="meter_type_slave">SLAVE</string>
+
+    <string name="meter_status_active">ACTIVE</string>
+    <string name="meter_status_maintenance">MAINTENANCE</string>
+    <string name="meter_status_offline">OFFLINE</string>
+    <string name="your_meter">Your Meter</string>
+    <string name="no_meter_found">No meter found</string>
+
+    <string name="meter_add_success">Meter added successfully</string>
+    <string name="meter_error_loading_meters">Error loading meters : %1$s</string>
+
+</resources>

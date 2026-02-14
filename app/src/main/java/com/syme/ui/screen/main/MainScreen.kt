@@ -23,9 +23,11 @@ import com.syme.ui.screen.home.HomeHeader
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
 import com.syme.ui.viewmodel.ApplianceViewModel
+import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.MeasurementViewModel
+import com.syme.ui.viewmodel.MeterViewModel
 import com.syme.utils.connectivityFlow
 import kotlinx.coroutines.delay
 
@@ -35,7 +37,9 @@ fun MainScreen(
     installationViewModel: InstallationViewModel,
     consumptionViewModel: ConsumptionViewModel,
     measurementViewModel: MeasurementViewModel,
-    applianceViewModel: ApplianceViewModel
+    meterViewModel: MeterViewModel,
+    applianceViewModel: ApplianceViewModel,
+    circuitViewModel: CircuitViewModel
     ) {
 
     val mainNavController = rememberNavController()
@@ -71,7 +75,9 @@ fun MainScreen(
                 installationViewModel = installationViewModel,
                 consumptionViewModel = consumptionViewModel,
                 measurementViewModel = measurementViewModel,
-                applianceViewModel = applianceViewModel
+                meterViewModel = meterViewModel,
+                applianceViewModel = applianceViewModel,
+                circuitViewModel = circuitViewModel
             )
         }
     }
