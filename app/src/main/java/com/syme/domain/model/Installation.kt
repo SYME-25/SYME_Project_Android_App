@@ -14,6 +14,7 @@ data class Installation(
     val address: String = "",
 
     //Energy by day
+    val powerSubscribed: Double = 0.0,
     val energyWh: Double = 0.0,
 
     // Production locale

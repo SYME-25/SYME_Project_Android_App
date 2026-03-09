@@ -57,7 +57,7 @@ fun InstallationDetailScreen(
                     .fillMaxWidth()
                     .padding(top = 400.dp)
             ) {
-                InstallationDetailBody(
+                InstallationForm(
                     item = installation,
                     onSaveInstallation = { newInstallation ->
                         installationViewModel.insert(ownerId ?: "", newInstallation)

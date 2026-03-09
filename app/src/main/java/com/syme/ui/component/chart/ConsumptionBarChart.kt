@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -30,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import com.syme.domain.model.ConsumptionBar
 import com.syme.ui.theme.YellowTank
 import com.syme.ui.theme.darkBlue
@@ -48,234 +53,233 @@ fun ConsumptionInjectionBarChart(
     yValueFormatter: (Float) -> String = { it.roundToInt().toString() },
     xLabelStep: Int = 2,
     moneyUnit: String = "FCFA",
-    energyUnit: String = "kWh",
+    energyUnit: String = "Wh",
     kWhPrice: Float = 49.0f
 ) {
-    val maxValueTop = data.maxOfOrNull { it.subscription + it.consumption } ?: 1f
-    val maxValueBottom = injection.maxOrNull() ?: 1f
-
-    val lastConsumptionValue by remember(data) {
-        derivedStateOf {
-            data.lastOrNull()?.let { it.subscription + it.consumption } ?: 0f
-        }
+    val maxValueTop = (data.maxOfOrNull { it.subscription + it.consumption } ?: 0f)
+        .coerceAtLeast(1f)
+    val maxValueBottom = (injection.maxOrNull() ?: 0f)
+        .coerceAtLeast(1f)
+    val lastConsumptionValue = data.sumOf { (it.subscription + it.consumption).toDouble() }.toFloat()
+    val lastInjectionValue = injection.sum()
+    val scrollState = rememberScrollState()
+    val contentWidth =
+        48.dp + (data.size * (barWidth + barSpacing)) + barSpacing
+    LaunchedEffect(data.size) {
+        scrollState.animateScrollTo(scrollState.maxValue)
     }
-
-    val lastInjectionValue by remember(injection) {
-        derivedStateOf {
-            injection.lastOrNull() ?: 0f
-        }
-    }
-
-
 
     Column(modifier) {
-
         ConsumptionSummary(
-            amountText = "${(lastConsumptionValue * kWhPrice).roundToInt()} $moneyUnit", // exemple conversion en devise
+            amountText = "${(lastConsumptionValue.div(1000) * kWhPrice).roundToInt()} $moneyUnit",
             consumptionText = "${lastConsumptionValue.roundToInt()} $energyUnit",
             color = lightBlue,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
         ConsumptionSummary(
-            amountText = "${(lastInjectionValue * kWhPrice).roundToInt()} $moneyUnit", // exemple conversion en devise
+            amountText = "${(lastInjectionValue.div(1000) * kWhPrice).roundToInt()} $moneyUnit",
             consumptionText = "${lastInjectionValue.roundToInt()} $energyUnit",
             color = YellowTank,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(maxHeight)
-        ) {
-            val axisPadding = 48f
-            val barWidthPx = barWidth.toPx()
-            val barSpacingPx = barSpacing.toPx()
-            val startOffset = axisPadding + barSpacingPx
+        // ── GRAPHE PRINCIPAL ──
+        Row(modifier = Modifier.fillMaxWidth()) {
 
-            // 🔽 ARRONDI PLUS DISCRET
-            val radius = 4.dp.toPx()
-
-            val yTextPaint = android.graphics.Paint().apply {
-                color = android.graphics.Color.GRAY
-                textSize = 26f
-                textAlign = android.graphics.Paint.Align.RIGHT
-                isAntiAlias = true
-            }
-
-            // Axe Y haut
-            repeat(ySteps + 1) { step ->
-                val ratio = step / ySteps.toFloat()
-                val value = maxValueTop * ratio
-                val y = size.height / 2 - ratio * size.height / 2
-
-                drawLine(
-                    color = Color(0xFFE0E0E0),
-                    start = Offset(axisPadding, y),
-                    end = Offset(size.width, y),
-                    strokeWidth = 1f
-                )
-
-                drawContext.canvas.nativeCanvas.drawText(
-                    yValueFormatter(value),
-                    axisPadding - 10f,
-                    y + 9f,
-                    yTextPaint
-                )
-            }
-
-            // Axe Y bas
-            repeat(ySteps + 1) { step ->
-                val ratio = step / ySteps.toFloat()
-                val value = maxValueBottom * ratio
-                val y = size.height / 2 + ratio * size.height / 2
-
-                drawLine(
-                    color = Color(0xFFE0E0E0),
-                    start = Offset(axisPadding, y),
-                    end = Offset(size.width, y),
-                    strokeWidth = 1f
-                )
-
-                drawContext.canvas.nativeCanvas.drawText(
-                    yValueFormatter(value),
-                    axisPadding - 10f,
-                    y + 9f,
-                    yTextPaint
-                )
-            }
-
-            // CONSOMMATION + ABONNEMENT
-            data.forEachIndexed { index, bar ->
-                val total = bar.subscription + bar.consumption
-                val barHeight = (total / maxValueTop) * (size.height / 2)
-
-                val subHeight = 12.dp.toPx()
-
-                val x = startOffset + index * (barWidthPx + barSpacingPx)
-                val topY = size.height / 2 - barHeight
-
-                // abonnement (PAS ARRONDI)
-                drawRect(
-                    color = darkBlue,
-                    topLeft = Offset(x, size.height / 2 - subHeight),
-                    size = Size(barWidthPx, subHeight)
-                )
-
-                // consommation (ARRONDI EN HAUT SEULEMENT)
-                val path = Path().apply {
-                    moveTo(x, size.height / 2 - subHeight)
-                    lineTo(x, topY + radius)
-
-                    arcTo(
-                        rect = Rect(x, topY, x + radius * 2, topY + radius * 2),
-                        startAngleDegrees = 180f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false
-                    )
-
-                    lineTo(x + barWidthPx - radius, topY)
-
-                    arcTo(
-                        rect = Rect(
-                            x + barWidthPx - radius * 2,
-                            topY,
-                            x + barWidthPx,
-                            topY + radius * 2
-                        ),
-                        startAngleDegrees = 270f,
-                        sweepAngleDegrees = 90f,
-                        forceMoveTo = false
-                    )
-
-                    lineTo(x + barWidthPx, size.height / 2 - subHeight)
-                    close()
+            // ── AXE Y FIXE (non scrollable) ──
+            Canvas(
+                modifier = Modifier
+                    .width(40.dp)
+                    .height(maxHeight)
+            ) {
+                val axisPadding = 96f
+                val yTextPaint = android.graphics.Paint().apply {
+                    color = android.graphics.Color.GRAY
+                    textSize = 26f
+                    textAlign = android.graphics.Paint.Align.RIGHT
+                    isAntiAlias = true
                 }
-
-                drawPath(path, lightBlue)
-            }
-
-            // INJECTION (ARRONDI EN HAUT SEULEMENT, PROPRE)
-            injection.forEachIndexed { index, value ->
-                val barHeight = (value / maxValueBottom) * (size.height / 2)
-
-                val x = startOffset + index * (barWidthPx + barSpacingPx)
-                val bottomY = size.height / 2
-                val topY = bottomY + barHeight
-
-                val path = Path().apply {
-                    moveTo(x, bottomY)
-                    lineTo(x, topY - radius)
-
-                    // coin haut gauche
-                    arcTo(
-                        rect = Rect(x, topY - radius * 2, x + radius * 2, topY),
-                        startAngleDegrees = 180f,
-                        sweepAngleDegrees = -90f,
-                        forceMoveTo = false
+                // Axe Y haut
+                repeat(ySteps + 1) { step ->
+                    val ratio = step / ySteps.toFloat()
+                    val value = maxValueTop * ratio
+                    val y = size.height / 2 - ratio * size.height / 2
+                    drawContext.canvas.nativeCanvas.drawText(
+                        yValueFormatter(value),
+                        axisPadding - 10f,
+                        y -4f,
+                        yTextPaint
                     )
-
-                    lineTo(x + barWidthPx - radius, topY)
-
-                    // coin haut droit
-                    arcTo(
-                        rect = Rect(
-                            x + barWidthPx - radius * 2,
-                            topY - radius * 2,
-                            x + barWidthPx,
-                            topY
-                        ),
-                        startAngleDegrees = 90f,
-                        sweepAngleDegrees = -90f,
-                        forceMoveTo = false
-                    )
-
-                    lineTo(x + barWidthPx, bottomY)
-                    close()
                 }
-
-                drawPath(path, YellowTank)
+                // Axe Y bas
+                repeat(ySteps + 1) { step ->
+                    val ratio = step / ySteps.toFloat()
+                    val value = maxValueBottom * ratio
+                    val y = size.height / 2 + ratio * size.height / 2
+                    drawContext.canvas.nativeCanvas.drawText(
+                        yValueFormatter(value),
+                        axisPadding - 10f,
+                        y - 4f,
+                        yTextPaint
+                    )
+                }
             }
 
+            // ── BARRES SCROLLABLES ──
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(scrollState)
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .width(contentWidth)
+                        .height(maxHeight)
+                ) {
+                    val barWidthPx = barWidth.toPx()
+                    val barSpacingPx = barSpacing.toPx()
+                    val startOffset = barSpacingPx
+                    // 🔽 ARRONDI PLUS DISCRET
+                    val radius = 4.dp.toPx()
+
+                    // Lignes horizontales de fond
+                    repeat(ySteps + 1) { step ->
+                        val ratio = step / ySteps.toFloat()
+                        val y = size.height / 2 - ratio * size.height / 2
+                        val yBottom = size.height / 2 + ratio * size.height / 2
+                        drawLine(
+                            color = Color(0xFFE0E0E0),
+                            start = Offset(0f, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = 1f
+                        )
+                        if (step > 0) drawLine(
+                            color = Color(0xFFE0E0E0),
+                            start = Offset(0f, yBottom),
+                            end = Offset(size.width, yBottom),
+                            strokeWidth = 1f
+                        )
+                    }
+
+                    // CONSOMMATION + ABONNEMENT
+                    data.forEachIndexed { index, bar ->
+                        val total = bar.subscription + bar.consumption
+                        val barHeight = (total / maxValueTop) * (size.height / 2)
+                        val subHeight = 12.dp.toPx()
+                        val x = startOffset + index * (barWidthPx + barSpacingPx)
+                        val topY = size.height / 2 - barHeight
+                        // abonnement (PAS ARRONDI)
+                        drawRect(
+                            color = darkBlue,
+                            topLeft = Offset(x, size.height / 2 - subHeight),
+                            size = Size(barWidthPx, subHeight)
+                        )
+                        // consommation (ARRONDI EN HAUT SEULEMENT)
+                        val path = Path().apply {
+                            moveTo(x, size.height / 2 - subHeight)
+                            lineTo(x, topY + radius)
+                            arcTo(
+                                rect = Rect(x, topY, x + radius * 2, topY + radius * 2),
+                                startAngleDegrees = 180f,
+                                sweepAngleDegrees = 90f,
+                                forceMoveTo = false
+                            )
+                            lineTo(x + barWidthPx - radius, topY)
+                            arcTo(
+                                rect = Rect(
+                                    x + barWidthPx - radius * 2,
+                                    topY,
+                                    x + barWidthPx,
+                                    topY + radius * 2
+                                ),
+                                startAngleDegrees = 270f,
+                                sweepAngleDegrees = 90f,
+                                forceMoveTo = false
+                            )
+                            lineTo(x + barWidthPx, size.height / 2 - subHeight)
+                            close()
+                        }
+                        drawPath(path, lightBlue)
+                    }
+
+                    // INJECTION (ARRONDI EN HAUT SEULEMENT, PROPRE)
+                    injection.forEachIndexed { index, value ->
+                        val barHeight = (value / maxValueBottom) * (size.height / 2)
+                        val x = startOffset + index * (barWidthPx + barSpacingPx)
+                        val bottomY = size.height / 2
+                        val topY = bottomY + barHeight
+                        val path = Path().apply {
+                            moveTo(x, bottomY)
+                            lineTo(x, topY - radius)
+                            // coin haut gauche
+                            arcTo(
+                                rect = Rect(x, topY - radius * 2, x + radius * 2, topY),
+                                startAngleDegrees = 180f,
+                                sweepAngleDegrees = -90f,
+                                forceMoveTo = false
+                            )
+                            lineTo(x + barWidthPx - radius, topY)
+                            // coin haut droit
+                            arcTo(
+                                rect = Rect(
+                                    x + barWidthPx - radius * 2,
+                                    topY - radius * 2,
+                                    x + barWidthPx,
+                                    topY
+                                ),
+                                startAngleDegrees = 90f,
+                                sweepAngleDegrees = -90f,
+                                forceMoveTo = false
+                            )
+                            lineTo(x + barWidthPx, bottomY)
+                            close()
+                        }
+                        drawPath(path, YellowTank)
+                    }
+                }
+            }
         }
 
-        // Axe X
-        Canvas(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(18.dp)
-        ) {
-            val axisPadding = 48f
-            val barWidthPx = barWidth.toPx()
-            val barSpacingPx = barSpacing.toPx()
-            val startOffset = axisPadding + barSpacingPx
-
-            val xTextPaint = android.graphics.Paint().apply {
-                color = android.graphics.Color.GRAY
-                textSize = 26f
-                textAlign = android.graphics.Paint.Align.CENTER
-                isAntiAlias = true
-            }
-
-            data.forEachIndexed { index, bar ->
-                if (index % xLabelStep == 0) {
-                    val x = startOffset + index * (barWidthPx + barSpacingPx) + barWidthPx / 2
-                    drawContext.canvas.nativeCanvas.drawText(
-                        bar.timeLabel,
-                        x,
-                        size.height - 2f,
-                        xTextPaint
-                    )
+        // ── AXE X SCROLLABLE ──
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.width(40.dp)) // aligné avec la largeur de l'axe Y
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(scrollState)
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .width(contentWidth)
+                        .height(18.dp)
+                ) {
+                    val barWidthPx = barWidth.toPx()
+                    val barSpacingPx = barSpacing.toPx()
+                    val startOffset = barSpacingPx
+                    val xTextPaint = android.graphics.Paint().apply {
+                        color = android.graphics.Color.GRAY
+                        textSize = 26f
+                        textAlign = android.graphics.Paint.Align.CENTER
+                        isAntiAlias = true
+                    }
+                    data.forEachIndexed { index, bar ->
+                        if (index % xLabelStep == 0) {
+                            val x = startOffset + index * (barWidthPx + barSpacingPx) + barWidthPx / 2
+                            drawContext.canvas.nativeCanvas.drawText(
+                                bar.timeLabel,
+                                x,
+                                size.height - 2f,
+                                xTextPaint
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
     Spacer(modifier = Modifier.height(16.dp))
-
     Row(
         modifier = Modifier
             .fillMaxWidth()

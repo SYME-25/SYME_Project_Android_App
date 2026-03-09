@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Section titles -->
+    <string name="profile_section_personal">Personal Information</string>
+    <string name="profile_section_contact">Contact Details</string>
+    <string name="profile_section_roles">Roles &amp; Permissions</string>
+    <string name="profile_section_traceability">Account Traceability</string>
+
+    <!-- Field labels -->
+    <string name="profile_label_full_name">Full name</string>
+    <string name="profile_label_first_name">First name</string>
+    <string name="profile_label_last_name">Last name</string>
+    <string name="profile_label_birthday">Date of birth</string>
+    <string name="profile_label_gender">Gender</string>
+    <string name="profile_label_email">Email address</string>
+    <string name="profile_label_phone">Phone number</string>
+    <string name="profile_label_address">Address</string>
+    <string name="profile_label_created_at">Created at</string>
+    <string name="profile_label_updated_at">Last updated</string>
+    <string name="profile_label_version">Version</string>
+    <string name="profile_label_status">Account status</string>
+
+    <!-- Status -->
+    <string name="profile_status_active">Active</string>
+    <string name="profile_status_inactive">Inactive</string>
+
+    <!-- Gender -->
+    <string name="profile_gender_male">Male</string>
+    <string name="profile_gender_female">Female</string>
+    <string name="profile_gender_other">Other</string>
+
+    <!-- Edit dialogs -->
+    <string name="profile_edit_personal_title">Edit personal information</string>
+    <string name="profile_edit_contact_title">Edit contact details</string>
+    <string name="profile_edit_confirm">Save</string>
+    <string name="profile_edit_cancel">Cancel</string>
+    <string name="profile_edit_icon_desc">Edit section</string>
+
+    <!-- Toasts -->
+    <string name="profile_update_success">Profile updated successfully</string>
+    <string name="profile_update_error">Failed to update profile</string>
+
+</resources>

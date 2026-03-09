@@ -13,6 +13,10 @@ sealed class MainRoute(val route: String, val title: Int, val icon: Int) {
 
     object ProfileScreen : MainRoute("profile", 0, 0)
 
+    object NotificationScreen : MainRoute("notification", 0, 0)
+
+    object BotScreen : MainRoute("bot", 0, 0)
+
     object InstallationDetailScreen : MainRoute("installationDetail/{installationId}", 0, 0) {
         fun createRoute(installationId: String) =
             "installationDetail/$installationId"

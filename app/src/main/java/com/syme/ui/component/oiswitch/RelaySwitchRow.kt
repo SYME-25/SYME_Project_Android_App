@@ -1,5 +1,6 @@
 package com.syme.ui.component.oiswitch
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,10 +22,17 @@ fun RelaySwitchRow(
 ) {
     Card(
         shape = MaterialTheme.shapes.large,
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(
-            modifier = modifier.padding(12.dp),
+            modifier = modifier.padding(6.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -37,7 +45,7 @@ fun RelaySwitchRow(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // ───── LISTE HORIZONTALE ─────
             LazyRow(

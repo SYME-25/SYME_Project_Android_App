@@ -12,8 +12,10 @@
     <string name="home_installation_filter_all">All</string>
     <string name="home_installation">Installation</string>
     <string name="home_installation_electrical">electrical installation</string>
-    <string name="home_installation_power">Energy: %s kWh/J</string>
+    <string name="home_installation_energy">Energy: %s kWh/J</string>
     <string name="home_your_installations">Your installations</string>
+    <string name="home_installation_power_subscribed_label">Power subscribed</string>
+    <string name="home_installation_power_subscribed">Power subscribed: %s kW</string>
     <string name="home_no_installations_found">No installations found</string>
     <string name="installation_use_my_location">Use current location</string>
     <string name="installation_residential_desc">
@@ -79,5 +81,14 @@
     </string>
 
     <string name="installation_add_title">Add installation</string>
+
+    <string name="installation_longitude">Longitude</string>
+    <string name="installation_latitude">Latitude</string>
+
+    <string name="installation_longitude_error">Longitude is required</string>
+    <string name="installation_latitude_error">Latitude is required</string>
+
+    <string name="installation_state_on">ACTIVE</string>
+    <string name="installation_state_off">OFFLINE</string>
 
 </resources>

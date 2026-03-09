@@ -1,5 +1,6 @@
 package com.syme.ui.component.card
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -44,13 +46,28 @@ import com.syme.ui.component.text.TextWithBackground
 @Composable
 fun InstallationCard(item: Installation, onClick: () -> Unit, contentAction: (@Composable () -> Unit)? = null){
 
+    val installationState = if (item.trace.active) {
+        stringResource(id = R.string.installation_state_on)
+    } else {
+        stringResource(id = R.string.installation_state_off)
+    }
+    val stateColor = if (!item.trace.active) {
+        Color.Red
+    } else {
+        Color.Green
+    }
+
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .size(width = 190.dp, height = 270.dp),
+            .size(width = 190.dp, height = 300.dp),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 3.dp
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
         ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -63,44 +80,83 @@ fun InstallationCard(item: Installation, onClick: () -> Unit, contentAction: (@C
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Box(modifier = Modifier
-                .size(165.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                tonalElevation = 4.dp,
+                shadowElevation = 4.dp
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(165.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = item.type.imageResId,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = item.type.imageResId,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
+                Text(
+                    text = if(contentAction != null) item.name else item.installationId,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = item.name,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = stringResource(id = item.type.labelResId),
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            if(contentAction != null) {
-                contentAction()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(id = item.type.labelResId),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
             }
 
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (contentAction != null) {
+                    contentAction()
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                TextWithBackground(
+                    text = stringResource(
+                        id = R.string.circuit_state,
+                        installationState
+                    ),
+                    color = stateColor
+                )
+            }
         }
     }
 }
@@ -128,8 +184,9 @@ fun InstallationRow(
                     InstallationCard(item = item, onClick = { onClick(item) }, contentAction = {
                         if(contentAction != null) {
 
-                            TextWithBackground(
-                                text = stringResource(id = R.string.home_installation_power, item.energyWh / 1000.0),
+                            Text(
+                                text = stringResource(id = R.string.home_installation_energy, item.energyWh / 1000.0),
+                                fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.primary
                             )
 
@@ -141,8 +198,8 @@ fun InstallationRow(
                                 ) {
                                     Text(
                                         text = description,
-                                        fontSize = 8.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 10.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         maxLines = 3,
                                         overflow = TextOverflow.Ellipsis
                                     )

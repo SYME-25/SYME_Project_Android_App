@@ -1,34 +1,32 @@
 package com.syme.ui.component.card
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import com.syme.domain.model.Consumption
-import com.syme.domain.model.enumeration.ConsumptionStateType
-import com.syme.ui.component.actionbutton.AppSwitch
-import com.syme.ui.component.tank.TankLevelIndicator
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.syme.R
-import com.syme.ui.component.actionbutton.AppTextButton
+import com.syme.domain.model.Consumption
+import com.syme.domain.model.Measurement
+import com.syme.domain.model.enumeration.ConsumptionStateType
+import com.syme.ui.component.tank.TankLevelIndicator
 import com.syme.ui.component.text.TextWithBackground
 import com.syme.ui.theme.GreenTank
 import com.syme.ui.theme.RedTank
 import com.syme.ui.theme.YellowTank
+import com.syme.utils.round2
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -42,6 +40,8 @@ fun ConsumptionCard(
     cardWidth: Dp = Dp.Unspecified,
     cardHeight: Dp = Dp.Unspecified,
     energyUnit: String = "kWh",
+    powerUnit: String = "kW",
+    realtimeMeasurements: List<Measurement> = emptyList(),
     onPauseToggle: (Boolean) -> Unit
 ) {
     val currentTime = System.currentTimeMillis()
@@ -55,123 +55,142 @@ fun ConsumptionCard(
         else -> ConsumptionStateType.COMPLETED
     }
 
-    val totalEnergy_kWhRemaining = consumption.totalEnergy_kWh - consumption.totalEnergy_kWhConsummed
+    // ── Tank level: energy-based for both Subscription and Demand ────────────
+    val tankLevel: Float
+    val tankLabel: String
 
-    // Niveau d'énergie
-    val energyLevel = (totalEnergy_kWhRemaining / consumption.totalEnergy_kWh)
-        .coerceIn(0.0, 1.0).toFloat()
+    // Energy-based tank for both Subscription and Demand
+    val realtimeKwh = if (dynamicState == ConsumptionStateType.RUNNING)
+        realtimeMeasurements
+            .filter { it.timestamp >= consumption.periodStart }
+            .mapNotNull { it.energyActiveWh }
+            .sum().div(1000.0)
+    else 0.0
 
-    // Couleur dynamique selon niveau (même logique que TankLevelIndicator)
-    val energyColor = when {
-        energyLevel > 0.5f -> GreenTank
-        energyLevel > 0.3f -> YellowTank
+    val totalConsumed = if (dynamicState == ConsumptionStateType.RUNNING)
+        (consumption.totalEnergy_kWhConsummed + realtimeKwh).coerceAtMost(consumption.totalEnergy_kWh.toDouble())
+    else consumption.totalEnergy_kWhConsummed
+
+    val remaining = (consumption.totalEnergy_kWh - totalConsumed).coerceAtLeast(0.0)
+    tankLevel = if (consumption.totalEnergy_kWh > 0)
+        (remaining / consumption.totalEnergy_kWh).coerceIn(0.0, 1.0).toFloat()
+    else 0f
+    tankLabel = "${round2(remaining)} $energyUnit"
+    val tankColor: Color = when {
+        tankLevel > 0.5f -> GreenTank
+        tankLevel > 0.3f -> YellowTank
         else -> RedTank
     }
+
+    val dateFormat = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
+    val periodStartText = dateFormat.format(Date(consumption.periodStart))
+    val periodEndText   = dateFormat.format(Date(consumption.periodEnd))
+
     Card(
         modifier = modifier
+            .sizeIn(minWidth = 360.dp, maxWidth = 360.dp, minHeight = 350.dp, maxHeight = 390.dp)
             .then(
-                if (cardWidth != Dp.Unspecified && cardHeight != Dp.Unspecified) {
+                if (cardWidth != Dp.Unspecified && cardHeight != Dp.Unspecified)
                     Modifier.size(width = cardWidth, height = cardHeight)
-                } else Modifier.fillMaxWidth()
+                else Modifier.fillMaxWidth()
             )
             .padding(8.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(8.dp),
+        border = BorderStroke(
+            1.dp,
+            if (consumption.onDemand)
+                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
+            else
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // Header: ID à gauche, état à droite
+            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = consumption.consumptionId,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
+                Text(text = consumption.consumptionId, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
                     text = dynamicState.name,
                     color = when (dynamicState) {
-                        ConsumptionStateType.RUNNING -> MaterialTheme.colorScheme.primary
-                        ConsumptionStateType.WAITING -> MaterialTheme.colorScheme.onSurfaceVariant
+                        ConsumptionStateType.RUNNING   -> MaterialTheme.colorScheme.primary
+                        ConsumptionStateType.WAITING   -> MaterialTheme.colorScheme.onSurfaceVariant
                         ConsumptionStateType.COMPLETED -> MaterialTheme.colorScheme.secondary
-                        ConsumptionStateType.PAUSED -> MaterialTheme.colorScheme.tertiary
-                        ConsumptionStateType.ERROR -> MaterialTheme.colorScheme.error
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        ConsumptionStateType.PAUSED    -> MaterialTheme.colorScheme.tertiary
+                        ConsumptionStateType.ERROR     -> MaterialTheme.colorScheme.error
+                        else                           -> MaterialTheme.colorScheme.onSurfaceVariant
                     },
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
+            Spacer(modifier = Modifier.height(6.dp))
             HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
+            // Body
+            Box(modifier = Modifier.weight(4f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top
-            ) {
-                // TankLevelIndicator à gauche
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                    // Tank
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = tankLabel, fontWeight = FontWeight.Bold, color = tankColor, fontSize = 12.sp)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        TankLevelIndicator(level = tankLevel, width = 80.dp, height = 200.dp)
+                    }
 
-                    Text(
-                        text = "$totalEnergy_kWhRemaining $energyUnit",
-                        fontWeight = FontWeight.Bold,
-                        color = energyColor
-                    )
+                    Spacer(modifier = Modifier.width(16.dp))
 
-                    Spacer(modifier = Modifier.height(2.dp))
+                    // Info items
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Type chip
+                        TypeChip(isOnDemand = consumption.onDemand)
+                        
+                        Spacer(modifier = Modifier.height(6.dp))
+                        
+                        InfoItem(
+                            id = R.drawable.outline_home_24,
+                            title = "Installation",
+                            value = consumption.installationId ?: "-"
+                        )
+                        InfoItem(
+                            id = R.drawable.outline_schedule_24,
+                            title = "Periode",
+                            value = "$periodStartText -> $periodEndText"
+                        )
 
-                    TankLevelIndicator(
-                        level = energyLevel,
-                        width = 80.dp,
-                        height = 150.dp
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                // Infos à droite
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .align(Alignment.Top),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    InfoItem(
-                        id = R.drawable.outline_home_24,
-                        title = "installation ID",
-                        value = consumption.installationId ?: "-"
-                    )
-                    InfoItem(
-                        id = R.drawable.outline_electric_bolt_24,
-                        title = "Meter ID",
-                        value = consumption.meterId ?: "-"
-                    )
-                    val dateFormat = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
-                    val periodStartText = dateFormat.format(Date(consumption.periodStart))
-                    val periodEndText = dateFormat.format(Date(consumption.periodEnd))
-                    InfoItem(
-                        id = R.drawable.outline_schedule_24,
-                        title = "Period",
-                        value = "$periodStartText → $periodEndText"
-                    )
-
-                    CountdownTimer(endTime = consumption.periodEnd, textColor = energyColor)
-
+                        if (consumption.onDemand && consumption.requestedPowerKw != null) {
+                            InfoItem(
+                                id = R.drawable.outline_electric_bolt_24,
+                                title = "Power",
+                                value = "${consumption.requestedPowerKw.toInt()} $powerUnit"
+                            )
+                        }
+                    }
                 }
             }
 
-            // Switch pause
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Countdown
+            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CountdownTimer(endTime = consumption.periodEnd, textColor = tankColor)
+            }
+
+            /*
+            // Actions
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -179,13 +198,9 @@ fun ConsumptionCard(
             ) {
                 AppSwitch(
                     checked = isPaused,
-                    onCheckedChange = {
-                        isPaused = it
-                        onPauseToggle(it)
-                    },
+                    onCheckedChange = { isPaused = it; onPauseToggle(it) },
                     label = "Pause"
                 )
-
                 AppTextButton(
                     text = "Delete",
                     onClick = {},
@@ -196,10 +211,37 @@ fun ConsumptionCard(
                         )
                     }
                 )
-            }
+            }*/
         }
     }
 }
+
+// ── TypeChip ──────────────────────────────────────────────────────────────────
+
+@Composable
+fun TypeChip(isOnDemand: Boolean) {
+    val label = if (isOnDemand) "Demande" else "Subscription"
+    val containerColor = if (isOnDemand)
+        MaterialTheme.colorScheme.tertiaryContainer
+    else
+        MaterialTheme.colorScheme.primaryContainer
+    val contentColor = if (isOnDemand)
+        MaterialTheme.colorScheme.onTertiaryContainer
+    else
+        MaterialTheme.colorScheme.onPrimaryContainer
+
+    Surface(shape = RoundedCornerShape(50), color = containerColor) {
+        Text(
+            text = label,
+            color = contentColor,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+        )
+    }
+}
+
+// ── InfoItem ──────────────────────────────────────────────────────────────────
 
 @Composable
 fun InfoItem(id: Int, title: String, value: String) {
@@ -215,41 +257,29 @@ fun InfoItem(id: Int, title: String, value: String) {
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
+            Text(text = title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
         }
-        Text(
-            text = value,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Text(text = value, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
+// ── CountdownTimer ────────────────────────────────────────────────────────────
+
 @Composable
 fun CountdownTimer(endTime: Long, textColor: Color) {
-    var remainingTime by remember { mutableStateOf(endTime - System.currentTimeMillis()) }
-
+    var remainingTime by remember { mutableLongStateOf(endTime - System.currentTimeMillis()) }
     LaunchedEffect(endTime) {
         while (remainingTime > 0) {
             remainingTime = endTime - System.currentTimeMillis()
             delay(1000)
         }
     }
-
     val duration = remainingTime.coerceAtLeast(0L).toDuration(DurationUnit.MILLISECONDS)
-    val days = duration.inWholeDays
-    val hours = (duration.inWholeHours % 24)
-    val minutes = (duration.inWholeMinutes % 60)
-    val seconds = (duration.inWholeSeconds % 60)
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
+    val days    = duration.inWholeDays
+    val hours   = duration.inWholeHours % 24
+    val minutes = duration.inWholeMinutes % 60
+    val seconds = duration.inWholeSeconds % 60
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
         TextWithBackground(
             text = String.format("%dJ %02dh %02dm %02ds", days, hours, minutes, seconds),
             color = textColor
@@ -257,23 +287,28 @@ fun CountdownTimer(endTime: Long, textColor: Color) {
     }
 }
 
+// ── ConsumptionRow ────────────────────────────────────────────────────────────
+
 @Composable
 fun ConsumptionRow(
     consumptions: List<Consumption>,
     onPauseToggle: (Consumption, Boolean) -> Unit,
-    cardWidth: Dp = 360.dp, // 🔹 largeur fixe
-    cardHeight: Dp = 350.dp, // 🔹 hauteur fixe
+    realtimeMeasurements: List<Measurement> = emptyList(),
+    cardWidth: Dp = 360.dp,
+    cardHeight: Dp = 370.dp,
     maxItems: Int = 30
 ) {
-    val limitedList = remember(consumptions) {
-        consumptions.take(maxItems)
+    val now = System.currentTimeMillis()
+    val limitedList = remember(consumptions) { consumptions.take(maxItems) }
+    val runningId = remember(consumptions, now) {
+        consumptions.firstOrNull {
+            it.consumptionState != ConsumptionStateType.PAUSED &&
+            it.consumptionState != ConsumptionStateType.ERROR &&
+            now in it.periodStart..it.periodEnd
+        }?.consumptionId
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 200.dp, max = 500.dp) // 🔒 hauteur fixe pour le row horizontal
-    ) {
+    Box(modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp, max = 500.dp)) {
         if (limitedList.isEmpty()) {
             Column(
                 modifier = Modifier.align(Alignment.Center),
@@ -295,9 +330,8 @@ fun ConsumptionRow(
                         consumption = cons,
                         cardWidth = cardWidth,
                         cardHeight = cardHeight,
-                        onPauseToggle = { paused ->
-                            onPauseToggle(cons, paused)
-                        }
+                        realtimeMeasurements = if (cons.consumptionId == runningId) realtimeMeasurements else emptyList(),
+                        onPauseToggle = { /*paused -> onPauseToggle(cons, paused)*/ }
                     )
                 }
             }
@@ -305,82 +339,50 @@ fun ConsumptionRow(
     }
 }
 
+// ── Preview ───────────────────────────────────────────────────────────────────
 
 @Preview(showBackground = true)
 @Composable
 fun ConsumptionCardStatesPreview() {
     val now = System.currentTimeMillis()
-    val oneHour = 3600_000L
+    val oneHour   = 3_600_000L
+    val twoMonths = 5_184_000_000L
 
     val consumptions = listOf(
-        // WAITING : période dans le futur
         Consumption(
-            consumptionId = "C001",
-            installationId = "H001",
-            meterId = "M001",
-            periodStart = now + oneHour,
-            periodEnd = now + 2 * oneHour,
-            totalEnergy_kWh = 100,
-            totalEnergy_kWhConsummed = 100.0,
-            consumptionState = ConsumptionStateType.WAITING
+            consumptionId = "C001", installationId = "H001",
+            periodStart = now - oneHour, periodEnd = now + twoMonths,
+            totalEnergy_kWh = 1000, totalEnergy_kWhConsummed = 320.0,
+            consumptionState = ConsumptionStateType.RUNNING, onDemand = false
         ),
-        // RUNNING : période en cours
         Consumption(
-            consumptionId = "C002",
-            installationId = "H002",
-            meterId = "M002",
-            periodStart = now - oneHour,
-            periodEnd = now + oneHour,
-            totalEnergy_kWh = 100,
-            totalEnergy_kWhConsummed = 60.0,
-            consumptionState = ConsumptionStateType.RUNNING
+            consumptionId = "C002", installationId = "H001",
+            periodStart = now - oneHour, periodEnd = now + (oneHour * 48),
+            totalEnergy_kWh = 0, totalEnergy_kWhConsummed = 0.0,
+            consumptionState = ConsumptionStateType.RUNNING,
+            onDemand = true, requestedPowerKw = 500.0
         ),
-        // COMPLETED : période terminée
         Consumption(
-            consumptionId = "C003",
-            installationId = "H003",
-            meterId = "M003",
-            periodStart = now - 3 * oneHour,
-            periodEnd = now - 2 * oneHour,
-            totalEnergy_kWh = 100,
-            totalEnergy_kWhConsummed = 0.0,
-            consumptionState = ConsumptionStateType.COMPLETED
+            consumptionId = "C003", installationId = "H002",
+            periodStart = now + oneHour, periodEnd = now + twoMonths,
+            totalEnergy_kWh = 800, totalEnergy_kWhConsummed = 0.0,
+            consumptionState = ConsumptionStateType.WAITING, onDemand = false
         ),
-        // PAUSED : manuel
         Consumption(
-            consumptionId = "C004",
-            installationId = "H004",
-            meterId = "M004",
-            periodStart = now - oneHour,
-            periodEnd = now + oneHour,
-            totalEnergy_kWh = 100,
-            totalEnergy_kWhConsummed = 40.0,
-            consumptionState = ConsumptionStateType.PAUSED
-        ),
-        // ERROR : exemple d’erreur
-        Consumption(
-            consumptionId = "C005",
-            installationId = "H005",
-            meterId = "M005",
-            periodStart = now - oneHour,
-            periodEnd = now + oneHour,
-            totalEnergy_kWh = 100,
-            totalEnergy_kWhConsummed = 20.0,
-            consumptionState = ConsumptionStateType.ERROR
+            consumptionId = "C004", installationId = "H002",
+            periodStart = now - oneHour, periodEnd = now + (oneHour * 24),
+            totalEnergy_kWh = 0, totalEnergy_kWhConsummed = 0.0,
+            consumptionState = ConsumptionStateType.PAUSED,
+            onDemand = true, requestedPowerKw = 250.0
         )
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    LazyRow(
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        consumptions.forEach { cons ->
-            ConsumptionCard(
-                consumption = cons,
-                onPauseToggle = { /* noop */ }
-            )
+        items(consumptions) { cons ->
+            ConsumptionCard(consumption = cons, onPauseToggle = {})
         }
     }
 }

@@ -8,7 +8,8 @@ import com.syme.domain.model.Traceability
 fun buildTraceability(
     existing: Traceability?,     // null = creation, otherwise = editing
     currentUserId: String,       // the admin/technician/user performing the action
-    currentUserRole: String = "USER"
+    currentUserRole: String = "USER",
+    isActive: Boolean = false
 ): Traceability {
 
     val now = System.currentTimeMillis()
@@ -29,6 +30,6 @@ fun buildTraceability(
             createdByRole = currentUserRole,
             updatedByRole = currentUserRole,
             version = 1,
-            active = true
+            active = isActive
         )
 }

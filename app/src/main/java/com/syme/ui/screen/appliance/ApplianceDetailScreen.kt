@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.syme.domain.mapper.imageResId
@@ -18,18 +19,19 @@ import com.syme.ui.component.animation.ItemDetailHeader
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.utils.applianceCatalog
-import com.syme.domain.model.Circuit
+import com.syme.ui.viewmodel.CircuitViewModel
 
 @Composable
 fun ApplianceDetailScreen(
     applianceId: String,
     installationId: String?,
-    circuits: List<Circuit>,
+    circuitViewModel: CircuitViewModel,
     applianceViewModel: ApplianceViewModel,
     onBack: () -> Unit
 ) {
 
     val ownerId = LocalCurrentUserSession.current?.userId
+    val circuits = circuitViewModel.circuits.collectAsState().value
 
     val appliance = applianceCatalog.find {
         it.applianceId == applianceId
@@ -60,7 +62,7 @@ fun ApplianceDetailScreen(
                     .fillMaxWidth()
                     .padding(top = 400.dp)
             ) {
-                ApplianceDetailBody(
+                ApplianceForm(
                     item = appliance,
                     circuits = circuits,
                     onSaveAppliance = { newAppliance ->

@@ -41,7 +41,8 @@ class RegisterViewModel @Inject constructor(
                 val trace: Traceability = buildTraceability(
                     existing = null,
                     currentUserId = userId,
-                    currentUserRole = "USER"
+                    currentUserRole = "USER",
+                    isActive = true
                 )
 
                 val metadata = mapOf(

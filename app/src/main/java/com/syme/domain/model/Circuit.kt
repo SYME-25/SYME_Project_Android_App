@@ -3,7 +3,7 @@ package com.syme.domain.model
 import com.syme.domain.model.enumeration.CircuitState
 
 data class Circuit(
-    val circuitId: String = "",
+    val circuitId: Int = 0,
     val installationId: String = "",
     val meterId: String = "",
     val relayChannel: Int? = null,          // ex: 1, 2, 3, 4...

@@ -2,6 +2,8 @@ package com.syme.ui.component.text
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +21,7 @@ import androidx.compose.ui.unit.dp
 fun TextWithBackground(text: String, color: Color, textStyle: TextStyle = MaterialTheme.typography.bodySmall){
     Box(
         modifier = Modifier
+            .fillMaxSize()
             .clip(RoundedCornerShape(50))
             .background(
                 color = color.copy(alpha = 0.2f)

@@ -2,7 +2,6 @@ package com.syme.ui.screen.consumption
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +26,7 @@ import java.util.*
 import kotlin.math.roundToInt
 
 @Composable
-fun ConsumptionPlanningForm(
+fun SubscriptionForm(
     installationsId: List<String>,
     lastSubscriptions: Map<String, Long>,
     kWhPrice: Float = 49f,
@@ -43,10 +41,10 @@ fun ConsumptionPlanningForm(
 
     var installationError by remember { mutableStateOf("") }
     var startDateError by remember { mutableStateOf("") }
-    var endDateError by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val sdf = remember { TimeUtils.dateFormat }
+
     val today = remember {
         Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -56,48 +54,48 @@ fun ConsumptionPlanningForm(
         }.timeInMillis
     }
 
-    // Erreurs
-    val installationErrorMsg = stringResource(R.string.consumption_error_installation_required)
-    val startDateErrorMsg = stringResource(R.string.consumption_error_start_date_invalid)
-    val startErrorOverlapMsg = stringResource(R.string.consumption_error_start_date_overlap)
-    val endDateErrorMsg = stringResource(R.string.consumption_error_end_date_invalid)
-
     fun parseDate(value: String): Long? =
         runCatching { sdf.parse(value)?.time }.getOrNull()
+
+    // 🔹 date minimale autorisée pour start
+    val minStartMs by remember(selectedInstallation, lastSubscriptions) {
+        derivedStateOf { lastSubscriptions[selectedInstallation] ?: today }
+    }
+
+    val minStartLabel by remember(minStartMs) {
+        derivedStateOf { sdf.format(Date(minStartMs)) }
+    }
 
     val amountValue = amount.toDoubleOrNull() ?: 0.0
     val energyValue = if (kWhPrice > 0) amountValue / kWhPrice else 0.0
 
-    // DatePickers Android
-    val startCalendar = Calendar.getInstance()
-    val endCalendar = Calendar.getInstance()
+    // DatePickers
+    val startCalendar = remember { Calendar.getInstance() }
 
     val startDatePicker = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
             startCalendar.set(year, month, dayOfMonth)
+
+            val startMillis = startCalendar.timeInMillis
+
+            // ⚡ fin = +2 mois automatique
+            val endCalendar = startCalendar.clone() as Calendar
+            endCalendar.add(Calendar.MONTH, 2)
+
             startDate = sdf.format(startCalendar.time)
+            endDate = sdf.format(endCalendar.time)
         },
         startCalendar.get(Calendar.YEAR),
         startCalendar.get(Calendar.MONTH),
         startCalendar.get(Calendar.DAY_OF_MONTH)
-    )
-
-    val endDatePicker = DatePickerDialog(
-        context,
-        { _, year, month, dayOfMonth ->
-            endCalendar.set(year, month, dayOfMonth)
-            endDate = sdf.format(endCalendar.time)
-        },
-        endCalendar.get(Calendar.YEAR),
-        endCalendar.get(Calendar.MONTH),
-        endCalendar.get(Calendar.DAY_OF_MONTH)
-    )
+    ).apply {
+        datePicker.minDate = minStartMs
+    }
 
     fun validate(): Boolean {
         installationError = ""
         startDateError = ""
-        endDateError = ""
 
         var valid = true
 
@@ -105,32 +103,21 @@ fun ConsumptionPlanningForm(
         val end = parseDate(endDate)
 
         if (selectedInstallation.isBlank()) {
-            installationError = installationErrorMsg
+            installationError =
+                context.getString(R.string.consumption_error_installation_required)
             valid = false
         }
 
-        if (start == null || start < today) {
-            startDateError = startDateErrorMsg
-            valid = false
-        }
-
-        // Vérification chevauchement avec dernière consommation
-        val lastEnd = lastSubscriptions[selectedInstallation]
-        if (start != null && lastEnd != null && start <= lastEnd) {
-            val formattedLastEnd = sdf.format(Date(lastEnd)) // transforme en texte lisible
+        if (start == null || start < minStartMs) {
             startDateError = context.getString(
                 R.string.consumption_error_start_date_overlap,
-                formattedLastEnd
+                minStartLabel
             )
             valid = false
         }
 
-        if (end == null || (start != null && end < start)) {
-            endDateError = endDateErrorMsg
-            valid = false
-        }
-
         if (amountValue <= 0) valid = false
+        if (start == null || end == null) valid = false
 
         return valid
     }
@@ -148,7 +135,7 @@ fun ConsumptionPlanningForm(
 
         item {
             Text(
-                text = stringResource(R.string.consumption_title),
+                text = stringResource(R.string.subscription_title),
                 fontSize = 24.sp,
                 modifier = Modifier.fillMaxWidth().padding(start = 25.dp),
                 fontWeight = FontWeight.ExtraBold
@@ -169,13 +156,34 @@ fun ConsumptionPlanningForm(
         item {
             DropdownField(
                 value = selectedInstallation,
-                onValueChange = { selectedInstallation = it },
+                onValueChange = {
+                    selectedInstallation = it
+                    startDate = ""
+                    endDate = ""
+                },
                 label = stringResource(R.string.consumption_label_installation),
                 error = installationError,
                 items = installationsId
             )
         }
 
+        if (selectedInstallation.isNotBlank()) {
+            item {
+                Text(
+                    text = stringResource(
+                        R.string.consumption_error_start_date_overlap,
+                        minStartLabel
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 25.dp, vertical = 4.dp)
+                )
+            }
+        }
+
+        // Start date (editable)
         item {
             DateField(
                 value = startDate,
@@ -185,12 +193,13 @@ fun ConsumptionPlanningForm(
             )
         }
 
+        // End date (auto, non cliquable)
         item {
             DateField(
                 value = endDate,
-                onClick = { endDatePicker.show() },
+                onClick = {},
                 label = stringResource(R.string.consumption_label_end_date),
-                error = endDateError
+                error = ""
             )
         }
 
@@ -221,15 +230,21 @@ fun ConsumptionPlanningForm(
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
         item {
-            TextWithBackground(
-                text = stringResource(
-                    R.string.consumption_energy_result,
-                    energyValue.roundToInt(),
-                    energyUnit
-                ),
-                color = MaterialTheme.colorScheme.primary,
-                textStyle = MaterialTheme.typography.bodyLarge
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            ) {
+                TextWithBackground(
+                    text = stringResource(
+                        R.string.consumption_energy_result,
+                        energyValue.roundToInt(),
+                        energyUnit
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    textStyle = MaterialTheme.typography.bodyLarge
+                )
+            }
         }
 
         item { Spacer(modifier = Modifier.height(24.dp)) }
@@ -256,14 +271,14 @@ fun ConsumptionPlanningForm(
 
 @Preview(showBackground = true)
 @Composable
-fun ConsumptionPlanningFormPreview() {
+fun SubscriptionFormPreview() {
     val installations = listOf("House A", "Shop B", "Factory C")
     val lastSubscriptions = mapOf(
         "House A" to Calendar.getInstance().apply { set(2026, 1, 5) }.timeInMillis,
         "Shop B" to Calendar.getInstance().apply { set(2026, 1, 20) }.timeInMillis
     )
 
-    ConsumptionPlanningForm(
+    SubscriptionForm(
         installationsId = installations,
         lastSubscriptions = lastSubscriptions,
         kWhPrice = 49f,

@@ -1,8 +1,11 @@
 package com.syme.ui.screen.installation
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,9 +25,9 @@ import com.syme.domain.mapper.imageResId
 import com.syme.domain.model.*
 import com.syme.domain.model.enumeration.ApplianceHeatType
 import com.syme.domain.model.enumeration.InstallationType
-import com.syme.ui.component.actionbutton.AppTextButton
 import com.syme.ui.component.card.*
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
 import com.syme.ui.screen.appliance.*
 import com.syme.ui.screen.circuit.CircuitForm
@@ -32,7 +35,9 @@ import com.syme.ui.screen.meter.MeterAddForm
 import com.syme.ui.state.UiState
 import com.syme.ui.viewmodel.*
 import com.syme.utils.applianceCatalog
+import com.syme.utils.buildTraceability
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun UserInstallationDetailScreen(
@@ -62,7 +67,7 @@ fun UserInstallationDetailScreen(
     var showMeterDialog by remember { mutableStateOf(false) }
     var showAddCircuitDialog by remember { mutableStateOf(false) }
 
-    val latestMeasurement = measurements.lastOrNull()
+    val latestMeasurement = measurements.lastOrNull() ?: Measurement(meterId = selectedMeter?.meterId ?: "", installationId = installationId)
     val liveSelectedMeter = meters.find { it.meterId == selectedMeter?.meterId }
 
     // Charger données
@@ -73,6 +78,14 @@ fun UserInstallationDetailScreen(
             applianceViewModel.observe(userId, installationId)
             meterViewModel.observeMeters(userId, installationId)
             circuitViewModel.observeCircuits(userId, installationId)
+        }
+    }
+
+    // 👇 Nouveau : observer les états relay depuis le Realtime DB pour chaque meter
+    LaunchedEffect(meters) {
+        val userId = currentUser?.userId ?: return@LaunchedEffect
+        meters.forEach { meter ->
+            meterViewModel.observeRelaysForMeter(userId, installationId, meter.meterId)
         }
     }
 
@@ -94,6 +107,52 @@ fun UserInstallationDetailScreen(
     ) {
 
         item { Title(title = selectedInstallation?.name ?: "", fontSize = 30) }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Title(
+                        title = stringResource(
+                            id = R.string.home_installation_power_subscribed,
+                            selectedInstallation?.powerSubscribed ?: 0.0
+                        ),
+                        fontSize = 16,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Title(
+                        title = stringResource(
+                            id = R.string.home_installation_energy,
+                            selectedInstallation?.energyWh?.div(1000.0) ?: 0.0
+                        ),
+                        fontSize = 16,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+            }
+        }
 
         item {
             BannerUserInstallation(
@@ -160,14 +219,13 @@ fun UserInstallationDetailScreen(
 
         item { Spacer(Modifier.height(16.dp)) }
 
-        item { Title(stringResource(R.string.your_meter), 18) }
-
         item {
-            AppTextButton(
-                text = stringResource(R.string.meter_add_title),
-                onClick = { showAddMeterDialog = true }
+            SectionHeader(
+                title = stringResource(R.string.your_meter),
+                onAddClick = { showAddMeterDialog = true }
             )
         }
+
 
         item {
             if (meters.isNotEmpty()) {
@@ -178,7 +236,7 @@ fun UserInstallationDetailScreen(
                         showMeterDialog = true
 
                         val userId = currentUser?.userId ?: return@MeterListItemRow
-                        meterViewModel.observeMeasurements(
+                        meterViewModel.startRealtimeAggregation(
                             userId,
                             installationId,
                             meter.meterId
@@ -192,12 +250,10 @@ fun UserInstallationDetailScreen(
 
         item { HorizontalDivider(Modifier.fillMaxWidth().padding(vertical = 16.dp)) }
 
-        item { Title(stringResource(R.string.your_circuits), 18) }
-
         item {
-            AppTextButton(
-                text = stringResource(R.string.add_circuit),
-                onClick = { showAddCircuitDialog = true }
+            SectionHeader(
+                title = stringResource(R.string.your_circuits),
+                onAddClick = { showAddCircuitDialog = true }
             )
         }
 
@@ -226,6 +282,10 @@ fun UserInstallationDetailScreen(
                 MeterAddForm { meterId, securityCode ->
                     val userId = currentUser?.userId ?: return@MeterAddForm
                     meterViewModel.loadMeter(userId, installationId, meterId, securityCode)
+
+                    val updatedInstallation = selectedInstallation?.copy(trace = buildTraceability(selectedInstallation?.trace, userId, isActive = true))
+                    installationViewModel.update(userId, updatedInstallation!!)
+
                     showAddMeterDialog = false
                 }
             }
@@ -240,6 +300,7 @@ fun UserInstallationDetailScreen(
             onDismissRequest = {
                 showMeterDialog = false
                 selectedMeter = null
+                meterViewModel.stopRealtime()
             },
             properties = DialogProperties(
                 usePlatformDefaultWidth = false
@@ -261,12 +322,13 @@ fun UserInstallationDetailScreen(
                     Surface(
                         shape = MaterialTheme.shapes.extraLarge,
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .padding(16.dp)
+                            .fillMaxWidth(1f)
+                            .padding(8.dp)
                     ) {
                         if (latestMeasurement != null) {
                             MeterCard(
                                 meterId = liveSelectedMeter.meterId,
+                                meterState = liveSelectedMeter.status.name,
                                 measurement = latestMeasurement,
                                 relays = liveSelectedMeter.relays,
                                 onRelayToggle = { relay, _ ->
@@ -297,20 +359,25 @@ fun UserInstallationDetailScreen(
                 shape = MaterialTheme.shapes.large,
                 modifier = Modifier.padding(16.dp)
             ) {
-
                 CircuitForm(
                     meters = meters,
                     onSave = { meterId, relayChannel, name, priority, isProtected ->
 
                         val userId = currentUser?.userId ?: return@CircuitForm
 
+                        val nextCircuitId = (circuits.maxOfOrNull {
+                            it.circuitId
+                        } ?: 0) + 1
+
                         val circuit = Circuit(
+                            circuitId = nextCircuitId, // 👈 auto incrément
                             installationId = installationId,
                             meterId = meterId,
                             relayChannel = relayChannel,
                             name = name,
                             priority = priority,
-                            isProtected = isProtected
+                            isProtected = isProtected,
+                            trace = buildTraceability(null, userId, isActive = true)
                         )
 
                         circuitViewModel.addCircuit(

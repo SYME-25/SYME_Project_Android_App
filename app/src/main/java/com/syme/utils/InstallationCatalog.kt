@@ -7,7 +7,7 @@ import java.util.Locale
 
 val installationCatalog = listOf(
     Installation(
-        installationId = "residential",
+        installationId = "1",
         name = "Residential",
         type = InstallationType.RESIDENTIAL,
         energyWh = 1000.0,
@@ -17,7 +17,7 @@ val installationCatalog = listOf(
     ),
 
     Installation(
-        installationId = "commercial",
+        installationId = "2",
         name = "Commercial",
         type = InstallationType.COMMERCIAL,
         energyWh = 2000.0,
@@ -27,7 +27,7 @@ val installationCatalog = listOf(
     ),
 
     Installation(
-        installationId = "industrial",
+        installationId = "3",
         name = "Industrial",
         type = InstallationType.INDUSTRIAL,
         energyWh = 3000.0,
@@ -37,7 +37,7 @@ val installationCatalog = listOf(
     ),
 
     Installation(
-        installationId = "agricultural",
+        installationId = "4",
         name = "Agricultural",
         type = InstallationType.AGRICULTURAL,
         energyWh = 4000.0,
@@ -47,7 +47,7 @@ val installationCatalog = listOf(
     ),
 
     Installation(
-        installationId = "public",
+        installationId = "5",
         name = "Public Building",
         type = InstallationType.PUBLIC,
         energyWh = 5000.0,
@@ -57,7 +57,7 @@ val installationCatalog = listOf(
     ),
 
     Installation(
-        installationId = "other",
+        installationId = "6",
         name = "Other",
         type = InstallationType.OTHER,
         energyWh = 6000.0,
@@ -65,4 +65,4 @@ val installationCatalog = listOf(
             "description" to R.string.installation_other_desc
         )
     )
-).sortedBy { it.installationId.lowercase(Locale.getDefault()) }
+).sortedBy { it.installationId.toInt() }

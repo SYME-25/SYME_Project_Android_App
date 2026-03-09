@@ -1,5 +1,6 @@
 package com.syme.ui.component.card
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,12 +48,25 @@ fun CircuitCard(
     relayState: String,
     onClick: () -> Unit
 ) {
+
+    val stateColor = if (relayState == "OFF") {
+        Color.Red
+    } else {
+        Color.Green
+    }
+
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .size(width = 190.dp, height = 280.dp),
+            .size(width = 190.dp, height = 290.dp),
         shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -64,43 +79,53 @@ fun CircuitCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // IMAGE
-            Box(
-                modifier = Modifier
-                    .size(165.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                tonalElevation = 4.dp,
+                shadowElevation = 4.dp
             ) {
-                AsyncImage(
-                    model = R.drawable.power_socket,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
+                // IMAGE
+                Box(
+                    modifier = Modifier
+                        .size(165.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = R.drawable.power_socket,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // ZONE TEXTE (corrigée)
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-
                 Text(
                     text = item.name,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+            }
 
-                Spacer(modifier = Modifier.height(4.dp))
-
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     text = if (item.isProtected)
                         stringResource(id = R.string.home_circuit_protected)
@@ -108,13 +133,18 @@ fun CircuitCard(
                         stringResource(id = R.string.home_circuit_unprotected),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 10.sp,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+            }
 
-                Spacer(modifier = Modifier.height(2.dp))
-
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     text = stringResource(
                         id = R.string.relay_channel,
@@ -122,15 +152,20 @@ fun CircuitCard(
                     ),
                     fontSize = 12.sp,
                 )
+            }
 
-                Spacer(modifier = Modifier.height(6.dp))
-
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 TextWithBackground(
                     text = stringResource(
                         id = R.string.circuit_state,
                         relayState
                     ),
-                    color = MaterialTheme.colorScheme.primary
+                    color = stateColor
                 )
             }
         }
@@ -156,7 +191,7 @@ fun CircuitRow(
                 items(items) { item ->
                     CircuitCard(
                         item = item,
-                        relayState = "OFF",
+                        relayState = item.currentState.name,
                         onClick = { onClick(item) }
                     )
                 }
@@ -169,7 +204,7 @@ fun CircuitRow(
 @Composable
 fun CircuitCardPreview() {
     val item = Circuit(
-        circuitId = "1",
+        circuitId = 1,
         name = "Climatisation très longue pour tester overflow",
         relayChannel = 1,
         currentState = CircuitState.ON,

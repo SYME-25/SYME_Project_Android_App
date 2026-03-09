@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import com.syme.domain.model.enumeration.PeriodFilter
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
@@ -24,6 +25,9 @@ object TimeUtils {
         return dateFormat.format(Date(currentTimestamp))
     }
 
+    fun formatDate2(ts: Long)     = SimpleDateFormat("MMMM d, yyyy",            Locale.ENGLISH).format(Date(ts))
+    fun formatDateTime(ts: Long) = SimpleDateFormat("MMM d, yyyy 'at' HH:mm", Locale.ENGLISH).format(Date(ts))
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun formatDateForPeriod(
         period: PeriodFilter,
@@ -39,6 +43,15 @@ object TimeUtils {
             PeriodFilter.YEAR ->
                 date.year.toString()
         }
+    }
+
+    /**
+     * Retourne le timestamp (en millis) du début du jour pour une date donnée.
+     * Si aucun paramètre n’est passé, prend la date d’aujourd’hui.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun startOfDayMillis(date: LocalDate = LocalDate.now(), zone: ZoneId = ZoneId.systemDefault()): Long {
+        return date.atStartOfDay(zone).toInstant().toEpochMilli()
     }
 
 }

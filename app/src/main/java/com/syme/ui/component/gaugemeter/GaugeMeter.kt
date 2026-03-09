@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.syme.domain.model.GradientSegment
@@ -51,7 +53,8 @@ fun GaugeMeter(
     modifier: Modifier = Modifier,
     value: Float,
     min: Float = 0f,
-    max: Float = 100f
+    max: Float = 100f,
+    tickColor: Int = MaterialTheme.colorScheme.onSurface.toArgb()
 ) {
     // Animation de la valeur pour une transition fluide
     val animatedValue by animateFloatAsState(
@@ -72,7 +75,7 @@ fun GaugeMeter(
 
         // Dessiner les éléments dans l'ordre
         drawGradientGaugeArc(center, arcTopLeft, arcSize, strokeWidth)
-        drawTicks(center, radius, strokeWidth, min, max)
+        drawTicks(center, radius, strokeWidth, min, max, tickColor)
         drawNeedle(center, radius, strokeWidth, needleAngle)
     }
 
@@ -136,7 +139,8 @@ private fun DrawScope.drawTicks(
     radius: Float,
     strokeWidth: Float,
     min: Float,
-    max: Float
+    max: Float,
+    tickColor: Int
 ) {
     val tickCount = 20
     val tickLength = strokeWidth * 0.6f
@@ -170,8 +174,8 @@ private fun DrawScope.drawTicks(
 
             // Ajustement pour centrer le texte verticalement
             val paint = Paint().apply {
-                color = android.graphics.Color.BLACK
-                textSize = strokeWidth * 0.6f
+                color = tickColor
+                textSize = strokeWidth //* 0.8f
                 textAlign = Paint.Align.CENTER
                 isAntiAlias = true
             }

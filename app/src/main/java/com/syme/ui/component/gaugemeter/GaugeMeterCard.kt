@@ -1,5 +1,6 @@
 package com.syme.ui.component.gaugemeter
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.syme.utils.round2
 
 @Composable
 fun GaugeMeterCard(
@@ -28,7 +30,12 @@ fun GaugeMeterCard(
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
-        tonalElevation = 2.dp
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        ),
+        color =  MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
     ) {
         Column(
             modifier = Modifier
@@ -51,8 +58,12 @@ fun GaugeMeterCard(
             // Le card de la valeur prend toute la largeur disponible
             Card(
                 shape = MaterialTheme.shapes.medium,
+                border = BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                ),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier
@@ -64,7 +75,7 @@ fun GaugeMeterCard(
                     contentAlignment = Alignment.Center // centre le contenu verticalement et horizontalement
                 ) {
                     Text(
-                        text = "$title: ${value.toInt()} $unit",
+                        text = "$title: ${round2(value.toDouble())} $unit",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

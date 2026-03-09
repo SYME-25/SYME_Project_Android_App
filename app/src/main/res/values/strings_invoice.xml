@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Header -->
+    <string name="invoice_header_title">Invoice</string>
+    <string name="invoice_label">INVOICE</string>
+    <string name="invoice_number_prefix">N° </string>
+    <string name="invoice_issued_at">Issued on: %s</string>
+
+    <!-- Status labels -->
+    <string name="invoice_status_draft">DRAFT</string>
+    <string name="invoice_status_issued">ISSUED</string>
+    <string name="invoice_status_paid">PAID</string>
+    <string name="invoice_status_overdue">OVERDUE</string>
+    <string name="invoice_status_cancelled">CANCELLED</string>
+
+    <!-- Meta section -->
+    <string name="invoice_bill_to">BILL TO</string>
+    <string name="invoice_installation_prefix">Installation: %s</string>
+    <string name="invoice_billing_period">BILLING PERIOD</string>
+    <string name="invoice_period_to">to %s</string>
+    <string name="invoice_duration_hours">Duration: %.0f hours</string>
+
+    <!-- Cost section -->
+    <string name="invoice_cost_details">COST BREAKDOWN</string>
+    <string name="invoice_col_description">Description</string>
+    <string name="invoice_col_detail">Detail</string>
+    <string name="invoice_col_amount">Amount</string>
+    <string name="invoice_row_subscription_label">Subscription power</string>
+    <string name="invoice_row_subscription_detail">%.0fh × %.0f kW</string>
+    <string name="invoice_row_demand_label">Demand power</string>
+    <string name="invoice_row_demand_detail">%d demand(s)</string>
+    <string name="invoice_row_energy_label">Energy consumed</string>
+    <string name="invoice_row_energy_detail">%.1f kWh</string>
+
+    <!-- Adjustments section -->
+    <string name="invoice_adjustments">ADJUSTMENTS</string>
+    <string name="invoice_subtotal">Subtotal</string>
+    <string name="invoice_vat">VAT (%d%%)</string>
+    <string name="invoice_other_taxes">Other taxes</string>
+    <string name="invoice_voluntary_bonus">Voluntary reduction bonus</string>
+    <string name="invoice_social_discount">Social discount</string>
+    <string name="invoice_network_balancing">Network balancing</string>
+
+    <!-- Total band -->
+    <string name="invoice_total_due">TOTAL DUE</string>
+    <string name="invoice_due_date">Due date: %s</string>
+
+    <!-- Demand lines table -->
+    <string name="invoice_demand_details">DEMAND DETAILS</string>
+    <string name="invoice_col_period_start">Period start</string>
+    <string name="invoice_col_period_end">Period end</string>
+    <string name="invoice_col_duration_h">Duration (h)</string>
+    <string name="invoice_col_power_kw">Power (kW)</string>
+    <string name="invoice_col_cost">Cost</string>
+
+    <!-- Footer -->
+    <string name="invoice_footer_thanks">Thank you for your trust</string>
+    <string name="invoice_footer_page">Page 1 / 1  ·  %s</string>
+
+    <!-- Email export -->
+    <string name="invoice_email_subject">SYME Invoice – %s</string>
+    <string name="invoice_email_body">Please find attached your SYME invoice for the period from %s to %s.</string>
+    <string name="invoice_email_chooser">Send invoice via</string>
+    <!-- Bill screen -->
+    <string name="bill_empty_title">No invoices yet</string>
+    <string name="bill_empty_subtitle">Your invoices will appear here once generated.</string>
+    <string name="bill_export_generating">Generating PDF…</string>
+
+    <string name="invoice_export_pdf">Export as PDF</string>
+
+    <string name="penalty_label">Out of subscription</string>
+    <string name="penalty_section_title">Ongoing penalties</string>
+    <string name="penalty_period_start">Gap start</string>
+    <string name="penalty_period_end">Gap end</string>
+    <string name="penalty_duration">Duration</string>
+    <string name="penalty_duration_value">%1$s h</string>
+    <string name="penalty_energy">Estimated energy</string>
+    <string name="penalty_energy_value">%1$s kWh</string>
+    <string name="penalty_cost">Penalty cost</string>
+</resources>

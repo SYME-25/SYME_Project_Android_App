@@ -1,5 +1,6 @@
 package com.syme.ui.component.card
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,9 +52,15 @@ fun ApplianceCard(
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .size(width = 190.dp, height = 270.dp),
+            .size(width = 190.dp, height = 290.dp),
         shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -65,43 +73,66 @@ fun ApplianceCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                tonalElevation = 4.dp,
+                shadowElevation = 4.dp
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(165.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = item.type.imageResId,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             Box(
                 modifier = Modifier
-                    .size(165.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                    .weight(1f)
+                    .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = item.type.imageResId,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
+                Text(
+                    text = item.applianceId,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(id = item.type.labelResId),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+            }
 
-            Text(
-                text = item.name,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = stringResource(id = item.type.labelResId),
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            if (contentAction != null) {
-                contentAction()
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (contentAction != null) {
+                    contentAction()
+                }
             }
         }
     }
@@ -149,8 +180,8 @@ fun ApplianceRow(
                                     ) {
                                         Text(
                                             text = description,
-                                            fontSize = 8.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                             maxLines = 3,
                                             overflow = TextOverflow.Ellipsis
                                         )

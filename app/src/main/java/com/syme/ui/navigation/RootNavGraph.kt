@@ -30,14 +30,15 @@ import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
 import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.ui.viewmodel.AuthViewModel
+import com.syme.ui.viewmodel.BillViewModel
 import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConnectivityViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.LoginViewModel
-import com.syme.ui.viewmodel.MeasurementViewModel
 import com.syme.ui.viewmodel.MeterViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
+import com.syme.ui.viewmodel.UserViewModel
 import com.syme.utils.connectivityFlow
 import kotlinx.coroutines.delay
 
@@ -60,12 +61,13 @@ fun RootNavGraph(
     val loginViewModel: LoginViewModel = hiltViewModel()
     val authViewModel: AuthViewModel = hiltViewModel()
     val consumptionViewModel: ConsumptionViewModel = hiltViewModel()
-    val measurementViewModel: MeasurementViewModel = hiltViewModel()
     val session by authViewModel.currentSession.collectAsState()
     val connectivityViewModel: ConnectivityViewModel = hiltViewModel()
     val applianceViewModel : ApplianceViewModel = hiltViewModel()
     val meterViewModel: MeterViewModel = hiltViewModel()
     val circuitViewModel: CircuitViewModel = hiltViewModel()
+    val billViewModel: BillViewModel = hiltViewModel()
+    val userViewModel: UserViewModel = hiltViewModel()
 
     val isOnline by connectivityViewModel.isOnline.collectAsState()
 
@@ -111,12 +113,13 @@ fun RootNavGraph(
 
             composable(MainRoute.MainScreen.route) {
                 MainScreen(
+                    userViewModel = userViewModel,
                     installationViewModel = installationViewModel,
                     consumptionViewModel = consumptionViewModel,
-                    measurementViewModel = measurementViewModel,
                     meterViewModel = meterViewModel,
                     applianceViewModel = applianceViewModel,
-                    circuitViewModel = circuitViewModel
+                    circuitViewModel = circuitViewModel,
+                    billViewModel = billViewModel
                 )
             }
         }

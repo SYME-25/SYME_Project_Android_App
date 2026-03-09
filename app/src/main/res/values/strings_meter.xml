@@ -4,7 +4,8 @@
     <string name="energy">Energy</string>
     <string name="voltage">Voltage</string>
     <string name="current">Current</string>
-    <string name="amount_to_pay">Amount to Pay</string>
+    <string name="meter_id">Meter Id: %1$s</string>
+    <string name="meter_state">State: %1$s</string>
     <string name="currency_unit">FCFA</string>
     <string name="relays">Relays</string>
     <string name="unit_watt">W</string>
@@ -32,7 +33,7 @@
     <string name="meter_status_active">ACTIVE</string>
     <string name="meter_status_maintenance">MAINTENANCE</string>
     <string name="meter_status_offline">OFFLINE</string>
-    <string name="your_meter">Your Meter</string>
+    <string name="your_meter">Your Meters</string>
     <string name="no_meter_found">No meter found</string>
 
     <string name="meter_add_success">Meter added successfully</string>

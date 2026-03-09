@@ -52,10 +52,10 @@ class CircuitRepository @Inject constructor(
         installationId: String,
         circuit: Circuit
     ) {
-        val docRef = circuitCollection(userId, installationId).document()
-        val circuitWithId = circuit.copy(circuitId = docRef.id)
+        val docRef = circuitCollection(userId, installationId)
+            .document(circuit.circuitId.toString())
 
-        docRef.set(circuitWithId).await()
+        docRef.set(circuit).await()
     }
 
     suspend fun updateCircuit(
@@ -64,7 +64,7 @@ class CircuitRepository @Inject constructor(
         circuit: Circuit
     ) {
         circuitCollection(userId, installationId)
-            .document(circuit.circuitId)
+            .document(circuit.circuitId.toString())
             .set(circuit)
             .await()
     }

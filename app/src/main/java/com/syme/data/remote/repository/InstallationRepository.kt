@@ -1,5 +1,6 @@
 package com.syme.data.remote.repository
 
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import com.syme.domain.model.Installation
@@ -10,9 +11,11 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class InstallationRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val realtimeDb: FirebaseDatabase
 ) {
 
+    // ── Firestore ──────────────────────────────────────────
     private fun collection(ownerId: String) =
         require(ownerId.isNotBlank()) { "ownerId is blank!" }
             .let {
@@ -20,6 +23,12 @@ class InstallationRepository @Inject constructor(
                     .document(ownerId)
                     .collection("installations")
             }
+
+    // ── Realtime Database ──────────────────────────────────
+    private fun realtimeRef(ownerId: String) =
+        realtimeDb.reference
+            .child("realTimeInstallations")
+            .child(ownerId)
 
     // 🔁 OBSERVE (temps réel)
     fun observeAll(ownerId: String): Flow<List<Installation>> = callbackFlow {
@@ -63,6 +72,11 @@ class InstallationRepository @Inject constructor(
             .document(installation.installationId)
             .set(installation)
             .await()
+
+        realtimeRef(ownerId)
+            .child(installation.installationId)
+            .setValue(installation)
+            .await()
     }
 
     // ✏️ UPDATE
@@ -71,6 +85,11 @@ class InstallationRepository @Inject constructor(
             .document(installation.installationId)
             .set(installation)
             .await()
+
+        realtimeRef(ownerId)
+            .child(installation.installationId)
+            .setValue(installation)
+            .await()
     }
 
     // ❌ DELETE
@@ -78,6 +97,11 @@ class InstallationRepository @Inject constructor(
         collection(ownerId)
             .document(installationId)
             .delete()
+            .await()
+
+        realtimeRef(ownerId)
+            .child(installationId)
+            .removeValue()
             .await()
     }
 }

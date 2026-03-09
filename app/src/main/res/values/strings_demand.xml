@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ══════════════════════════════════════════════════════════════
+     DemandForm strings — to be added in res/values/strings.xml
+     ══════════════════════════════════════════════════════════════ -->
+
+    <!-- Titles -->
+    <string name="demand_title">New request</string>
+    <string name="demand_subtitle">Reduce your power and save</string>
+
+    <!-- Labels -->
+    <string name="demand_label_power">Requested power</string>
+    <string name="demand_label_or_custom">Or enter a custom value:</string>
+    <string name="demand_label_power_input">Power (%1$s)</string>
+
+    <!-- Hints -->
+    <string name="demand_start_date_hint">Minimum start date: %1$s</string>
+
+    <!-- Summary -->
+    <!-- %1$d = requested kW, %2$s = unit, %3$d = savings % -->
+    <string name="demand_power_summary">%1$d %2$s requested — %3$d%% reduction on your subscribed power</string>
+
+    <!-- Button -->
+    <string name="demand_button_submit">Submit request</string>
+
+    <!-- Errors -->
+    <!-- %1$s = minStartDate label -->
+    <string name="demand_error_start_date_invalid">The start date must be ≥ %1$s</string>
+    <string name="demand_error_power_required">Please enter a requested power</string>
+    <!-- %1$f = powerSubscribed, %2$s = unit -->
+    <string name="demand_error_power_exceeds_subscription">Power must be less than %1$.0f %2$s (your subscribed power)</string>
+
+    <!-- Already present but needed as reminder -->
+    <!-- <string name="consumption_error_installation_required">...</string> -->
+    <!-- <string name="consumption_error_end_date_invalid">...</string>     -->
+
+    <string name="demande_price_info">1 %1$s = %2$.0f %3$s</string>
+    <string name="demand_price_info">Cost of requested power: %1$.0f %2$s</string>
+    <string name="demand_error_no_subscription">You must have an active subscription before submitting a demand request.</string>
+</resources>

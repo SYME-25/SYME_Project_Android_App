@@ -1,8 +1,6 @@
 package com.syme.ui.screen.appliance
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,25 +20,17 @@ import com.syme.ui.component.field.DropdownField
 import com.syme.ui.component.field.NumberField
 import com.syme.ui.component.field.NameField
 import com.syme.ui.component.field.TextAreaField
+import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.utils.buildTraceability
 import com.syme.utils.generateId
 
 @Composable
-fun ApplianceDetailBody(
+fun ApplianceForm(
     item: Appliance,
     circuits: List<Circuit>,
     onSaveAppliance: (Appliance) -> Unit
 ) {
     val ownerId = LocalCurrentUserSession.current?.userId
-
-    // 🔹 Circuits statiques temporaires
-    val circuits = remember {
-        listOf(
-            Circuit(circuitId = "C1", name = "Kitchen Lighting"),
-            Circuit(circuitId = "C2", name = "Living Room AC"),
-            Circuit(circuitId = "C3", name = "Bedroom Heater")
-        )
-    }
 
     var selectedCircuit by remember { mutableStateOf(circuits.firstOrNull()?.name ?: "") }
     var circuitError by remember { mutableStateOf("") }
@@ -250,14 +240,14 @@ fun ApplianceDetailBody(
                         onSaveAppliance(
                             item.copy(
                                 applianceId = generateId("A", selectedCircuit.take(1) + (index + 1)),
-                                circuitId = circuitId,
+                                circuitId = circuitId.toString(),
                                 powerWatt = power,
                                 powerFactor = factor,
                                 usageHoursPerDay = hours,
                                 metadata = if (selectedType == ApplianceType.OTHER)
                                     mapOf("name" to otherName, "description" to otherDescription)
                                 else item.metadata,
-                                trace = buildTraceability(item.trace, ownerId ?: "")
+                                trace = buildTraceability(null, ownerId ?: "", isActive = true)
                             )
                         )
                     }

@@ -16,3 +16,15 @@ val RedTank = Color(0xFFFC1403)
 
 val darkBlue = Color(0xFF0A1A3A)
 val lightBlue = Color(0xFF6EFAFF)
+
+val switchGreen = Color(0xFF2ECC71)
+val switchRed = Color(0xFFE74C3C)
+
+// ─── Color palette ────────────────────────────────────────────────────────────
+
+val AvatarMaleBg   = Color(0xFFDCEEFB)
+val AvatarMaleFg   = Color(0xFF2196F3)
+val AvatarFemaleBg = Color(0xFFFCE4EC)
+val AvatarFemaleFg = Color(0xFFE91E8C)
+val AvatarOtherBg  = Color(0xFFE8F5E9)
+val AvatarOtherFg  = Color(0xFF4CAF50)

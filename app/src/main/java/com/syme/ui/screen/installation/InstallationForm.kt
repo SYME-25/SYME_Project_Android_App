@@ -10,18 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -38,33 +31,33 @@ import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.actionbutton.AppSwitchWithLocationPermission
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.component.field.NameField
+import com.syme.ui.component.field.NumberField
 import com.syme.ui.theme.SYMETheme
 import com.syme.utils.buildTraceability
 import com.syme.utils.generateId
 
 @Composable
-fun InstallationDetailBody(
+fun InstallationForm(
     item: Installation,
     onSaveInstallation: (Installation) -> Unit
-){
-
+) {
     val owner = LocalCurrentUserSession.current
 
     var name by remember { mutableStateOf("") }
     var nameError by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var addressError by remember { mutableStateOf("") }
+    var powerSubscribed by remember { mutableStateOf("10") }
 
-    // 🌍 Etat local de l'installation (pour la location)
+    // 🌍 Etat local de l'installation
     var currentInstallation by remember { mutableStateOf(item) }
 
-    // Switch localisation
+    // ✅ Etat réel du switch
     var useLocation by remember { mutableStateOf(false) }
 
     val nameErrorMsg = stringResource(R.string.installation_name_error)
     val codeEntity = stringResource(item.type.labelResId).take(1)
 
-    // Build traceability
     LaunchedEffect(owner?.userId) {
         val ownerId = owner?.userId
         if (!ownerId.isNullOrBlank()) {
@@ -86,131 +79,110 @@ fun InstallationDetailBody(
         Text(
             text = stringResource(item.type.labelResId) + " " +
                     stringResource(R.string.home_installation_electrical),
-            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         Spacer(Modifier.height(16.dp))
 
         Text(
             text = stringResource(item.metadata?.get("description") as Int),
-            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         Spacer(Modifier.height(24.dp))
 
-        // ✏️ NOM
         NameField(
             value = name,
             onValueChange = {
                 name = it
-                if (nameError.isNotEmpty()) nameError = ""
+                nameError = ""
             },
             label = stringResource(R.string.installation_name_label),
-            icon = {
-                Icon(Icons.Outlined.Home, contentDescription = null)
-            },
+            icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
             error = nameError
         )
 
-        // 📍 ADRESSE
         NameField(
             value = address,
             onValueChange = {
                 address = it
-                if (addressError.isNotEmpty()) addressError = ""
+                addressError = ""
             },
             label = stringResource(R.string.installation_address_label),
-            icon = {
-                Icon(Icons.Outlined.LocationOn, contentDescription = null)
-            },
+            icon = { Icon(Icons.Outlined.LocationOn, contentDescription = null) },
             error = addressError
+        )
+
+        NumberField(
+            value = powerSubscribed,
+            onValueChange = {
+                powerSubscribed = it
+            },
+            label = stringResource(R.string.home_installation_power_subscribed_label),
+            error = ""
         )
 
         Spacer(Modifier.height(16.dp))
 
-        // 🌍 SWITCH LOCALISATION
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            shape = MaterialTheme.shapes.medium
+                .padding(horizontal = 16.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.LocationOn,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+            Column(modifier = Modifier.padding(16.dp)) {
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.LocationOn, null)
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.installation_location_card_title),
-                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
                 Spacer(Modifier.height(8.dp))
 
-                Text(
-                    text = stringResource(R.string.installation_location_card_description),
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text(text = stringResource(R.string.installation_location_card_description))
 
                 Spacer(Modifier.height(12.dp))
 
                 AppSwitchWithLocationPermission(
-                    checked = useLocation,
-                    onCheckedChange = { checked ->
-                        useLocation = checked
-                        if (!checked) {
-                            currentInstallation = currentInstallation.copy(
-                                location = Location()
-                            )
-                        }
-                    },
                     label = stringResource(R.string.installation_use_my_location),
-                    onLocationReceived = { loc ->
-                        currentInstallation = currentInstallation.copy(
-                            location = loc
-                        )
+                    onLocationStateChanged = { isEnabled, location ->
+                        if (isEnabled && location != null) {
+                            currentInstallation = currentInstallation.copy(location = location)
+                        } else {
+                            currentInstallation = currentInstallation.copy(location = Location())
+                        }
                     }
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                NameField(
+                    value = currentInstallation.location?.latitude?.toString() ?: "",
+                    onValueChange = {},
+                    label = stringResource(R.string.installation_latitude),
+                    icon = { Icon(Icons.Outlined.LocationOn, null) },
+                    error = ""
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                NameField(
+                    value = currentInstallation.location?.longitude?.toString() ?: "",
+                    onValueChange = {},
+                    label = stringResource(R.string.installation_longitude),
+                    icon = { Icon(Icons.Outlined.LocationOn, null) },
+                    error = ""
                 )
             }
         }
 
-        Spacer(Modifier.height(24.dp))
-
-        // ⚠️ ETAT
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 20.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = stringResource(R.string.installation_not_ready_message),
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-
         Spacer(Modifier.height(32.dp))
 
-        // ✅ ACTION
         AppButton(
             text = stringResource(R.string.installation_create_button),
             onClick = {
@@ -222,6 +194,7 @@ fun InstallationDetailBody(
                             ownerId = owner?.userId ?: "",
                             installationId = generateId("I", codeEntity),
                             name = name,
+                            powerSubscribed = powerSubscribed.toDouble(),
                             energyWh = 0.0,
                             address = address,
                             trace = currentInstallation.trace.copy(active = false)
@@ -235,9 +208,9 @@ fun InstallationDetailBody(
 
 @Preview(showBackground = true)
 @Composable
-fun InstallationDetailBodyPreview() {
+fun InstallationFormPreview() {
     SYMETheme {
-        InstallationDetailBody(
+        InstallationForm(
             item = Installation(
                 type = InstallationType.RESIDENTIAL,
                 metadata = mapOf("description" to R.string.installation_not_ready_message)

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="consumption_label">My consumption</string>
+    <string name="consumption_label">Consumption</string>
     <string name="consumption_filter_by_installation">"Select installation"</string>
     <string name="consumption_label_day">Day</string>
     <string name="consumption_label_month">Month</string>
     <string name="consumption_label_year">Year</string>
     <!-- Consumption planning -->
-    <string name="consumption_title">New consumption planning</string>
+    <string name="subscription_title">New subscription</string>
     <string name="consumption_subtitle">Enter subscription details</string>
 
     <string name="consumption_label_installation">Installation</string>
@@ -27,7 +27,7 @@
     <string name="consumption_error_end_date_invalid">End date must be after start date</string>
     <string name="consumption_error_start_date_overlap">The start date must be after: %1$s.</string>
 
-    <string name="consumption_label_kWh">kWh</string>
+    <string name="consumption_label_Wh">Wh</string>
 
     <string name="no_subscriptions_found">No subscriptions found</string>
 

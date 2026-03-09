@@ -8,5 +8,5 @@ data class Traceability(
     val createdByRole: String = "",
     val updatedByRole: String = "",
     val version: Int = 1,
-    val active: Boolean = true
+    val active: Boolean = false
 )

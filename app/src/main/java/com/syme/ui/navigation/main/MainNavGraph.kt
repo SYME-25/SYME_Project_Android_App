@@ -12,30 +12,34 @@ import com.syme.ui.navigation.extensions.navigateToUserInstallationDetail
 import com.syme.ui.screen.analysis.AnalysisScreen
 import com.syme.ui.screen.appliance.ApplianceDetailScreen
 import com.syme.ui.screen.bill.BillScreen
+import com.syme.ui.screen.bot.BotScreen
 import com.syme.ui.screen.consumption.ConsumptionScreen
 import com.syme.ui.screen.home.HomeScreen
 import com.syme.ui.screen.installation.InstallationDetailScreen
 import com.syme.ui.screen.installation.UserInstallationDetailScreen
+import com.syme.ui.screen.notification.NotificationScreen
 import com.syme.ui.screen.profile.ProfileScreen
 import com.syme.ui.screen.settings.SettingsScreen
 import com.syme.ui.viewmodel.ApplianceViewModel
+import com.syme.ui.viewmodel.BillViewModel
 import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
-import com.syme.ui.viewmodel.MeasurementViewModel
 import com.syme.ui.viewmodel.MeterViewModel
+import com.syme.ui.viewmodel.UserViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.mainNavGraph(
     navController: NavHostController,
     paddingValues: PaddingValues,
+    userViewModel: UserViewModel,
     installationViewModel: InstallationViewModel,
     consumptionViewModel: ConsumptionViewModel,
-    measurementViewModel: MeasurementViewModel,
     meterViewModel: MeterViewModel,
     applianceViewModel: ApplianceViewModel,
-    circuitViewModel: CircuitViewModel
+    circuitViewModel: CircuitViewModel,
+    billViewModel: BillViewModel
     ) {
 
     composable (MainRoute.AnalysisScreen.route) {
@@ -43,14 +47,19 @@ fun NavGraphBuilder.mainNavGraph(
     }
 
     composable (MainRoute.BillScreen.route) {
-        BillScreen()
+        BillScreen(
+            installationViewModel = installationViewModel,
+            billViewModel = billViewModel,
+            meterViewModel = meterViewModel,
+            consumptionViewModel = consumptionViewModel
+        )
     }
 
     composable (MainRoute.ConsumptionScreen.route) {
         ConsumptionScreen(
             installationViewModel = installationViewModel,
             consumptionViewModel = consumptionViewModel,
-            measurementViewModel = measurementViewModel
+            meterViewModel = meterViewModel
         )
     }
 
@@ -67,7 +76,15 @@ fun NavGraphBuilder.mainNavGraph(
     }
 
     composable (MainRoute.ProfileScreen.route) {
-        ProfileScreen()
+        ProfileScreen(userViewModel)
+    }
+
+    composable (MainRoute.NotificationScreen.route) {
+        NotificationScreen()
+    }
+
+    composable (MainRoute.BotScreen.route) {
+        BotScreen()
     }
 
     composable (MainRoute.SettingsScreen.route) {
@@ -125,7 +142,7 @@ fun NavGraphBuilder.mainNavGraph(
             ApplianceDetailScreen(
                 applianceId = applianceId,
                 installationId = installationId,
-                circuits = emptyList(),
+                circuitViewModel = circuitViewModel,
                 applianceViewModel = applianceViewModel,
                 onBack = { navController.popBackStack() },
             )

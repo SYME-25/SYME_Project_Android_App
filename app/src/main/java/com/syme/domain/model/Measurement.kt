@@ -9,18 +9,18 @@ data class Measurement(
     val timestamp: Long = 0L,
     val meterId: String = "",
     val installationId: String = "",
-    val voltage: Double? = null,
-    val current: Double? = null,
+    val voltage: Double? = 0.0,
+    val current: Double? = 0.0,
 
     // Puissances
-    val activePowerW: Double? = null,       // Puissance active (W)
-    val reactivePowerVar: Double? = null,   // Puissance réactive (var)
-    val apparentPowerVA: Double? = null,    // Puissance apparente (VA)
+    val activePowerW: Double? = 0.0,       // Puissance active (W)
+    val reactivePowerVar: Double? = 0.0,   // Puissance réactive (var)
+    val apparentPowerVA: Double? = 0.0,    // Puissance apparente (VA)
 
     // Énergies
-    val energyActiveWh: Double? = null,     // Énergie active (Wh)
-    val energyReactiveVarh: Double? = null, // Énergie réactive (varh)
-    val energyApparentVAh: Double? = null,  // Énergie apparente (VAh)
+    val energyActiveWh: Double? = 0.0,     // Énergie active (Wh)
+    val energyReactiveVarh: Double? = 0.0, // Énergie réactive (varh)
+    val energyApparentVAh: Double? = 0.0,  // Énergie apparente (VAh)
 
     val aiAnalysisStatus: String = "pending",  // "pending" | "processed" | "flagged"
     val rawPayload: Map<String, Any>? = null   // Données brutes optionnelles

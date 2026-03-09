@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bot_label">Chat with the Syme assistant</string>
+    <string name="bot_message_1">Need help? 🤔</string>
+    <string name="bot_message_2">Got a question? ❓</string>
+    <string name="bot_message_3">Let’s talk! 💬</string>
+    <string name="bot_message_4">Your usage today? 📊</string>
+    <string name="bot_message_5">Possible savings! 💰</string>
+    <string name="bot_message_6">Usage peak detected ⚡</string>
+    <string name="bot_message_7">Let’s optimize together!</string>
+    <string name="bot_message_8">Your estimated bill? 🧾</string>
+    <string name="bot_message_9">Compare your data? 📈</string>
+    <string name="bot_message_10">Energy tip 💡</string>
+</resources>

@@ -1,17 +1,20 @@
 package com.syme.ui.viewmodel
 
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.syme.R
-import com.syme.data.remote.repository.MeasurementRepository
 import com.syme.data.remote.repository.MeterRepository
 import com.syme.domain.model.Measurement
 import com.syme.domain.model.Meter
 import com.syme.domain.model.MeterEvent
 import com.syme.domain.model.Relay
+import com.syme.utils.TimeUtils.startOfDayMillis
+import com.syme.utils.round2
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
@@ -20,12 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MeterViewModel @Inject constructor(
     private val meterRepository: MeterRepository,
-    private val measurementRepository: MeasurementRepository
 ) : ViewModel() {
-
-    companion object {
-        private const val TAG = "MeterViewModel"
-    }
 
     // -------------------------
     // STATES
@@ -36,50 +34,161 @@ class MeterViewModel @Inject constructor(
     private val _measurements = MutableStateFlow<List<Measurement>>(emptyList())
     val measurements: StateFlow<List<Measurement>> = _measurements.asStateFlow()
 
+    private val _aggregatedMeasurements = MutableStateFlow<List<Measurement>>(emptyList())
+    val aggregatedMeasurements: StateFlow<List<Measurement>> = _aggregatedMeasurements
+
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    // 🎯 EVENTS (messages UI)
     private val _meterEvent = MutableSharedFlow<MeterEvent>()
     val meterEvent: SharedFlow<MeterEvent> = _meterEvent.asSharedFlow()
 
-    // ⭐ Job pour éviter les collectors multiples
-    private var measurementJob: Job? = null
+    // -------------------------
+    // INTERNAL JOBS
+    // -------------------------
+    private var realtimeJob: Job? = null
+    private var aggregationJob: Job? = null
+    private val relayJobs = mutableMapOf<String, Job>()
+    private val buffer = mutableListOf<Measurement>()
+    private var lastTimestampSeen: Long = 0
 
     // -------------------------
     // OBSERVE METERS
     // -------------------------
     fun observeMeters(userId: String, installationId: String) {
-        Log.d(TAG, "observeMeters() called with userId=$userId, installationId=$installationId")
-
         viewModelScope.launch {
-            try {
-                meterRepository.observeMeters(userId, installationId)
-                    .collect { list ->
-                        Log.d(TAG, "observeMeters() -> received ${list.size} meters")
-                        _meters.value = list
-                    }
-            } catch (e: Exception) {
-                Log.e(TAG, "observeMeters() error", e)
-                _error.value = e.message
-            }
+            meterRepository.observeMeters(userId, installationId)
+                .collect { _meters.value = it }
+        }
+    }
+
+    // ----------------------------------------
+    // OBSERVE MEASUREMENTS AGGREGATED
+    // ----------------------------------------
+    fun observeAggregatedMeasurements(
+        userId: String,
+        installationId: String
+    ) {
+        viewModelScope.launch {
+            meterRepository
+                .observeAggregatedMeasurementsFromFirestore(userId, installationId)
+                .collect { list ->
+                    _aggregatedMeasurements.value = list
+                }
         }
     }
 
     // -------------------------
-    // HASH FUNCTION (SHA-256)
+    // START REALTIME + AGGREGATION
     // -------------------------
-    private fun hashSecurityCode(code: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        val hashBytes = digest.digest(code.toByteArray(Charsets.UTF_8))
-        return hashBytes.joinToString("") { "%02x".format(it) }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun startRealtimeAggregation(
+        userId: String,
+        installationId: String,
+        meterId: String
+    ) {
+        stopRealtime()
+        buffer.clear()
+        lastTimestampSeen = System.currentTimeMillis()
+
+        // 🔁 REALTIME DATABASE LISTENER
+        realtimeJob = viewModelScope.launch {
+            meterRepository
+                .observeRealtimeFromRealtimeDb(userId, installationId, meterId)
+                .collect { list ->
+                    _measurements.value = list
+                    val todayStart = startOfDayMillis()
+                    val newOnes = list.filter {
+                        it.timestamp > lastTimestampSeen && it.timestamp >= todayStart
+                    }
+                    if (newOnes.isNotEmpty()) {
+                        lastTimestampSeen = newOnes.maxOf { it.timestamp }
+                        buffer.addAll(newOnes)
+                    }
+                }
+        }
+
+        // ⏱️ AGGREGATION LOOP
+        aggregationJob = viewModelScope.launch {
+            while (true) {
+                delay(60_000)
+                val measurementToSave =
+                    if (buffer.isNotEmpty()) {
+                        aggregate(buffer, meterId, installationId)
+                    } else {
+                        defaultMeasurement(meterId, installationId)
+                    }
+                meterRepository.saveToFirestore(
+                    userId,
+                    installationId,
+                    meterId,
+                    measurementToSave
+                )
+                buffer.clear()
+                lastTimestampSeen = System.currentTimeMillis()
+            }
+        }
+    }
+
+    fun stopRealtime() {
+        realtimeJob?.cancel()
+        aggregationJob?.cancel()
+        buffer.clear()
+        _measurements.value = emptyList()
     }
 
     // -------------------------
-    // ADD / LOAD METER
+    // AGGREGATION
+    // -------------------------
+    private fun aggregate(
+        list: List<Measurement>,
+        meterId: String,
+        installationId: String
+    ): Measurement {
+        fun avg(values: List<Double?>): Double? {
+            val valid = values.filterNotNull()
+            return if (valid.isNotEmpty()) valid.average() else null
+        }
+        return Measurement(
+            timestamp = System.currentTimeMillis(),
+            meterId = meterId,
+            installationId = installationId,
+            voltage = round2(avg(list.map { it.voltage })),
+            current = round2(avg(list.map { it.current })),
+            activePowerW = round2(avg(list.map { it.activePowerW })),
+            reactivePowerVar = round2(avg(list.map { it.reactivePowerVar })),
+            apparentPowerVA = round2(avg(list.map { it.apparentPowerVA })),
+            energyActiveWh = round2(list.mapNotNull { it.energyActiveWh }.sum()),
+            energyReactiveVarh = round2(list.mapNotNull { it.energyReactiveVarh }.sum()),
+            energyApparentVAh = round2(list.mapNotNull { it.energyApparentVAh }.sum()),
+            aiAnalysisStatus = "processed"
+        )
+    }
+
+    private fun defaultMeasurement(
+        meterId: String,
+        installationId: String
+    ): Measurement =
+        Measurement(
+            timestamp = System.currentTimeMillis(),
+            meterId = meterId,
+            installationId = installationId,
+            voltage = 0.0,
+            current = 0.0,
+            activePowerW = 0.0,
+            reactivePowerVar = 0.0,
+            apparentPowerVA = 0.0,
+            energyActiveWh = 0.0,
+            energyReactiveVarh = 0.0,
+            energyApparentVAh = 0.0,
+            aiAnalysisStatus = "missing"
+        )
+
+    // -------------------------
+    // LOAD METER
     // -------------------------
     fun loadMeter(
         userId: String,
@@ -87,22 +196,16 @@ class MeterViewModel @Inject constructor(
         meterId: String,
         securityCode: String
     ) {
-        Log.d(TAG, "loadMeter() called with meterId=$meterId, installationId=$installationId")
-
         viewModelScope.launch {
             _loading.value = true
-            _error.value = null
-
             try {
                 val hashedCode = hashSecurityCode(securityCode)
-
                 val meter = meterRepository.loadMeterToInstallation(
-                    userId = userId,
-                    installationId = installationId,
-                    meterId = meterId,
-                    inputCodeHash = hashedCode
+                    userId,
+                    installationId,
+                    meterId,
+                    hashedCode
                 )
-
                 if (meter != null) {
                     _meterEvent.emit(MeterEvent.Success(R.string.meter_add_success))
                 } else {
@@ -113,70 +216,84 @@ class MeterViewModel @Inject constructor(
                         )
                     )
                 }
-
             } catch (e: Exception) {
-                Log.e(TAG, "Exception in loadMeter()", e)
-                _meterEvent.emit(
-                    MeterEvent.Error(
-                        R.string.meter_error_loading_meters,
-                        e.message ?: "Unknown error"
-                    )
-                )
+                _error.value = e.message
             } finally {
                 _loading.value = false
             }
         }
     }
 
-    // -------------------------
-    // OBSERVE MEASUREMENTS (corrigé)
-    // -------------------------
-    fun observeMeasurements(userId: String, installationId: String, meterId: String) {
-        Log.d(TAG, "observeMeasurements() userId=$userId installationId=$installationId meterId=$meterId")
-
-        // 🧹 Annule l'ancien collector s'il existe
-        measurementJob?.cancel()
-
-        measurementJob = viewModelScope.launch {
-            try {
-                measurementRepository
-                    .observeRealtime(userId, installationId, meterId)
-                    .collect { list ->
-                        Log.d(TAG, "observeMeasurements() -> received ${list.size} measurements")
-                        _measurements.value = list
-                    }
-            } catch (e: Exception) {
-                Log.e(TAG, "observeMeasurements() error", e)
-                _error.value = e.message
-            }
-        }
+    private fun hashSecurityCode(code: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(code.toByteArray(Charsets.UTF_8))
+        return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
     // -------------------------
     // RELAYS
     // -------------------------
-    fun toggleRelay(userId: String, installationId: String, relay: Relay) {
-        Log.d(
-            TAG,
-            "toggleRelay() relayId=${relay.relayId}, meterId=${relay.meterId}, currentState=${relay.currentState}"
-        )
-
+    fun toggleRelay(
+        userId: String,
+        installationId: String,
+        relay: Relay
+    ) {
         viewModelScope.launch {
             try {
                 val newState = if (relay.currentState == "ON") "OFF" else "ON"
-
                 meterRepository.updateRelayState(
-                    userId = userId,
-                    installationId = installationId,
-                    meterId = relay.meterId,
-                    relayId = relay.relayId,
-                    newState = newState
+                    userId,
+                    installationId,
+                    relay.meterId,
+                    relay.relayId,
+                    newState
                 )
-
+                // L'UI se met à jour via observeRelaysForMeter()
             } catch (e: Exception) {
-                Log.e(TAG, "toggleRelay() error", e)
-                _error.value = e.message ?: "Failed to toggle relay"
+                _error.value = "Failed to update relay: ${e.message}"
             }
         }
+    }
+
+    fun observeRelaysForMeter(
+        userId: String,
+        installationId: String,
+        meterId: String
+    ) {
+        relayJobs[meterId]?.cancel()
+        relayJobs[meterId] = viewModelScope.launch {
+            meterRepository.observeRelaysFromRealtimeDb(userId, installationId, meterId)
+                .collect { realtimeRelays ->
+                    _meters.update { meters ->
+                        meters.map { meter ->
+                            if (meter.meterId != meterId) return@map meter
+                            meter.copy(
+                                relays = meter.relays.map { relay ->
+                                    val rtState = realtimeRelays
+                                        .find { it.relayId == relay.relayId }
+                                        ?.currentState
+                                    if (rtState != null) relay.copy(currentState = rtState)
+                                    else relay
+                                }
+                            )
+                        }
+                    }
+                }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun startBackgroundAggregationIfNeeded(
+        userId: String,
+        installationId: String,
+        meterId: String
+    ) {
+        if (realtimeJob?.isActive == true) return
+        startRealtimeAggregation(userId, installationId, meterId)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        relayJobs.values.forEach { it.cancel() }
     }
 }
