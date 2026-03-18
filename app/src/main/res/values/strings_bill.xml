@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bill_title">Bills</string>
+
+    <string name="bill_paid">PAID</string>
+    <string name="bill_unpaid">UNPAID</string>
+
+    <string name="bill_number">Bill #%1$s</string>
+
+    <string name="bill_energy">⚡ %1$d kWh</string>
+    <string name="bill_hours">⏱ %1$d h</string>
+    <string name="bill_peak">📈 Peak %1$d kW</string>
+
+    <string name="bill_amount">%1$d %2$s</string>
+
+    <string name="no_bills">No Bills Yet</string>
+
+    <string name="no_bills_description">Your invoices will appear here once generated.\nCheck back soon!</string>
+
+    <string name="current_bill">Current bill</string>
+
+    <string name="history_bills">History</string>
+
+    <string name="no_history_bills">No billing history yet</string>
+
+    <string name="bill_energy_value">Energy: %1$d kWh</string>
+    <string name="bill_peak_power_value">Peak Power: %1$d kW</string>
+    <string name="bill_duration_value">Duration: %1$d h</string>
+
+    <string name="bill_total_value">Total: %1$d %2$s</string>
+
+    <string name="bill_calculation_trace">Calculation trace</string>
+
+    <string name="bill_no_trace_available">No trace available</string>
+
+    <string name="bill_trace_item">• %1$s</string>
+
+    <string name="export_pdf">Export PDF</string>
+
+    <string name="cancel">Cancel</string>
+
+    <string name="bill_details">Bill details</string>
+
+    <string name="enter_email">Enter email address</string>
+
+    <string name="error_invalid_email">Invalid email address</string>
+
+    <string name="bill_tariff_section">Tariff details</string>
+
+    <string name="bill_price_per_kwh">Energy price: %1$d %2$s / kWh</string>
+    <string name="bill_penalty_price_per_kwh">Penalty price: %1$d %2$s / kWh</string>
+
+    <string name="bill_vat_rate">VAT: %1$d %%</string>
+    <string name="bill_other_taxes_rate">Other taxes: %1$d %%</string>
+    <string name="bill_bonus_rate">Bonus: −%1$d %%</string>
+    <string name="bill_social_discount_rate">Social discount: −%1$d %%</string>
+
+    <string name="bill_network_factor">Grid factor: × %1$.2f</string>
+
+    <string name="bill_export">Bill Export</string>
+    <string name="bill_export_success">The bill was successfully exported.</string>
+    <string name="bill_export_failed">Failed to export the bill.</string>
+
+    <string name="bill_id">Bill Id: %1$s</string>
+    <string name="bill_installation_id">Installation Id: %1$s</string>
+    <string name="bill_owner_id">Owner Id: %1$s</string>
+
+    <string name="bill_identification">Bill Identification</string>
+    <string name="bill_consumption">Bill Consumption</string>
+
+    <string name="bill_export_indication">Enter your email address to export the bill.</string>
+
+</resources>

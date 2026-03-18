@@ -102,7 +102,7 @@ fun NotificationIcon(unreadCount: Int, onClick: () -> Unit) {
                 Badge(
                     modifier = Modifier
                         .size(20.dp)
-                        .offset(x = (-10).dp, y = 10.dp), // ← rapproche le badge
+                        .offset(x = (-14).dp, y = 12.dp), // ← rapproche le badge
                     containerColor = Color.Red,       // ← fond rouge
                     contentColor = Color.White        // ← texte blanc
                 ) {

@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.syme.ui.theme.switchGreen
-import com.syme.ui.theme.switchRed
+import com.syme.ui.theme.green
+import com.syme.ui.theme.red
 
 @Composable
 fun OiSwitch(
@@ -47,7 +47,7 @@ fun OiSwitch(
         SwitchButton(
             text = "I",
             selected = isOn,
-            selectedColor = switchGreen, // vert
+            selectedColor = green, // vert
             onClick = { onToggle(true) },
             modifier = Modifier.weight(1f)
         )
@@ -58,7 +58,7 @@ fun OiSwitch(
         SwitchButton(
             text = "O",
             selected = !isOn,
-            selectedColor = switchRed, // rouge
+            selectedColor = red, // rouge
             onClick = { onToggle(false) },
             modifier = Modifier.weight(1f)
         )

@@ -6,7 +6,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -17,9 +16,8 @@ import com.syme.domain.model.Measurement
 import com.syme.domain.model.Relay
 import com.syme.ui.component.gaugemeter.GaugeMeterCard
 import com.syme.ui.component.oiswitch.RelaySwitchRow
-import com.syme.ui.theme.switchGreen
-import com.syme.ui.theme.switchRed
-import kotlin.math.roundToInt
+import com.syme.ui.theme.green
+import com.syme.ui.theme.red
 
 @Composable
 fun MeterCard(
@@ -36,9 +34,9 @@ fun MeterCard(
     val current = measurement.current ?: 0.0
 
     val stateColor = if (meterState != "ACTIVE") {
-        switchRed
+        red
     } else {
-        switchGreen
+        green
     }
 
     LazyColumn(

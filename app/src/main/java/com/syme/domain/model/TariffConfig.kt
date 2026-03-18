@@ -39,8 +39,4 @@ data class TariffConfig(
     val bonusRate              : Double = 0.0,
     val socialDiscountRate     : Double = 0.0,
     val networkBalancingFactor : Double = 1.0
-) {
-    /** Combined additive adjustment rate: taxes − bonuses − discounts */
-    val netAdjustmentRate: Double
-        get() = vatRate + otherTaxesRate - bonusRate - socialDiscountRate
-}
+)

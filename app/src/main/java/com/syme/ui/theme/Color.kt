@@ -17,8 +17,8 @@ val RedTank = Color(0xFFFC1403)
 val darkBlue = Color(0xFF0A1A3A)
 val lightBlue = Color(0xFF6EFAFF)
 
-val switchGreen = Color(0xFF2ECC71)
-val switchRed = Color(0xFFE74C3C)
+val green = Color(0xFF2ECC71)
+val red = Color(0xFFE74C3C)
 
 // ─── Color palette ────────────────────────────────────────────────────────────
 

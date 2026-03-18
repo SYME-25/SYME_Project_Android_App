@@ -65,8 +65,13 @@ fun ConsumptionInjectionBarChart(
     val scrollState = rememberScrollState()
     val contentWidth =
         48.dp + (data.size * (barWidth + barSpacing)) + barSpacing
-    LaunchedEffect(data.size) {
-        scrollState.animateScrollTo(scrollState.maxValue)
+
+    LaunchedEffect(data.lastOrNull(), scrollState.maxValue) {
+        if (scrollState.maxValue > 0 &&
+            scrollState.value < scrollState.maxValue
+        ) {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
     }
 
     Column(modifier) {

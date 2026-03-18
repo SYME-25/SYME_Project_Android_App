@@ -49,9 +49,7 @@ fun NavGraphBuilder.mainNavGraph(
     composable (MainRoute.BillScreen.route) {
         BillScreen(
             installationViewModel = installationViewModel,
-            billViewModel = billViewModel,
-            meterViewModel = meterViewModel,
-            consumptionViewModel = consumptionViewModel
+            billViewModel = billViewModel
         )
     }
 
