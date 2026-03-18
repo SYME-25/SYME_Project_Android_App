@@ -17,7 +17,7 @@ import com.syme.R
 @Composable
 fun Title(
     title: String,
-    fontSize: Int = 24,
+    fontSize: Int = 32,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground
 ) {
@@ -29,6 +29,8 @@ fun Title(
             .padding(start = 25.dp, top = 15.dp),
         textAlign = TextAlign.Start,
         color = color,
-        fontWeight = FontWeight.ExtraBold
+        fontWeight = FontWeight.Black,
+        letterSpacing = (-0.5).sp,
+        lineHeight = (fontSize * 1.1).sp
     )
 }

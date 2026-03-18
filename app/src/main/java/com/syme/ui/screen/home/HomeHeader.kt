@@ -2,47 +2,35 @@ package com.syme.ui.screen.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.syme.R
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
-import com.syme.ui.component.text.Title
-import com.syme.utils.TimeUtils
 
 @Composable
 fun HomeHeader(
     onNotificationsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     unreadCount: Int = 0
-){
-    val currentUser = LocalCurrentUserSession.current
+) {
+    val colorPrimary = Color(0xFF1A237E)
+    val colorAccent  = Color(0xFF3949AB)
 
+    val currentUser = LocalCurrentUserSession.current
     val initials = listOfNotNull(currentUser?.firstName, currentUser?.lastName)
         .filter { it.isNotBlank() }
         .take(2)
@@ -52,85 +40,88 @@ fun HomeHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 4.dp, end = 16.dp, top = 40.dp),
+            .padding(start = 20.dp, end = 16.dp, top = 48.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
-    ){
-
-        // 🟦 Partie gauche (titre)
-        Title(
-            title = "SYME",
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 30,
-            modifier = Modifier.weight(1f)
-        )
-
-        // 🟨 Partie droite (icônes)
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            NotificationIcon(
-                unreadCount = unreadCount,
-                onClick = onNotificationsClick
+    ) {
+        // ── Left: brand + greeting ────────────────────────────────────────
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "SYME",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = colorPrimary,
+                letterSpacing = 1.5.sp
             )
+        }
 
+        // ── Right: notification + avatar ──────────────────────────────────
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Notification button
+            Box {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFECEFFE))
+                        .clickable { onNotificationsClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = null,
+                        tint = colorPrimary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                if (unreadCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .size(18.dp)
+                            .align(Alignment.TopEnd)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE53935)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = unreadCount.coerceAtMost(99).toString(),
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+
+            // Avatar
             Box(
                 modifier = Modifier
-                    .padding(start = 16.dp)
-                    .size(40.dp)
+                    .size(42.dp)
+                    .shadow(4.dp, CircleShape)
                     .clip(CircleShape)
-                    .background(Color.Red)
+                    .background(
+                        Brush.linearGradient(listOf(colorPrimary, colorAccent))
+                    )
                     .clickable { onProfileClick() },
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = initials,
+                    text = initials.ifBlank { "?" },
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.align(Alignment.Center)
+                    fontSize = 15.sp,
+                    color = Color.White
                 )
             }
         }
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-fun NotificationIcon(unreadCount: Int, onClick: () -> Unit) {
-    BadgedBox(
-        modifier = Modifier, // tu peux aussi jouer ici si besoin
-        badge = {
-            if (unreadCount > 0) {
-                Badge(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .offset(x = (-14).dp, y = 12.dp), // ← rapproche le badge
-                    containerColor = Color.Red,       // ← fond rouge
-                    contentColor = Color.White        // ← texte blanc
-                ) {
-                    Text(
-                        text = unreadCount.coerceAtMost(99).toString(),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                }
-            }
-        }
-    ) {
-        IconButton(
-            onClick = onClick,
-            modifier = Modifier.size(56.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp)
-            )
-        }
+fun HomeHeaderPreview() {
+    MaterialTheme {
+        HomeHeader(unreadCount = 5)
     }
-}
-
-@Preview
-@Composable
-fun HomeHeaderPreview(){
-    HomeHeader(unreadCount = 5)
 }

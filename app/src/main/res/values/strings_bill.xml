@@ -71,4 +71,38 @@
 
     <string name="bill_export_indication">Enter your email address to export the bill.</string>
 
+    <!-- Invoice PDF: company identity -->
+    <string name="company_name">SYME Energy</string>
+    <string name="invoice_tagline">Smart Energy Billing System</string>
+    <string name="invoice_label">INVOICE</string>
+
+    <!-- Invoice PDF: section headers -->
+    <string name="section_consumption">Consumption Summary</string>
+    <string name="section_tariff">Tariff &amp; Tax Configuration</string>
+    <string name="section_trace">Calculation Trace</string>
+
+    <!-- Invoice PDF: info block labels -->
+    <string name="label_owner_id">Owner ID</string>
+    <string name="label_installation_id">Installation ID</string>
+    <string name="label_bill_id">Invoice No.</string>
+    <string name="label_currency">Currency</string>
+
+    <!-- Invoice PDF: consumption labels -->
+    <string name="label_energy_kwh">Energy Consumed</string>
+    <string name="label_peak_power_kw">Peak Power</string>
+    <string name="label_duration_h">Duration</string>
+
+    <!-- Invoice PDF: tariff labels -->
+    <string name="label_price_per_kwh">Price per kWh</string>
+    <string name="label_penalty_per_kwh">Penalty Price per kWh</string>
+    <string name="label_vat_rate">VAT Rate</string>
+    <string name="label_other_taxes">Other Taxes Rate</string>
+    <string name="label_bonus_rate">Bonus Rate</string>
+    <string name="label_social_discount">Social Discount Rate</string>
+    <string name="label_network_factor">Network Balancing Factor</string>
+
+    <!-- Invoice PDF: total block -->
+    <string name="label_total_due">Total Amount Due</string>
+    <string name="label_status_generated">● GENERATED</string>
+
 </resources>

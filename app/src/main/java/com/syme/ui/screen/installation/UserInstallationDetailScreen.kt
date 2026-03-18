@@ -164,10 +164,9 @@ fun UserInstallationDetailScreen(
 
         item { Spacer(Modifier.height(16.dp)) }
 
-        item { Title(stringResource(R.string.appliance_filter_type), 18) }
-
         item {
             InstallationTypeFilterByType(
+                title = stringResource(R.string.appliance_filter_type),
                 selectedType = selectedInstallationType,
                 onTypeSelected = { selectedInstallationType = it }
             )

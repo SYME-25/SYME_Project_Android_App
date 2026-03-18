@@ -58,14 +58,8 @@ fun HomeScreen(
         item { Banner() }
 
         item {
-            Title(
-                title = stringResource(R.string.home_installation_type),
-                fontSize = 18
-            )
-        }
-
-        item {
             InstallationTypeFilterByType(
+                title = stringResource(R.string.home_installation_type),
                 selectedType = selectedType,
                 onTypeSelected = { selectedType = it }
             )

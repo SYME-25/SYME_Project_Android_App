@@ -74,6 +74,7 @@ import com.syme.R
 import com.syme.domain.model.User
 import com.syme.domain.model.UserEvent
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.component.text.Title
 import com.syme.ui.state.UiState
 import com.syme.ui.theme.AvatarFemaleBg
 import com.syme.ui.theme.AvatarFemaleFg
@@ -167,6 +168,8 @@ private fun ProfileContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(bottom = 32.dp)
     ) {
+        item { Title(stringResource(R.string.profile_label)) }
+
         item { ProfileAvatar(user) }
 
         // ── Personal — editable ────────────────────────────────────────────────

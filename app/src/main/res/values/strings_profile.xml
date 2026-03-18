@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Labels -->
+    <string name="profile_label">Profile</string>
+
     <!-- Section titles -->
     <string name="profile_section_personal">Personal Information</string>
     <string name="profile_section_contact">Contact Details</string>
