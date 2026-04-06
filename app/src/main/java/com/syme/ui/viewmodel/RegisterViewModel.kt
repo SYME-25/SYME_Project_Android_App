@@ -3,10 +3,10 @@ package com.syme.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.syme.R
-import com.syme.data.remote.model.UserFirebase
-import com.syme.data.remote.repository.AuthRepository
+import com.syme.data.repository.AuthRepository
 import com.syme.domain.model.RegisterEvent
 import com.syme.domain.model.Traceability
+import com.syme.domain.model.User
 import com.syme.utils.TimeUtils
 import com.syme.utils.buildTraceability
 import com.syme.utils.generateId
@@ -53,7 +53,7 @@ class RegisterViewModel @Inject constructor(
                     )
                 )
 
-                val user = UserFirebase(
+                val user = User(
                     userId = userId,
                     firstName = firstName,
                     lastName = lastName,

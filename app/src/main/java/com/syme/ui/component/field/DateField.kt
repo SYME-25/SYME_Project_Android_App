@@ -1,67 +1,60 @@
 package com.syme.ui.component.field
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DateRange
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun DateField(
     value: String,
     onClick: () -> Unit,
     label: String,
-    error: String
+    error: String,
+    modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier
+    val isError = error.isNotEmpty()
+    val colors = rememberFieldColors(isError = isError)
+
+    Row(
+        modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 20.dp)
-            .clickable { onClick() }   // 👈 clic ici, pas sur le TextField
+            .padding(vertical = 6.dp, horizontal = 20.dp)
+            .fieldBase(colors, borderWidth = if (isError) 1.5.dp else 1.dp)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            enabled = false, // 👈 on désactive l’interaction interne du TextField
-
-            label = {
-                Text(
-                    text = error.ifEmpty { label },
-                    color = if (error.isNotEmpty()) Color.Red else Color.Unspecified
-                )
-            },
-            leadingIcon = {
-                Icon(Icons.Rounded.DateRange, contentDescription = null)
-            },
-            shape = RoundedCornerShape(8.dp),
-            colors = TextFieldDefaults.colors(
-                // 🎨 fond identique aux autres TextField
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-
-                // ✨ texte et icône NON atténués
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-
-                disabledIndicatorColor = Color.Transparent
-            )
+        Icon(
+            imageVector = Icons.Rounded.DateRange,
+            contentDescription = null,
+            tint = colors.icon,
+            modifier = Modifier.size(22.dp)
         )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = if (isError) error else label,
+                color = colors.label,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 0.4.sp
+            )
+            if (value.isNotEmpty()) {
+                Text(
+                    text = value,
+                    color = colors.text,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        }
     }
 }

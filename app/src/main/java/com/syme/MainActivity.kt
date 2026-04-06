@@ -32,9 +32,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SYMETheme {
-                Scaffold { paddingValues ->
-                    App(paddingValues = paddingValues)
-                }
+                App()
             }
         }
     }

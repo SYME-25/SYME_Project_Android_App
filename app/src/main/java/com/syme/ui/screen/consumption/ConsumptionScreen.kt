@@ -21,7 +21,6 @@ import com.syme.domain.model.Installation
 import com.syme.domain.model.enumeration.ConsumptionFormType
 import com.syme.domain.model.enumeration.ConsumptionStateType
 import com.syme.domain.model.enumeration.PeriodFilter
-import com.syme.ui.alerts.AlertManager
 import com.syme.ui.component.card.ConsumptionRow
 import com.syme.ui.component.chart.ConsumptionInjectionBarChart
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
@@ -30,7 +29,10 @@ import com.syme.ui.component.text.Title
 import com.syme.ui.snapshot.MessageAction
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
-import com.syme.ui.state.UiState
+import com.syme.domain.state.UiState
+import com.syme.ui.component.animation.banner.BannerConsumption
+import com.syme.ui.screen.consumption.components.PeriodFilterSegmented
+import com.syme.ui.screen.consumption.components.PeriodSwitcher
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.MeterViewModel
@@ -163,6 +165,53 @@ fun ConsumptionScreen(
         }
     }
 
+    // 🔹 Recalcul de la puissance effective à chaque changement de consumptions
+    LaunchedEffect(consumptions, installationState) {
+        val now = System.currentTimeMillis()
+        val installations = (installationState as? UiState.Success<List<Installation>>)?.data
+            ?: return@LaunchedEffect
+
+        installations.forEach { installation ->
+            val instId = installation.installationId
+
+            // 1️⃣ Demande courante (priorité max)
+            val currentDemand = consumptions.firstOrNull { c ->
+                c.installationId == instId &&
+                        c.onDemand &&
+                        c.periodStart <= now && now <= c.periodEnd &&
+                        c.consumptionState != ConsumptionStateType.PAUSED
+            }
+
+            // 2️⃣ Subscription courante
+            val currentSubscription = consumptions.firstOrNull { c ->
+                c.installationId == instId &&
+                        !c.onDemand &&
+                        c.periodStart <= now && now <= c.periodEnd &&
+                        c.consumptionState != ConsumptionStateType.PAUSED
+            }
+
+            // 3️⃣ Dernière subscription connue (fallback)
+            val lastSubscription = consumptions
+                .filter { c -> c.installationId == instId && !c.onDemand }
+                .maxByOrNull { it.periodEnd }
+
+            val resolvedPower = when {
+                currentDemand != null && currentDemand.requestedPowerKw > 0 ->
+                    currentDemand.requestedPowerKw
+                currentSubscription != null && currentSubscription.requestedPowerKw > 0 ->
+                    currentSubscription.requestedPowerKw
+                lastSubscription != null && lastSubscription.requestedPowerKw > 0 ->
+                    lastSubscription.requestedPowerKw
+                else -> null // rien à faire, on ne touche pas à la valeur existante
+            }
+
+            // Mettre à jour seulement si la puissance a changé
+            if (resolvedPower != null && resolvedPower != installation.powerSubscribed) {
+                installationViewModel.update(userId, installation.copy(powerSubscribed = resolvedPower))
+            }
+        }
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             meterViewModel.stopRealtime()
@@ -177,7 +226,7 @@ fun ConsumptionScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item { Title(stringResource(R.string.consumption_label)) }
+        item { Title(stringResource(R.string.consumption_label), padding = 0) }
         item { BannerConsumption() }
 
         // 🔹 Filtre installation
@@ -334,10 +383,10 @@ fun ConsumptionScreen(
                             SubscriptionForm(
                                 installationsId = installationNames,
                                 lastSubscriptions = lastSubscriptions,
-                                onSubmit = { installationName, start, end, energyWh ->
-
-                                    val installationId =
-                                        installationsMap[installationName] ?: return@SubscriptionForm
+                                onSubmit = { installationName, start, end, energyWh, powerKw ->
+                                    val installationId = installationsMap[installationName]
+                                        ?: return@SubscriptionForm
+                                    val now = System.currentTimeMillis()
 
                                     val newConsumption = Consumption(
                                         consumptionId = generateId("C"),
@@ -347,26 +396,47 @@ fun ConsumptionScreen(
                                         periodEnd = end,
                                         totalEnergy_kWh = energyWh.roundToInt(),
                                         totalEnergy_kWhConsummed = 0.0,
-                                        onDemand = false
+                                        onDemand = false,
+                                        requestedPowerKw = powerKw
+                                    )
+                                    consumptionViewModel.addConsumption(
+                                        userId,
+                                        installationId,
+                                        newConsumption
                                     )
 
-                                    consumptionViewModel.addConsumption(
-                                        userId = userId,
-                                        installationId = installationId,
-                                        consumption = newConsumption
-                                    )
+                                    // Appliquer la puissance seulement si subscription courante
+                                    // ET qu'il n'y a pas de demande active (la demande a priorité)
+                                    val isCurrent = now in start..end
+                                    if (isCurrent) {
+                                        val hasActiveDemand = consumptions.any { c ->
+                                            c.installationId == installationId &&
+                                                    c.onDemand &&
+                                                    c.periodStart <= now && now <= c.periodEnd &&
+                                                    c.consumptionState != ConsumptionStateType.PAUSED
+                                        }
+                                        if (!hasActiveDemand) {
+                                            val installation =
+                                                (installationState as? UiState.Success<List<Installation>>)
+                                                    ?.data?.find { it.installationId == installationId }
+                                            if (installation != null && powerKw > 0.0) {
+                                                installationViewModel.update(
+                                                    userId,
+                                                    installation.copy(powerSubscribed = powerKw)
+                                                )
+                                            }
+                                        }
+                                    }
 
                                     globalMessageManager.showMessage(
                                         item = "Subscription",
                                         type = MessageType.SUCCESS,
                                         action = MessageAction.CREATE
                                     )
-
                                     showFormDialog = false
                                 }
                             )
                         }
-
                         ConsumptionFormType.DEMAND -> {
 
                             val suggestedPowersKw = remember(selectedInstallationId, powerSubscribedByInstallation) {
@@ -395,9 +465,9 @@ fun ConsumptionScreen(
                                 hasSubscriptionByInstallation = hasSubscriptionByInstallation,
                                 suggestedPowersKw = suggestedPowersKw,
                                 onSubmit = { installationName, start, end, requestedPowerKw ->
-
                                     val installationId =
                                         installationsMap[installationName] ?: return@DemandForm
+                                    val now = System.currentTimeMillis()
 
                                     val newConsumption = Consumption(
                                         consumptionId = generateId("D"),
@@ -410,12 +480,25 @@ fun ConsumptionScreen(
                                         onDemand = true,
                                         requestedPowerKw = requestedPowerKw
                                     )
-
                                     consumptionViewModel.addConsumption(
-                                        userId = userId,
-                                        installationId = installationId,
-                                        consumption = newConsumption
+                                        userId,
+                                        installationId,
+                                        newConsumption
                                     )
+
+                                    // La demande a priorité absolue → on applique toujours si courante
+                                    val isCurrent = now in start..end
+                                    if (isCurrent) {
+                                        val installation =
+                                            (installationState as? UiState.Success<List<Installation>>)
+                                                ?.data?.find { it.installationId == installationId }
+                                        if (installation != null && requestedPowerKw > 0.0) {
+                                            installationViewModel.update(
+                                                userId,
+                                                installation.copy(powerSubscribed = requestedPowerKw)
+                                            )
+                                        }
+                                    }
 
                                     globalMessageManager.showMessage(
                                         item = "Demand",

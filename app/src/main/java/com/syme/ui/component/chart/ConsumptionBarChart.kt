@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.syme.domain.model.ConsumptionBar
-import com.syme.ui.theme.YellowTank
-import com.syme.ui.theme.darkBlue
-import com.syme.ui.theme.lightBlue
+import com.syme.ui.theme.Accent500
+import com.syme.ui.theme.Brand900
+import com.syme.ui.theme.SemanticWarning500
 import kotlin.math.roundToInt
 
 @Composable
@@ -78,13 +78,13 @@ fun ConsumptionInjectionBarChart(
         ConsumptionSummary(
             amountText = "${(lastConsumptionValue.div(1000) * kWhPrice).roundToInt()} $moneyUnit",
             consumptionText = "${lastConsumptionValue.roundToInt()} $energyUnit",
-            color = lightBlue,
+            color = Accent500,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         ConsumptionSummary(
             amountText = "${(lastInjectionValue.div(1000) * kWhPrice).roundToInt()} $moneyUnit",
             consumptionText = "${lastInjectionValue.roundToInt()} $energyUnit",
-            color = YellowTank,
+            color = SemanticWarning500,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -176,7 +176,7 @@ fun ConsumptionInjectionBarChart(
                         val topY = size.height / 2 - barHeight
                         // abonnement (PAS ARRONDI)
                         drawRect(
-                            color = darkBlue,
+                            color = Brand900,
                             topLeft = Offset(x, size.height / 2 - subHeight),
                             size = Size(barWidthPx, subHeight)
                         )
@@ -205,7 +205,7 @@ fun ConsumptionInjectionBarChart(
                             lineTo(x + barWidthPx, size.height / 2 - subHeight)
                             close()
                         }
-                        drawPath(path, lightBlue)
+                        drawPath(path, Accent500)
                     }
 
                     // INJECTION (ARRONDI EN HAUT SEULEMENT, PROPRE)
@@ -240,7 +240,7 @@ fun ConsumptionInjectionBarChart(
                             lineTo(x + barWidthPx, bottomY)
                             close()
                         }
-                        drawPath(path, YellowTank)
+                        drawPath(path, SemanticWarning500)
                     }
                 }
             }
@@ -291,9 +291,9 @@ fun ConsumptionInjectionBarChart(
             .padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        ChartLegendItem(color = lightBlue, label = "Consumption")
-        ChartLegendItem(color = darkBlue, label = "Subscription")
-        ChartLegendItem(color = YellowTank, label = "Injection")
+        ChartLegendItem(color = Accent500, label = "Consumption")
+        ChartLegendItem(color = Brand900, label = "Subscription")
+        ChartLegendItem(color = SemanticWarning500, label = "Injection")
     }
 }
 

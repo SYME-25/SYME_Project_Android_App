@@ -2,7 +2,7 @@ package com.syme.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.syme.data.remote.repository.ConsumptionRepository
+import com.syme.data.repository.ConsumptionRepository
 import com.syme.domain.model.Consumption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

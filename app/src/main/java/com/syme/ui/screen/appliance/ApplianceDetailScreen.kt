@@ -66,7 +66,7 @@ fun ApplianceDetailScreen(
                     item = appliance,
                     circuits = circuits,
                     onSaveAppliance = { newAppliance ->
-                        applianceViewModel.insert(ownerId ?: "", installationId ?: "",newAppliance)
+                        applianceViewModel.insert(ownerId ?: "", installationId ?: "", newAppliance)
                         onBack()
                     }
                 )

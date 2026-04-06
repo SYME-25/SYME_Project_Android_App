@@ -1,23 +1,18 @@
 package com.syme.ui.screen.installation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.syme.domain.mapper.imageResId
 import com.syme.ui.component.animation.ItemDetailHeader
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.screen.installation.components.InstallationForm
 import com.syme.ui.viewmodel.InstallationViewModel
-
 import com.syme.utils.installationCatalog
 
 @Composable
@@ -26,14 +21,9 @@ fun InstallationDetailScreen(
     installationViewModel: InstallationViewModel,
     onBack: () -> Unit
 ) {
-
     val ownerId = LocalCurrentUserSession.current?.userId
+    val installation = installationCatalog.find { it.installationId == installationId }
 
-    val installation = installationCatalog.find {
-        it.installationId == installationId
-    }
-
-    // Sécurité : si l'id n'existe pas, on repart en arrière
     if (installation == null) {
         onBack()
         return
@@ -49,13 +39,13 @@ fun InstallationDetailScreen(
                 id = installation.type.imageResId,
                 onBack = onBack
             )
-
+            // Sheet content overlapping the header image
             Surface(
-                color = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp),
+                color = MaterialTheme.colorScheme.background,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 400.dp)
+                    .padding(top = 360.dp)
             ) {
                 InstallationForm(
                     item = installation,

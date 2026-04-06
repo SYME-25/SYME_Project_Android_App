@@ -1,5 +1,6 @@
 package com.syme.ui.component.text
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -19,18 +20,19 @@ fun Title(
     title: String,
     fontSize: Int = 32,
     modifier: Modifier = Modifier,
+    padding: Int = 16,
     color: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Text(
         text = title,
         fontSize = fontSize.sp,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 25.dp, top = 15.dp),
-        textAlign = TextAlign.Start,
         color = color,
         fontWeight = FontWeight.Black,
         letterSpacing = (-0.5).sp,
-        lineHeight = (fontSize * 1.1).sp
+        lineHeight = (fontSize * 1.1).sp,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = padding.dp),
+        textAlign = TextAlign.Start
     )
 }

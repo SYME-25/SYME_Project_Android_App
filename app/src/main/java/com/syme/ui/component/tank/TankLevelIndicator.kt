@@ -1,72 +1,71 @@
 package com.syme.ui.component.tank
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Dp
-import androidx.compose.animation.core.tween
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.syme.ui.theme.GreenTank
-import com.syme.ui.theme.RedTank
-import com.syme.ui.theme.YellowTank
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.syme.ui.theme.TankGreen
+import com.syme.ui.theme.TankRed
+import com.syme.ui.theme.TankYellow
 
 @Composable
 fun TankLevelIndicator(
-    level: Float,                   // 0f à 1f
-    width: Dp = 100.dp,
-    height: Dp = 150.dp,
-    cornerRadius: Dp = 12.dp,
-    padding: Dp = 6.dp,             // padding entre bord externe et niveau
-    borderWidth: Dp = 4.dp          // épaisseur des bordures
+    level: Float,
+    width: Dp = 56.dp,
+    height: Dp = 130.dp,
+    cornerRadius: Dp = 10.dp
 ) {
-    // Animation douce du niveau
     val animatedLevel by animateFloatAsState(
         targetValue = level.coerceIn(0f, 1f),
-        animationSpec = tween(durationMillis = 600)
+        animationSpec = tween(durationMillis = 700),
+        label = "tankLevel"
     )
 
-    // Couleur dynamique selon le niveau
-    val fillColor = when {
-        animatedLevel > 0.5f -> GreenTank // vert
-        animatedLevel > 0.3f -> YellowTank // jaune
-        else -> RedTank                 // rouge
+    val fillColor: Color = when {
+        animatedLevel > 0.5f -> TankGreen
+        animatedLevel > 0.3f -> TankYellow
+        else                 -> TankRed
     }
 
+    // Outer track
     Box(
         modifier = Modifier
             .size(width = width, height = height)
-            .background(MaterialTheme.colorScheme.surface) // <-- ici
-            .border(width = borderWidth, color = fillColor, shape = RoundedCornerShape(cornerRadius))
-            .clip(RoundedCornerShape(cornerRadius)),
+            .clip(RoundedCornerShape(cornerRadius))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.BottomCenter
     ) {
-        // Niveau de remplissage avec padding
+        // Fill
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(animatedLevel)
-                .padding(horizontal = padding, vertical = padding)
-                .clip(RoundedCornerShape(cornerRadius - padding))
-                .background(fillColor),
+                .clip(RoundedCornerShape(cornerRadius))
+                .background(fillColor.copy(alpha = 0.85f)),
             contentAlignment = Alignment.Center
         ) {
-            // Pourcentage affiché à l'intérieur
-            Text(
-                text = "${(animatedLevel * 100).toInt()}%",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.Bold
-            )
+            if (animatedLevel > 0.18f) {
+                Text(
+                    text = "${(animatedLevel * 100).toInt()}%",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                )
+            }
         }
     }
 }

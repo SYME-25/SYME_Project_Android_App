@@ -5,4 +5,5 @@ sealed class AuthRoute(val route: String) {
     object Register : AuthRoute("register")
     object ResetPasswordStep1 : AuthRoute("reset_password_step1")
     object ResetPasswordStep2 : AuthRoute("reset_password_step2")
+    object PrivacyPolicy : AuthRoute("privacy_policy")
 }

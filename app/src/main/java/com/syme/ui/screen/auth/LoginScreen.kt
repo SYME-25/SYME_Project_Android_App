@@ -21,13 +21,11 @@ import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.animation.Animation
 import com.syme.ui.component.field.EmailField
 import com.syme.ui.component.field.PasswordField
-import com.syme.ui.component.link.LoginLinksRow
+import com.syme.ui.component.actionbutton.LoginLinksRow
 import com.syme.ui.navigation.RootRoute
 import com.syme.ui.snapshot.GlobalMessageSnapshot
-import com.syme.ui.snapshot.MessageAction
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
-import com.syme.ui.state.UiState
 import com.syme.ui.theme.SYMETheme
 import com.syme.ui.viewmodel.LoginViewModel
 import kotlinx.coroutines.flow.collectLatest

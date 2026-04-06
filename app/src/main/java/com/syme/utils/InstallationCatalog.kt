@@ -10,7 +10,7 @@ val installationCatalog = listOf(
         installationId = "1",
         name = "Residential",
         type = InstallationType.RESIDENTIAL,
-        energyWh = 1000.0,
+        energyWh = 0.0,
         metadata = mapOf(
             "description" to R.string.installation_residential_desc
         )
@@ -20,7 +20,7 @@ val installationCatalog = listOf(
         installationId = "2",
         name = "Commercial",
         type = InstallationType.COMMERCIAL,
-        energyWh = 2000.0,
+        energyWh = 0.0,
         metadata = mapOf(
             "description" to R.string.installation_commercial_desc
         )
@@ -30,7 +30,7 @@ val installationCatalog = listOf(
         installationId = "3",
         name = "Industrial",
         type = InstallationType.INDUSTRIAL,
-        energyWh = 3000.0,
+        energyWh = 0.0,
         metadata = mapOf(
             "description" to R.string.installation_industrial_desc
         )
@@ -40,7 +40,7 @@ val installationCatalog = listOf(
         installationId = "4",
         name = "Agricultural",
         type = InstallationType.AGRICULTURAL,
-        energyWh = 4000.0,
+        energyWh = 0.0,
         metadata = mapOf(
             "description" to R.string.installation_agricultural_desc
         )
@@ -50,7 +50,7 @@ val installationCatalog = listOf(
         installationId = "5",
         name = "Public Building",
         type = InstallationType.PUBLIC,
-        energyWh = 5000.0,
+        energyWh = 0.0,
         metadata = mapOf(
             "description" to R.string.installation_public_desc
         )
@@ -60,7 +60,7 @@ val installationCatalog = listOf(
         installationId = "6",
         name = "Other",
         type = InstallationType.OTHER,
-        energyWh = 6000.0,
+        energyWh = 0.0,
         metadata = mapOf(
             "description" to R.string.installation_other_desc
         )

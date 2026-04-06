@@ -1,9 +1,8 @@
 package com.syme.domain.mapper
 
-import com.syme.data.remote.model.UserFirebase
 import com.syme.domain.model.User
 
-fun UserFirebase.toDomain(): User =
+fun User.toDomain(): User =
     User(
         userId = userId,
         firstName = firstName,

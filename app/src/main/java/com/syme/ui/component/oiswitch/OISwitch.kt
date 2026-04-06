@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.syme.ui.theme.green
-import com.syme.ui.theme.red
+import com.syme.ui.theme.SemanticError500
+import com.syme.ui.theme.SemanticSuccess500
 
 @Composable
 fun OiSwitch(
@@ -47,7 +47,7 @@ fun OiSwitch(
         SwitchButton(
             text = "I",
             selected = isOn,
-            selectedColor = green, // vert
+            selectedColor = SemanticSuccess500, // vert
             onClick = { onToggle(true) },
             modifier = Modifier.weight(1f)
         )
@@ -58,7 +58,7 @@ fun OiSwitch(
         SwitchButton(
             text = "O",
             selected = !isOn,
-            selectedColor = red, // rouge
+            selectedColor = SemanticError500, // rouge
             onClick = { onToggle(false) },
             modifier = Modifier.weight(1f)
         )

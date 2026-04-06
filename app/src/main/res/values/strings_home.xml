@@ -91,4 +91,30 @@
     <string name="installation_state_on">ACTIVE</string>
     <string name="installation_state_off">OFFLINE</string>
 
+    <string name="installation_no_address">No address</string>
+
+    <!-- Home greetings -->
+    <string name="home_greeting_hello">Hello,</string>
+    <string name="home_greeting_fallback">there</string>
+
+    <!-- Stats cards -->
+    <string name="stat_power_label">Power</string>
+    <string name="stat_power_value">%1$.1f kW</string>
+    <string name="stat_power_sublabel">Subscribed</string>
+    <string name="stat_energy_label">Energy</string>
+    <string name="stat_energy_value">%1$.2f kWh</string>
+    <string name="stat_energy_sublabel">Daily consumption</string>
+
+    <string name="power_balance_title">Power Balance</string>
+    <string name="power_balance_active">Active</string>
+    <string name="power_balance_reactive">Reactive</string>
+    <string name="power_balance_apparent">Apparent</string>
+    <string name="power_balance_pf">cos φ %1$s</string>
+    <string name="power_balance_pf_label">Power factor</string>
+    <string name="power_balance_pf_poor">Poor</string>
+    <string name="power_balance_pf_fair">Fair</string>
+    <string name="power_balance_pf_good">Good</string>
+    <string name="power_balance_current">Current</string>
+    <string name="power_balance_footnote">* Current estimated at %1$d V single-phase</string>
+
 </resources>

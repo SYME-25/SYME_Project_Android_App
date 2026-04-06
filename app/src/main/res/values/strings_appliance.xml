@@ -168,4 +168,8 @@
     <string name="appliance_add_title">Add an appliance</string>
     <string name="appliance_your_appliances">Your appliances</string>
 
+    <string name="appliance_smart">Smart</string>
+    <string name="appliance_standard">Standard</string>
+    <string name="appliance_usage_hours">%1$.1f h/day</string>
+
 </resources>

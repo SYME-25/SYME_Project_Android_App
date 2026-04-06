@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.syme.data.remote.repository.BillRepository
+import com.syme.data.repository.BillRepository
 import com.syme.domain.model.Bill
 import com.syme.utils.BillPdfGenerator
 import com.syme.utils.EmailSender

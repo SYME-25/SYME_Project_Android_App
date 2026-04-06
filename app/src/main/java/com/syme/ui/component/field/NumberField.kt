@@ -1,15 +1,16 @@
 package com.syme.ui.component.field
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
@@ -18,38 +19,51 @@ fun NumberField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    error: String
+    error: String,
+    modifier: Modifier = Modifier
 ) {
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 20.dp),
-        value = value,
-        onValueChange = { newValue ->
-            // Autorise chiffres + une seule virgule ou un seul point
-            val filtered = newValue
-                .replace(',', '.')   // unifie en point
-                .let { text ->
-                    if (text.count { it == '.' } <= 1) text else value
-                }
+    val isError = error.isNotEmpty()
+    var isFocused by remember { mutableStateOf(false) }
+    val colors = rememberFieldColors(isError = isError, isFocused = isFocused)
 
-            if (filtered.all { it.isDigit() || it == '.' }) {
-                onValueChange(filtered)
-            }
-        },
-        label = {
-            Text(
-                text = error.ifEmpty { label },
-                color = if (error.isNotEmpty()) Color.Red else Color.Unspecified
-            )
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Decimal
-        ),
-        shape = RoundedCornerShape(8.dp),
-        colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 20.dp)
+            .fieldBase(colors, borderWidth = if (isError) 1.5.dp else 1.dp)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Edit,
+            contentDescription = null,
+            tint = colors.icon,
+            modifier = Modifier.size(22.dp)
         )
-    )
+        BasicTextField(
+            value = value,
+            onValueChange = { newValue ->
+                val filtered = newValue.replace(',', '.').let { t ->
+                    if (t.count { it == '.' } <= 1) t else value
+                }
+                if (filtered.all { it.isDigit() || it == '.' }) onValueChange(filtered)
+            },
+            modifier = Modifier
+                .weight(1f)
+                .onFocusChanged { isFocused = it.isFocused },
+            textStyle = LocalTextStyle.current.copy(color = colors.text),
+            cursorBrush = SolidColor(colors.cursor),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            decorationBox = { innerTextField ->
+                FieldDecorationBox(
+                    value = value,
+                    isFocused = isFocused,
+                    label = if (isError) error else label,
+                    labelColor = colors.label,
+                    innerTextField = innerTextField
+                )
+            }
+        )
+    }
 }

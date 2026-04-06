@@ -5,18 +5,24 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.syme.R
@@ -29,10 +35,13 @@ import com.syme.ui.component.card.*
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
-import com.syme.ui.screen.appliance.*
 import com.syme.ui.screen.circuit.CircuitForm
 import com.syme.ui.screen.meter.MeterAddForm
-import com.syme.ui.state.UiState
+import com.syme.domain.state.UiState
+import com.syme.ui.component.animation.banner.BannerImage
+import com.syme.ui.screen.appliance.ApplianceHeatTypeFilter
+import com.syme.ui.screen.appliance.UserAppliancesList
+import com.syme.ui.screen.installation.components.InstallationTypeFilterByType
 import com.syme.ui.viewmodel.*
 import com.syme.utils.applianceCatalog
 import com.syme.utils.buildTraceability
@@ -109,55 +118,25 @@ fun UserInstallationDetailScreen(
         item { Title(title = selectedInstallation?.name ?: "", fontSize = 30) }
 
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Title(
-                        title = stringResource(
-                            id = R.string.home_installation_power_subscribed,
-                            selectedInstallation?.powerSubscribed ?: 0.0
-                        ),
-                        fontSize = 16,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+            InstallationStatsRow(
+                powerSubscribed = selectedInstallation?.powerSubscribed ?: 0.0,
+                energyKwh = selectedInstallation?.energyWh?.div(1000.0) ?: 0.0
+            )
+        }
 
-                VerticalDivider(
-                    modifier = Modifier
-                        .height(24.dp)
-                        .width(1.dp)
+        item {
+            selectedInstallation?.let { installation ->
+                BannerImage(
+                    id = installation.type.imageResId
                 )
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Title(
-                        title = stringResource(
-                            id = R.string.home_installation_energy,
-                            selectedInstallation?.energyWh?.div(1000.0) ?: 0.0
-                        ),
-                        fontSize = 16,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
             }
         }
 
         item {
-            BannerUserInstallation(
-                id = selectedInstallation?.type?.imageResId ?: 0
-            )
+            val userAppliances = (applianceState as? UiState.Success<List<Appliance>>)?.data
+            if (!userAppliances.isNullOrEmpty()) {
+                PowerBalanceCard(appliances = userAppliances)
+            }
         }
 
         item { HorizontalDivider(Modifier.fillMaxWidth().padding(vertical = 16.dp)) }
@@ -392,4 +371,104 @@ fun UserInstallationDetailScreen(
         }
     }
 
+}
+
+// ── InstallationStatsRow ──────────────────────────────────────────────────────
+@Composable
+private fun InstallationStatsRow(
+    powerSubscribed: Double,
+    energyKwh: Double
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Power — filled with primary
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.ElectricBolt,
+            label = stringResource(R.string.stat_power_label),
+            value = stringResource(R.string.stat_power_value, powerSubscribed),
+            sublabel = stringResource(R.string.stat_power_sublabel),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            iconBgColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f)
+        )
+        // Energy — tonal surface
+        StatCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.BarChart,
+            label = stringResource(R.string.stat_energy_label),
+            value = stringResource(R.string.stat_energy_value, energyKwh),
+            sublabel = stringResource(R.string.stat_energy_sublabel),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            iconBgColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+            iconTint = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun StatCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    label: String,
+    value: String,
+    sublabel: String,
+    containerColor: Color,
+    contentColor: Color,
+    iconBgColor: Color,
+    iconTint: Color = contentColor
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = containerColor
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = iconBgColor,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
+                }
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contentColor.copy(alpha = 0.7f),
+                    letterSpacing = 0.4.sp
+                )
+            }
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = contentColor
+            )
+            Text(
+                text = sublabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = contentColor.copy(alpha = 0.6f)
+            )
+        }
+    }
 }

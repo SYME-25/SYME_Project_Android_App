@@ -13,7 +13,7 @@ import com.syme.ui.viewmodel.SplashViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun App(paddingValues: PaddingValues) {
+fun App() {
     val splashViewModel: SplashViewModel = hiltViewModel()
     val startDestination by splashViewModel.startDestination.collectAsState()
 

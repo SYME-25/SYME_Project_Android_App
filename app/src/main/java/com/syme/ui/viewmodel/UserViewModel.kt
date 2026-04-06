@@ -3,10 +3,10 @@ package com.syme.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.syme.R
-import com.syme.data.remote.repository.UserRepository
+import com.syme.data.repository.UserRepository
 import com.syme.domain.model.User
 import com.syme.domain.model.UserEvent
-import com.syme.ui.state.UiState
+import com.syme.domain.state.UiState
 import com.syme.utils.buildTraceability
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow

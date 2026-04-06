@@ -33,4 +33,14 @@
 
     <string name="your_consumption_planning">Your consumptions planning</string>
 
+    <string name="consumption_warning_power_reduction">"This power will update the installation if this subscription is active"</string>
+
+    <string name="consumption_label_consumed">Consumed</string>
+    <string name="consumption_label_remaining_time">Time left</string>
+    <string name="consumption_label_period">Period</string>
+    <string name="consumption_label_power">Power</string>
+    <string name="consumption_type_on_demand">On Demand</string>
+    <string name="consumption_type_subscription">Subscription</string>
+
+    <string name="consumption_power_requested">%1$d %2$s requested</string>
 </resources>

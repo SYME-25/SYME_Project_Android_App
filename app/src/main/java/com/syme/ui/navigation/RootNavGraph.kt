@@ -2,7 +2,6 @@ package com.syme.ui.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
@@ -11,7 +10,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -19,18 +17,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.syme.R
-import com.syme.data.session.SessionManager
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.navigation.auth.AuthRoute
 import com.syme.ui.navigation.auth.authNavGraph
 import com.syme.ui.navigation.main.MainRoute
-import com.syme.ui.navigation.main.mainNavGraph
 import com.syme.ui.screen.main.MainScreen
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
 import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.ui.viewmodel.AuthViewModel
 import com.syme.ui.viewmodel.BillViewModel
+import com.syme.ui.viewmodel.BotViewModel
 import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConnectivityViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
@@ -39,7 +36,6 @@ import com.syme.ui.viewmodel.LoginViewModel
 import com.syme.ui.viewmodel.MeterViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
 import com.syme.ui.viewmodel.UserViewModel
-import com.syme.utils.connectivityFlow
 import kotlinx.coroutines.delay
 
 
@@ -68,6 +64,7 @@ fun RootNavGraph(
     val circuitViewModel: CircuitViewModel = hiltViewModel()
     val billViewModel: BillViewModel = hiltViewModel()
     val userViewModel: UserViewModel = hiltViewModel()
+    val botViewModel: BotViewModel = hiltViewModel()
 
     val isOnline by connectivityViewModel.isOnline.collectAsState()
 
@@ -119,7 +116,8 @@ fun RootNavGraph(
                     meterViewModel = meterViewModel,
                     applianceViewModel = applianceViewModel,
                     circuitViewModel = circuitViewModel,
-                    billViewModel = billViewModel
+                    billViewModel = billViewModel,
+                    botViewModel = botViewModel
                 )
             }
         }

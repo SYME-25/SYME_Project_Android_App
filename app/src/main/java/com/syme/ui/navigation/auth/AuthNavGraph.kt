@@ -4,6 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
 import com.syme.ui.screen.auth.LoginScreen
+import com.syme.ui.screen.auth.PrivacyPolicyScreen
 import com.syme.ui.screen.auth.RegisterScreen
 import com.syme.ui.screen.auth.ResetPasswordStep1Screen
 import com.syme.ui.screen.auth.ResetPasswordStep2Screen
@@ -46,5 +47,9 @@ fun NavGraphBuilder.authNavGraph(
             navController = navController,
             onResetComplete = { navController.popBackStack(AuthRoute.Login.route, false) }
         )
+    }
+
+    composable(AuthRoute.PrivacyPolicy.route) {
+        PrivacyPolicyScreen()
     }
 }

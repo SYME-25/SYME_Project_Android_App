@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.syme.ui.theme.SYMETheme
@@ -22,25 +23,24 @@ import com.syme.ui.theme.SYMETheme
 @Composable
 fun AppIconButton(
     icon: ImageVector = Icons.Default.Add,
-    contentDescription: String = "add",
+    contentDescription: String = "",
     onClick: () -> Unit,
-    color: Color,
+    color: Color = MaterialTheme.colorScheme.primary,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
-            .size(48.dp)
-            .clip(CircleShape)
-            .background(color.copy(alpha = 0.2f))
-            .clickable(
-                onClick = onClick
-            ),
+            .size(40.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(color.copy(alpha = 0.10f))
+            .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = color
+            tint = color,
+            modifier = Modifier.size(20.dp)
         )
     }
 }

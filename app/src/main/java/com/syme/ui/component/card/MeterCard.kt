@@ -14,10 +14,10 @@ import androidx.compose.ui.unit.sp
 import com.syme.R
 import com.syme.domain.model.Measurement
 import com.syme.domain.model.Relay
-import com.syme.ui.component.gaugemeter.GaugeMeterCard
+import com.syme.ui.navigation.extensions.gaugemeter.GaugeMeterCard
 import com.syme.ui.component.oiswitch.RelaySwitchRow
-import com.syme.ui.theme.green
-import com.syme.ui.theme.red
+import com.syme.ui.theme.SemanticError500
+import com.syme.ui.theme.SemanticSuccess500
 
 @Composable
 fun MeterCard(
@@ -34,9 +34,9 @@ fun MeterCard(
     val current = measurement.current ?: 0.0
 
     val stateColor = if (meterState != "ACTIVE") {
-        red
+        SemanticError500
     } else {
-        green
+        SemanticSuccess500
     }
 
     LazyColumn(
@@ -126,11 +126,13 @@ fun MeterCard(
 
         item { Spacer(modifier = Modifier.height(8.dp)) }
 
-        item {
-            RelaySwitchRow(
-                relays = relays,
-                onRelayToggle = onRelayToggle
-            )
+        if(meterState == "ACTIVE") {
+            item {
+                RelaySwitchRow(
+                    relays = relays,
+                    onRelayToggle = onRelayToggle
+                )
+            }
         }
 
         item { Spacer(modifier = Modifier.height(6.dp)) }

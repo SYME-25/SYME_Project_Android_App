@@ -1,18 +1,21 @@
 package com.syme.ui.component.card
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -22,10 +25,10 @@ import com.syme.domain.model.Consumption
 import com.syme.domain.model.Measurement
 import com.syme.domain.model.enumeration.ConsumptionStateType
 import com.syme.ui.component.tank.TankLevelIndicator
-import com.syme.ui.component.text.TextWithBackground
-import com.syme.ui.theme.GreenTank
-import com.syme.ui.theme.RedTank
-import com.syme.ui.theme.YellowTank
+import com.syme.ui.component.text.EntityBadge
+import com.syme.ui.theme.TankGreen
+import com.syme.ui.theme.TankRed
+import com.syme.ui.theme.TankYellow
 import com.syme.utils.round2
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -37,265 +40,335 @@ import kotlin.time.toDuration
 fun ConsumptionCard(
     consumption: Consumption,
     modifier: Modifier = Modifier,
-    cardWidth: Dp = Dp.Unspecified,
-    cardHeight: Dp = Dp.Unspecified,
+    cardWidth: Dp = 350.dp,
     energyUnit: String = "kWh",
     powerUnit: String = "kW",
     realtimeMeasurements: List<Measurement> = emptyList(),
-    onPauseToggle: (Boolean) -> Unit
+    onPauseToggle: (Boolean) -> Unit = {}
 ) {
     val currentTime = System.currentTimeMillis()
-    var isPaused by remember { mutableStateOf(consumption.consumptionState == ConsumptionStateType.PAUSED) }
 
     val dynamicState = when {
-        consumption.consumptionState == ConsumptionStateType.ERROR -> ConsumptionStateType.ERROR
-        isPaused -> ConsumptionStateType.PAUSED
-        currentTime < consumption.periodStart -> ConsumptionStateType.WAITING
+        consumption.consumptionState == ConsumptionStateType.ERROR    -> ConsumptionStateType.ERROR
+        consumption.consumptionState == ConsumptionStateType.PAUSED   -> ConsumptionStateType.PAUSED
+        currentTime < consumption.periodStart                         -> ConsumptionStateType.WAITING
         currentTime in consumption.periodStart..consumption.periodEnd -> ConsumptionStateType.RUNNING
-        else -> ConsumptionStateType.COMPLETED
+        else                                                          -> ConsumptionStateType.COMPLETED
     }
 
-    // ── Tank level: energy-based for both Subscription and Demand ────────────
-    val tankLevel: Float
-    val tankLabel: String
-
-    // Energy-based tank for both Subscription and Demand
     val realtimeKwh = if (dynamicState == ConsumptionStateType.RUNNING)
         realtimeMeasurements
             .filter { it.timestamp >= consumption.periodStart }
             .mapNotNull { it.energyActiveWh }
-            .sum().div(1000.0)
+            .sum() / 1000.0
     else 0.0
 
-    val totalConsumed = if (dynamicState == ConsumptionStateType.RUNNING)
-        (consumption.totalEnergy_kWhConsummed + realtimeKwh).coerceAtMost(consumption.totalEnergy_kWh.toDouble())
-    else consumption.totalEnergy_kWhConsummed
-
+    val totalConsumed = (consumption.totalEnergy_kWhConsummed + realtimeKwh)
+        .coerceAtMost(consumption.totalEnergy_kWh.toDouble())
     val remaining = (consumption.totalEnergy_kWh - totalConsumed).coerceAtLeast(0.0)
-    tankLevel = if (consumption.totalEnergy_kWh > 0)
+
+    val tankLevel = if (consumption.totalEnergy_kWh > 0)
         (remaining / consumption.totalEnergy_kWh).coerceIn(0.0, 1.0).toFloat()
     else 0f
-    tankLabel = "${round2(remaining)} $energyUnit"
-    val tankColor: Color = when {
-        tankLevel > 0.5f -> GreenTank
-        tankLevel > 0.3f -> YellowTank
-        else -> RedTank
+
+    val tankColor = when {
+        tankLevel > 0.5f -> TankGreen
+        tankLevel > 0.3f -> TankYellow
+        else             -> TankRed
     }
 
-    val dateFormat = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
-    val periodStartText = dateFormat.format(Date(consumption.periodStart))
-    val periodEndText   = dateFormat.format(Date(consumption.periodEnd))
+    val stateColor = when (dynamicState) {
+        ConsumptionStateType.RUNNING   -> MaterialTheme.colorScheme.primary
+        ConsumptionStateType.WAITING   -> MaterialTheme.colorScheme.onSurfaceVariant
+        ConsumptionStateType.COMPLETED -> MaterialTheme.colorScheme.secondary
+        ConsumptionStateType.PAUSED    -> MaterialTheme.colorScheme.tertiary
+        ConsumptionStateType.ERROR     -> MaterialTheme.colorScheme.error
+        else                           -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val dateFormat = remember { SimpleDateFormat("dd MMM yy", Locale.getDefault()) }
+    val periodStartText = remember(consumption.periodStart) {
+        dateFormat.format(Date(consumption.periodStart))
+    }
+    val periodEndText = remember(consumption.periodEnd) {
+        dateFormat.format(Date(consumption.periodEnd))
+    }
 
     Card(
         modifier = modifier
-            .sizeIn(minWidth = 360.dp, maxWidth = 360.dp, minHeight = 350.dp, maxHeight = 390.dp)
-            .then(
-                if (cardWidth != Dp.Unspecified && cardHeight != Dp.Unspecified)
-                    Modifier.size(width = cardWidth, height = cardHeight)
-                else Modifier.fillMaxWidth()
-            )
-            .padding(8.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(8.dp),
-        border = BorderStroke(
-            1.dp,
+            .padding(horizontal = 6.dp, vertical = 5.dp)
+            .width(cardWidth),
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            0.5.dp,
             if (consumption.onDemand)
-                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)
+                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.25f)
             else
-                MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
         ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-
-            // Header
+        Column {
+            // ── BODY ──────────────────────────────────────────────────────────
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = consumption.consumptionId, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(
-                    text = dynamicState.name,
-                    color = when (dynamicState) {
-                        ConsumptionStateType.RUNNING   -> MaterialTheme.colorScheme.primary
-                        ConsumptionStateType.WAITING   -> MaterialTheme.colorScheme.onSurfaceVariant
-                        ConsumptionStateType.COMPLETED -> MaterialTheme.colorScheme.secondary
-                        ConsumptionStateType.PAUSED    -> MaterialTheme.colorScheme.tertiary
-                        ConsumptionStateType.ERROR     -> MaterialTheme.colorScheme.error
-                        else                           -> MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                // Tank gauge replaces image
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    TankLevelIndicator(
+                        level = tankLevel,
+                        width = 44.dp,
+                        height = 100.dp
+                    )
+                    Text(
+                        text = "${round2(remaining)}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = tankColor,
+                        fontSize = 10.sp
+                    )
+                    Text(
+                        text = energyUnit,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                        fontSize = 9.sp
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(6.dp))
-            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Body
-            Box(modifier = Modifier.weight(4f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-
-                    // Tank
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                // Info block
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // ID + chips
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = tankLabel, fontWeight = FontWeight.Bold, color = tankColor, fontSize = 12.sp)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        TankLevelIndicator(level = tankLevel, width = 80.dp, height = 200.dp)
+                        Text(
+                            text = consumption.consumptionId,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            maxLines = 1,
+                            letterSpacing = 0.3.sp
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            ConsumptionTypeChip(
+                                isOnDemand = consumption.onDemand,
+                                labelOnDemand = stringResource(R.string.consumption_type_on_demand),
+                                labelSubscription = stringResource(R.string.consumption_type_subscription)
+                            )
+                            EntityBadge(text = dynamicState.name, color = stateColor)
+                        }
                     }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    // Installation — main line
+                    Text(
+                        text = consumption.installationId ?: "-",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-                    // Info items
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
+                    // Period
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        // Type chip
-                        TypeChip(isOnDemand = consumption.onDemand)
-                        
-                        Spacer(modifier = Modifier.height(6.dp))
-                        
-                        InfoItem(
-                            id = R.drawable.outline_home_24,
-                            title = "Installation",
-                            value = consumption.installationId ?: "-"
+                        Text(
+                            text = periodStartText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )
-                        InfoItem(
-                            id = R.drawable.outline_schedule_24,
-                            title = "Periode",
-                            value = "$periodStartText -> $periodEndText"
+                        Text(
+                            text = "→",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
                         )
+                        Text(
+                            text = periodEndText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
 
-                        if (consumption.onDemand && consumption.requestedPowerKw != null) {
-                            InfoItem(
-                                id = R.drawable.outline_electric_bolt_24,
-                                title = "Power",
-                                value = "${consumption.requestedPowerKw.toInt()} $powerUnit"
+                    // Power if on demand
+                    if (consumption.onDemand && consumption.requestedPowerKw > 0.0) {
+                        Text(
+                            text = stringResource(
+                                R.string.consumption_power_requested,
+                                consumption.requestedPowerKw.toInt(),
+                                powerUnit
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    // Progress bar — consumed vs total
+                    if (consumption.totalEnergy_kWh > 0) {
+                        val progress = (totalConsumed / consumption.totalEnergy_kWh)
+                            .coerceIn(0.0, 1.0).toFloat()
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            LinearProgressIndicator(
+                                progress = { progress },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(3.dp)
+                                    .clip(RoundedCornerShape(2.dp)),
+                                color = tankColor,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant
                             )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "${round2(totalConsumed)} $energyUnit",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                    fontSize = 9.sp
+                                )
+                                Text(
+                                    text = "${consumption.totalEnergy_kWh} $energyUnit",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                    fontSize = 9.sp
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Countdown
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CountdownTimer(endTime = consumption.periodEnd, textColor = tankColor)
-            }
-
-            /*
-            // Actions
+            // ── FOOTER ────────────────────────────────────────────────────────
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)
+            )
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 9.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                AppSwitch(
-                    checked = isPaused,
-                    onCheckedChange = { isPaused = it; onPauseToggle(it) },
-                    label = "Pause"
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(stateColor)
+                    )
+                    Text(
+                        text = stringResource(R.string.consumption_label_remaining_time),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+
+                // Separator
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .width(1.dp)
+                        .height(12.dp)
+                        .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
                 )
-                AppTextButton(
-                    text = "Delete",
-                    onClick = {},
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_delete_24),
-                            contentDescription = null
-                        )
-                    }
+
+                CountdownTimer(
+                    endTime = consumption.periodEnd,
+                    textColor = tankColor
                 )
-            }*/
+            }
         }
     }
 }
 
-// ── TypeChip ──────────────────────────────────────────────────────────────────
-
+// ── ConsumptionTypeChip ───────────────────────────────────────────────────────
 @Composable
-fun TypeChip(isOnDemand: Boolean) {
-    val label = if (isOnDemand) "Demande" else "Subscription"
+fun ConsumptionTypeChip(
+    isOnDemand: Boolean,
+    labelOnDemand: String,
+    labelSubscription: String
+) {
     val containerColor = if (isOnDemand)
         MaterialTheme.colorScheme.tertiaryContainer
     else
-        MaterialTheme.colorScheme.primaryContainer
+        MaterialTheme.colorScheme.surfaceVariant
+
     val contentColor = if (isOnDemand)
         MaterialTheme.colorScheme.onTertiaryContainer
     else
-        MaterialTheme.colorScheme.onPrimaryContainer
+        MaterialTheme.colorScheme.onSurfaceVariant
 
-    Surface(shape = RoundedCornerShape(50), color = containerColor) {
-        Text(
-            text = label,
-            color = contentColor,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
-        )
-    }
-}
-
-// ── InfoItem ──────────────────────────────────────────────────────────────────
-
-@Composable
-fun InfoItem(id: Int, title: String, value: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(5.dp))
+            .background(containerColor)
+            .padding(horizontal = 7.dp, vertical = 2.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(id = id),
-                contentDescription = title,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(text = title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        }
-        Text(text = value, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = if (isOnDemand) labelOnDemand else labelSubscription,
+            color = contentColor,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.3.sp
+        )
     }
 }
 
 // ── CountdownTimer ────────────────────────────────────────────────────────────
-
 @Composable
-fun CountdownTimer(endTime: Long, textColor: Color) {
+fun CountdownTimer(
+    endTime: Long,
+    textColor: androidx.compose.ui.graphics.Color
+) {
     var remainingTime by remember { mutableLongStateOf(endTime - System.currentTimeMillis()) }
     LaunchedEffect(endTime) {
         while (remainingTime > 0) {
-            remainingTime = endTime - System.currentTimeMillis()
             delay(1000)
+            remainingTime = endTime - System.currentTimeMillis()
         }
     }
     val duration = remainingTime.coerceAtLeast(0L).toDuration(DurationUnit.MILLISECONDS)
-    val days    = duration.inWholeDays
-    val hours   = duration.inWholeHours % 24
-    val minutes = duration.inWholeMinutes % 60
-    val seconds = duration.inWholeSeconds % 60
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-        TextWithBackground(
-            text = String.format("%dJ %02dh %02dm %02ds", days, hours, minutes, seconds),
-            color = textColor
-        )
-    }
+    EntityBadge(
+        text = String.format(
+            "%dd %02dh %02dm %02ds",
+            duration.inWholeDays,
+            duration.inWholeHours % 24,
+            duration.inWholeMinutes % 60,
+            duration.inWholeSeconds % 60
+        ),
+        color = textColor
+    )
 }
 
 // ── ConsumptionRow ────────────────────────────────────────────────────────────
-
 @Composable
 fun ConsumptionRow(
     consumptions: List<Consumption>,
-    onPauseToggle: (Consumption, Boolean) -> Unit,
+    onPauseToggle: (Consumption, Boolean) -> Unit = { _, _ -> },
     realtimeMeasurements: List<Measurement> = emptyList(),
-    cardWidth: Dp = 360.dp,
-    cardHeight: Dp = 370.dp,
+    cardWidth: Dp = 300.dp,
     maxItems: Int = 30
 ) {
     val now = System.currentTimeMillis()
@@ -303,35 +376,37 @@ fun ConsumptionRow(
     val runningId = remember(consumptions, now) {
         consumptions.firstOrNull {
             it.consumptionState != ConsumptionStateType.PAUSED &&
-            it.consumptionState != ConsumptionStateType.ERROR &&
-            now in it.periodStart..it.periodEnd
+                    it.consumptionState != ConsumptionStateType.ERROR &&
+                    now in it.periodStart..it.periodEnd
         }?.consumptionId
     }
 
-    Box(modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp, max = 500.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().heightIn(min = 140.dp, max = 380.dp)) {
         if (limitedList.isEmpty()) {
             Column(
                 modifier = Modifier.align(Alignment.Center),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = stringResource(R.string.no_subscriptions_found))
+                CircularProgressIndicator(strokeWidth = 2.dp)
+                Text(
+                    text = stringResource(R.string.no_subscriptions_found),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         } else {
             LazyRow(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(limitedList, key = { it.consumptionId }) { cons ->
                     ConsumptionCard(
                         consumption = cons,
                         cardWidth = cardWidth,
-                        cardHeight = cardHeight,
-                        realtimeMeasurements = if (cons.consumptionId == runningId) realtimeMeasurements else emptyList(),
-                        onPauseToggle = { /*paused -> onPauseToggle(cons, paused)*/ }
+                        realtimeMeasurements = if (cons.consumptionId == runningId)
+                            realtimeMeasurements else emptyList(),
+                        onPauseToggle = { paused -> onPauseToggle(cons, paused) }
                     )
                 }
             }

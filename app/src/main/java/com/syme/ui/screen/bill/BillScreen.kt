@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,10 +37,11 @@ import com.syme.domain.model.Installation
 import com.syme.ui.component.card.BillCardAdaptive
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.component.text.Title
-import com.syme.ui.screen.consumption.InstallationFilterById
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
-import com.syme.ui.state.UiState
+import com.syme.domain.state.UiState
+import com.syme.ui.component.animation.banner.Banner
+import com.syme.ui.screen.consumption.InstallationFilterById
 import com.syme.ui.viewmodel.BillViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 
@@ -112,10 +112,13 @@ fun BillScreen(
     ) {
 
         item {
-            Title(stringResource(R.string.bill_title))
+            Title(
+                stringResource(R.string.bill_title),
+                modifier = Modifier.padding(top = 16.dp)
+            )
         }
 
-        item { BannerBill() }
+        item { Banner(id = R.raw.money) }
 
         // 🔹 Filtre installation
         item {

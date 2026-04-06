@@ -1,13 +1,11 @@
 package com.syme.ui.viewmodel
 
-import android.util.Log
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.syme.R
-import com.syme.data.remote.repository.AuthRepository
+import com.syme.data.repository.AuthRepository
 import com.syme.domain.model.LoginEvent
-import com.syme.ui.state.UiState
+import com.syme.domain.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

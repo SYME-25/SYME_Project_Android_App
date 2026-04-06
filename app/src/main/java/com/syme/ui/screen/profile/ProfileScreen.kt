@@ -22,9 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Man
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Woman
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.Cancel
@@ -75,7 +72,7 @@ import com.syme.domain.model.User
 import com.syme.domain.model.UserEvent
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.component.text.Title
-import com.syme.ui.state.UiState
+import com.syme.domain.state.UiState
 import com.syme.ui.theme.AvatarFemaleBg
 import com.syme.ui.theme.AvatarFemaleFg
 import com.syme.ui.theme.AvatarMaleBg

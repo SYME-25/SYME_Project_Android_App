@@ -3,8 +3,8 @@ package com.syme.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.syme.domain.model.Installation
-import com.syme.ui.state.UiState
-import com.syme.data.remote.repository.InstallationRepository
+import com.syme.domain.state.UiState
+import com.syme.data.repository.InstallationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

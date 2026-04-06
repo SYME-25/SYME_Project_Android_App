@@ -39,4 +39,9 @@
     <string name="meter_add_success">Meter added successfully</string>
     <string name="meter_error_loading_meters">Error loading meters : %1$s</string>
 
+    <string name="meter_no_installation">Unassigned</string>
+    <string name="meter_connected">Connected</string>
+    <string name="meter_disconnected">Disconnected</string>
+    <string name="meter_relay_count">%1$d relay(s)</string>
+
 </resources>

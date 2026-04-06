@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import com.syme.ui.navigation.extensions.navigateToApplianceDetail
 import com.syme.ui.navigation.extensions.navigateToInstallationDetail
 import com.syme.ui.navigation.extensions.navigateToUserInstallationDetail
-import com.syme.ui.screen.analysis.AnalysisScreen
 import com.syme.ui.screen.appliance.ApplianceDetailScreen
 import com.syme.ui.screen.bill.BillScreen
 import com.syme.ui.screen.bot.BotScreen
@@ -22,6 +21,7 @@ import com.syme.ui.screen.profile.ProfileScreen
 import com.syme.ui.screen.settings.SettingsScreen
 import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.ui.viewmodel.BillViewModel
+import com.syme.ui.viewmodel.BotViewModel
 import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
@@ -39,12 +39,9 @@ fun NavGraphBuilder.mainNavGraph(
     meterViewModel: MeterViewModel,
     applianceViewModel: ApplianceViewModel,
     circuitViewModel: CircuitViewModel,
-    billViewModel: BillViewModel
+    billViewModel: BillViewModel,
+    botViewModel: BotViewModel
     ) {
-
-    composable (MainRoute.AnalysisScreen.route) {
-        AnalysisScreen()
-    }
 
     composable (MainRoute.BillScreen.route) {
         BillScreen(
@@ -82,7 +79,7 @@ fun NavGraphBuilder.mainNavGraph(
     }
 
     composable (MainRoute.BotScreen.route) {
-        BotScreen()
+        BotScreen(viewModel = botViewModel)
     }
 
     composable (MainRoute.SettingsScreen.route) {
