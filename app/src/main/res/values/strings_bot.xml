@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bot_label">Chat with the Syme assistant</string>
+    <string name="bot_message_1">Need help? 🤔</string>
+    <string name="bot_message_2">Got a question? ❓</string>
+    <string name="bot_message_3">Let’s talk! 💬</string>
+    <string name="bot_message_4">Your usage today? 📊</string>
+    <string name="bot_message_5">Possible savings! 💰</string>
+    <string name="bot_message_6">Usage peak detected ⚡</string>
+    <string name="bot_message_7">Let’s optimize together!</string>
+    <string name="bot_message_8">Your estimated bill? 🧾</string>
+    <string name="bot_message_9">Compare your data? 📈</string>
+    <string name="bot_message_10">Energy tip 💡</string>
+
+    <!-- ── App / Bot identity ───────────────────────────────────────────── -->
+    <string name="bot_title">SymeBot</string>
+    <string name="bot_tagline">Your electricity assistant is ready to help you.</string>
+
+    <!-- ── Top bar actions ──────────────────────────────────────────────── -->
+    <string name="cd_history">History</string>
+    <string name="action_new_conversation">New conversation</string>
+
+    <!-- ── Input bar ────────────────────────────────────────────────────── -->
+    <string name="input_placeholder">Ask a question about electricity…</string>
+    <string name="cd_attach">Attach</string>
+    <string name="cd_voice">Voice input</string>
+    <string name="cd_send">Send</string>
+    <string name="attach_pdf">PDF</string>
+    <string name="attach_image">Image</string>
+    <string name="attach_document">Document</string>
+
+    <!-- ── Welcome / suggestions ────────────────────────────────────────── -->
+    <string name="suggestions_title">Suggestions</string>
+
+    <!-- ── Conversation drawer ──────────────────────────────────────────── -->
+    <string name="history_title">History</string>
+    <string name="action_delete">Delete</string>
+    <!-- %1$d = message count, %2$s = formatted date -->
+    <string name="conversation_meta">%1$d messages • %2$s</string>
+
+    <!-- ── Conversation titles ───────────────────────────────────────────── -->
+    <string name="conversation_default_title">New conversation</string>
+    <string name="conversation_file_analysis_title">File analysis</string>
+
+    <!-- ── File attachment messages ─────────────────────────────────────── -->
+    <string name="message_file_joined_prefix">📎 File attached:</string>
+    <string name="message_file_analysis_note">[Electrical document analysis]</string>
+    <!--
+        Use {fileName} as a placeholder in code:
+        fileReceivedFmt.replace("{fileName}", actualName)
+    -->
+    <string name="message_file_received">I have received your file **{fileName}**. To analyse an electrical document, please describe what you would like to know about it (diagram, calculations, standards, etc.).</string>
+
+    <!-- ── Error messages ────────────────────────────────────────────────── -->
+    <string name="error_prefix">⚠️</string>
+
+    <!-- ── Suggestion chips (shown on the welcome screen) ───────────────── -->
+    <string-array name="bot_suggestions">
+        <item>Compare your data? 📈</item>
+        <item>Your estimated bill? 🧾</item>
+        <item>⚡ What is Ohm\'s law?</item>
+        <item>⚡ What is Ohm\'s law?</item>
+        <item>🔌 How do I wire an electrical outlet?</item>
+        <item>Let’s optimize together!</item>
+        <item>💡 What is the difference between AC and DC?</item>
+        <item>🔋 How does a circuit breaker work?</item>
+        <item>☀️ How do I install solar panels?</item>
+    </string-array>
+
+    <string name="user_firstname">"Welcome %s!"</string>
+
+    <!-- ── Bot warning / disclaimer messages ─────────────────────────────── -->
+    <string name="bot_warning_title">⚠️ Disclaimer</string>
+    <string name="bot_warning_consent">
+        By sending a message, you agree to our Terms of Service.
+    </string>
+    <string name="bot_warning_accuracy">
+        SymeBot provides guidance on electricity matters but may be incorrect. Always verify critical information.
+    </string>
+    <string name="bot_warning_safety">
+        Never perform electrical work without proper safety precautions or professional supervision.
+    </string>
+    <string name="bot_warning_general">
+        Messages are for informational purposes only.
+    </string>
+
+    <string name="listening">Listening...</string>
+
+</resources>
