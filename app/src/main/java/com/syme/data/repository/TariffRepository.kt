@@ -1,6 +1,8 @@
 package com.syme.data.repository
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.toObject
 import com.syme.domain.model.TariffConfig
 import com.syme.domain.model.TariffOverride
@@ -57,16 +59,25 @@ class TariffRepository @Inject constructor(
         installationId: String,
         installationType: InstallationType
     ): TariffConfig? {
-        val global = globalDoc(installationType)
-            .get().await()
-            .toObject<TariffConfig>()
-            ?: return null
+        val global = try {
+            globalDoc(installationType)
+                .get()
+                .await()
+                .toObject<TariffConfig>()
+        } catch (e: Exception) {
+            Log.e("TariffRepository", "Failed to fetch global tariff", e)
+            null
+        } ?: return null
 
-        val override = runCatching {
+        val override = try {
             overrideDoc(ownerId, installationId)
-                .get().await()
+                .get()
+                .await()
                 .toObject<TariffOverride>()
-        }.getOrNull()
+        } catch (e: Exception) {
+            Log.e("TariffRepository", "Failed to fetch override tariff", e)
+            null
+        }
 
         return resolve(global, override, installationType)
     }
@@ -89,23 +100,43 @@ class TariffRepository @Inject constructor(
             trySend(resolve(base, override, installationType))
         }
 
-        val globalListener = globalDoc(installationType)
-            .addSnapshotListener { snap, error ->
-                if (error != null) { close(error); return@addSnapshotListener }
-                global = snap?.toObject<TariffConfig>()
-                emit()
-            }
+        val globalListener: ListenerRegistration? = try {
+            globalDoc(installationType)
+                .addSnapshotListener { snap, error ->
+                    if (error != null) { close(error); return@addSnapshotListener }
+                    global = try {
+                        snap?.toObject<TariffConfig>()
+                    } catch (e: Exception) {
+                        Log.e("TariffRepository", "Global tariff conversion failed", e)
+                        null
+                    }
+                    emit()
+                }
+        } catch (e: Exception) {
+            Log.e("TariffRepository", "Global listener failed", e)
+            null
+        }
 
-        val overrideListener = overrideDoc(ownerId, installationId)
-            .addSnapshotListener { snap, error ->
-                if (error != null) { close(error); return@addSnapshotListener }
-                override = snap?.toObject<TariffOverride>()
-                emit()
-            }
+        val overrideListener: ListenerRegistration? = try {
+            overrideDoc(ownerId, installationId)
+                .addSnapshotListener { snap, error ->
+                    if (error != null) { close(error); return@addSnapshotListener }
+                    override = try {
+                        snap?.toObject<TariffOverride>()
+                    } catch (e: Exception) {
+                        Log.e("TariffRepository", "Override tariff conversion failed", e)
+                        null
+                    }
+                    emit()
+                }
+        } catch (e: Exception) {
+            Log.e("TariffRepository", "Override listener failed", e)
+            null
+        }
 
         awaitClose {
-            globalListener.remove()
-            overrideListener.remove()
+            globalListener?.remove()
+            overrideListener?.remove()
         }
     }
 
@@ -114,7 +145,11 @@ class TariffRepository @Inject constructor(
      * Should only be called from an admin-authenticated context.
      */
     suspend fun saveGlobal(type: InstallationType, tariff: TariffConfig) {
-        globalDoc(type).set(tariff).await()
+        try {
+            globalDoc(type).set(tariff).await()
+        } catch (e: Exception) {
+            Log.e("TariffRepository", "saveGlobal failed", e)
+        }
     }
 
     // ── Internal ─────────────────────────────────────────────────────────────

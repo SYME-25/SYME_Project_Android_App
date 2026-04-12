@@ -32,7 +32,10 @@ fun LoginLinksRow(
         Spacer(modifier = Modifier.height(50.dp))
 
         Row {
-            Text(text = notMemberText)
+            Text(
+                text = notMemberText,
+                color = MaterialTheme.colorScheme.onBackground
+            )
             Spacer(modifier = Modifier.padding(4.dp))
             Text(
                 text = signInText,

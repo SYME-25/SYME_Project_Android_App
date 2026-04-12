@@ -1,7 +1,9 @@
 package com.syme.data.repository
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.syme.domain.model.Circuit
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +25,7 @@ class CircuitRepository @Inject constructor(
         .document(installationId)
         .collection("circuits")
 
+    // 🔁 Observe circuits (temps réel)
     fun observeCircuits(
         userId: String,
         installationId: String
@@ -31,57 +34,87 @@ class CircuitRepository @Inject constructor(
         val listener: ListenerRegistration =
             circuitCollection(userId, installationId)
                 .addSnapshotListener { snapshot, error ->
-
                     if (error != null) {
+                        Log.e("CircuitRepository", "Erreur observeCircuits", error)
                         close(error)
                         return@addSnapshotListener
                     }
 
                     val circuits = snapshot?.documents?.mapNotNull {
-                        it.toObject(Circuit::class.java)
+                        try {
+                            it.toObject(Circuit::class.java)
+                        } catch (e: Exception) {
+                            Log.e("CircuitRepository", "Erreur conversion document -> Circuit", e)
+                            null
+                        }
                     } ?: emptyList()
 
-                    trySend(circuits)
+                    trySend(circuits).isSuccess
                 }
 
         awaitClose { listener.remove() }
     }
 
-    // Dans CircuitRepository
-    suspend fun getAllOnce(userId: String, installationId: String): List<Circuit> =
-        circuitCollection(userId, installationId).get().await()
-            .documents.mapNotNull { it.toObject(Circuit::class.java) }
-
-    suspend fun addCircuit(
-        userId: String,
-        installationId: String,
-        circuit: Circuit
-    ) {
-        val docRef = circuitCollection(userId, installationId)
-            .document(circuit.circuitId.toString())
-
-        docRef.set(circuit).await()
+    // 📥 Get once
+    suspend fun getAllOnce(userId: String, installationId: String): List<Circuit> {
+        return try {
+            circuitCollection(userId, installationId)
+                .get()
+                .await()
+                .documents
+                .mapNotNull {
+                    try {
+                        it.toObject(Circuit::class.java)
+                    } catch (e: Exception) {
+                        Log.e("CircuitRepository", "Erreur conversion document -> Circuit", e)
+                        null
+                    }
+                }
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("CircuitRepository", "Erreur getAllOnce Firestore", e)
+            emptyList()
+        } catch (e: Exception) {
+            Log.e("CircuitRepository", "Erreur getAllOnce", e)
+            emptyList()
+        }
     }
 
-    suspend fun updateCircuit(
-        userId: String,
-        installationId: String,
-        circuit: Circuit
-    ) {
-        circuitCollection(userId, installationId)
-            .document(circuit.circuitId.toString())
-            .set(circuit)
-            .await()
+    // ➕ Add circuit
+    suspend fun addCircuit(userId: String, installationId: String, circuit: Circuit) {
+        try {
+            circuitCollection(userId, installationId)
+                .document(circuit.circuitId.toString())
+                .set(circuit)
+                .await()
+        } catch (e: Exception) {
+            Log.e("CircuitRepository", "Erreur addCircuit", e)
+            throw e
+        }
     }
 
-    suspend fun deleteCircuit(
-        userId: String,
-        installationId: String,
-        circuitId: String
-    ) {
-        circuitCollection(userId, installationId)
-            .document(circuitId)
-            .delete()
-            .await()
+    // ✏️ Update circuit
+    suspend fun updateCircuit(userId: String, installationId: String, circuit: Circuit) {
+        try {
+            circuitCollection(userId, installationId)
+                .document(circuit.circuitId.toString())
+                .set(circuit)
+                .await()
+        } catch (e: Exception) {
+            Log.e("CircuitRepository", "Erreur updateCircuit", e)
+            throw e
+        }
+    }
+
+    // ❌ Delete circuit
+    suspend fun deleteCircuit(userId: String, installationId: String, circuitId: String) {
+        try {
+            circuitCollection(userId, installationId)
+                .document(circuitId)
+                .delete()
+                .await()
+        } catch (e: Exception) {
+            Log.e("CircuitRepository", "Erreur deleteCircuit", e)
+            throw e
+        }
     }
 }

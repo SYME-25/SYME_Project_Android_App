@@ -1,6 +1,8 @@
 package com.syme.data.repository
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.toObject
 import com.syme.domain.model.Appliance
 import com.syme.domain.model.Installation
@@ -50,70 +52,92 @@ class ApplianceRepository @Inject constructor(
     }
 
     suspend fun getAllOnce(ownerId: String, installationId: String): List<Appliance> {
-        return collection(ownerId, installationId)
-            .get()
-            .await()
-            .documents
-            .mapNotNull { it.toObject<Appliance>() }
+        return try {
+            collection(ownerId, installationId)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { it.toObject<Appliance>() }
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ApplianceRepository", "Erreur getAllOnce", e)
+            emptyList()
+        }
     }
 
     suspend fun getById(ownerId: String, installationId: String, id: String): Appliance? {
-        return collection(ownerId, installationId)
-            .document(id)
-            .get()
-            .await()
-            .toObject()
+        return try {
+            collection(ownerId, installationId)
+                .document(id)
+                .get()
+                .await()
+                .toObject()
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ApplianceRepository", "Erreur getById", e)
+            null
+        }
     }
 
     // ➕ CREATE (recalcul global)
     suspend fun insert(ownerId: String, installationId: String, appliance: Appliance) {
-        val applianceRef = collection(ownerId, installationId)
-            .document(appliance.applianceId)
+        try {
+            val applianceRef = collection(ownerId, installationId)
+                .document(appliance.applianceId)
 
-        val installationRef = installationRef(ownerId, installationId)
+            val installationRef = installationRef(ownerId, installationId)
 
-        val appliances = getAllOnce(ownerId, installationId) + appliance
-        val totalEnergy = appliances.sumOf { it.energyWh() }
+            val appliances = getAllOnce(ownerId, installationId) + appliance
+            val totalEnergy = appliances.sumOf { it.energyWh() }
 
-        firestore.runTransaction { transaction ->
-            transaction.set(applianceRef, appliance)
-            transaction.update(installationRef, "energyWh", totalEnergy.toInt())
-        }.await()
+            firestore.runTransaction { transaction ->
+                transaction.set(applianceRef, appliance)
+                transaction.update(installationRef, "energyWh", totalEnergy.toInt())
+            }.await()
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ApplianceRepository", "Erreur insert", e)
+        }
     }
 
     // ✏️ UPDATE (recalcul global)
     suspend fun update(ownerId: String, installationId: String, appliance: Appliance) {
-        val applianceRef = collection(ownerId, installationId)
-            .document(appliance.applianceId)
+        try {
+            val applianceRef = collection(ownerId, installationId)
+                .document(appliance.applianceId)
 
-        val installationRef = installationRef(ownerId, installationId)
+            val installationRef = installationRef(ownerId, installationId)
 
-        val appliances = getAllOnce(ownerId, installationId)
-            .map { if (it.applianceId == appliance.applianceId) appliance else it }
+            val appliances = getAllOnce(ownerId, installationId)
+                .map { if (it.applianceId == appliance.applianceId) appliance else it }
 
-        val totalEnergy = appliances.sumOf { it.energyWh() }
+            val totalEnergy = appliances.sumOf { it.energyWh() }
 
-        firestore.runTransaction { transaction ->
-            transaction.set(applianceRef, appliance)
-            transaction.update(installationRef, "energyWh", totalEnergy)
-        }.await()
+            firestore.runTransaction { transaction ->
+                transaction.set(applianceRef, appliance)
+                transaction.update(installationRef, "energyWh", totalEnergy)
+            }.await()
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ApplianceRepository", "Erreur update", e)
+        }
     }
 
     // ❌ DELETE (recalcul global)
     suspend fun delete(ownerId: String, installationId: String, applianceId: String) {
-        val applianceRef = collection(ownerId, installationId)
-            .document(applianceId)
+        try {
+            val applianceRef = collection(ownerId, installationId)
+                .document(applianceId)
 
-        val installationRef = installationRef(ownerId, installationId)
+            val installationRef = installationRef(ownerId, installationId)
 
-        val appliances = getAllOnce(ownerId, installationId)
-            .filterNot { it.applianceId == applianceId }
+            val appliances = getAllOnce(ownerId, installationId)
+                .filterNot { it.applianceId == applianceId }
 
-        val totalEnergy = appliances.sumOf { it.energyWh() }
+            val totalEnergy = appliances.sumOf { it.energyWh() }
 
-        firestore.runTransaction { transaction ->
-            transaction.delete(applianceRef)
-            transaction.update(installationRef, "energyWh", totalEnergy)
-        }.await()
+            firestore.runTransaction { transaction ->
+                transaction.delete(applianceRef)
+                transaction.update(installationRef, "energyWh", totalEnergy)
+            }.await()
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ApplianceRepository", "Erreur delete", e)
+        }
     }
 }

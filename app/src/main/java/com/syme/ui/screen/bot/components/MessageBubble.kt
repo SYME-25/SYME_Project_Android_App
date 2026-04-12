@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -44,21 +46,27 @@ fun MessageBubble(message: ChatMessage) {
     val sdf = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { visible = true }
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(animationSpec = tween(durationMillis = 300)) +
+        enter = fadeIn(animationSpec = tween(300)) +
                 slideInVertically(
-                    animationSpec = tween(durationMillis = 300),
+                    animationSpec = tween(300),
                     initialOffsetY = { it / 4 }
                 )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
+            horizontalArrangement = if (message.isUser) {
+                Arrangement.End
+            } else {
+                Arrangement.Start
+            }
         ) {
-
             if (!message.isUser) {
                 Box(
                     modifier = Modifier
@@ -67,17 +75,23 @@ fun MessageBubble(message: ChatMessage) {
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("⚡", fontSize = 18.sp)
+                    Text(
+                        text = "⚡",
+                        fontSize = 18.sp
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
             }
 
             Column(
-                modifier = Modifier.widthIn(max = 300.dp),
-                horizontalAlignment = if (message.isUser) Alignment.End else Alignment.Start
+                modifier = Modifier.widthIn(max = 340.dp),
+                horizontalAlignment = if (message.isUser) {
+                    Alignment.End
+                } else {
+                    Alignment.Start
+                }
             ) {
-
                 if (message.isUser) {
                     Surface(
                         shape = RoundedCornerShape(
@@ -90,8 +104,7 @@ fun MessageBubble(message: ChatMessage) {
                             message.isError -> MaterialTheme.colorScheme.errorContainer
                             else -> MaterialTheme.colorScheme.primary
                         },
-                        tonalElevation = 2.dp,
-                        shadowElevation = 0.dp
+                        tonalElevation = 2.dp
                     ) {
                         Box(
                             modifier = Modifier.padding(
@@ -107,18 +120,17 @@ fun MessageBubble(message: ChatMessage) {
                             when {
                                 message.audioUri != null -> {
                                     AudioMessageBubble(
-                                        isUserMessage = message.isUser,
+                                        isUserMessage = true,
                                         durationSeconds = message.audioDurationSec,
-                                        onPlayPause = { isPlaying ->
-                                            // TODO connecter MediaPlayer ici
-                                        }
+                                        onPlayPause = {}
                                     )
                                 }
 
                                 else -> {
                                     MarkdownText(
                                         raw = message.content,
-                                        color = textColor
+                                        color = textColor,
+                                        modifier = Modifier.widthIn(max = 300.dp)
                                     )
                                 }
                             }
@@ -126,10 +138,9 @@ fun MessageBubble(message: ChatMessage) {
                     }
                 } else {
                     Box(
-                        modifier = Modifier.padding(
-                            end = 16.dp,
-                            bottom = 2.dp
-                        )
+                        modifier = Modifier
+                            .padding(end = 16.dp, bottom = 2.dp)
+                            .horizontalScroll(rememberScrollState(), enabled = false)
                     ) {
                         when {
                             message.isLoading -> {
@@ -149,7 +160,8 @@ fun MessageBubble(message: ChatMessage) {
                                     ) {
                                         MarkdownText(
                                             raw = message.content,
-                                            color = MaterialTheme.colorScheme.onErrorContainer
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            modifier = Modifier.widthIn(max = 320.dp)
                                         )
                                     }
                                 }
@@ -157,11 +169,9 @@ fun MessageBubble(message: ChatMessage) {
 
                             message.audioUri != null -> {
                                 AudioMessageBubble(
-                                    isUserMessage = message.isUser,
+                                    isUserMessage = false,
                                     durationSeconds = message.audioDurationSec,
-                                    onPlayPause = { isPlaying ->
-                                        // TODO connecter MediaPlayer ici
-                                    }
+                                    onPlayPause = {}
                                 )
                             }
 
@@ -169,7 +179,7 @@ fun MessageBubble(message: ChatMessage) {
                                 MarkdownText(
                                     raw = message.content,
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.widthIn(max = 300.dp)
+                                    modifier = Modifier.widthIn(max = 320.dp)
                                 )
                             }
                         }

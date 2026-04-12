@@ -50,5 +50,8 @@
 
     <string name="register_success">Account created successfully</string>
     <string name="register_error_with_message">Error : %1$s</string>
+    <string name="register_personal_data">Personal information</string>
+    <string name="register_contacts">Contacts</string>
+    <string name="register_connexion_information">Login information</string>
 
 </resources>

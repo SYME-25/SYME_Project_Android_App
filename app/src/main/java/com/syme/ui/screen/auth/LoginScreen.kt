@@ -1,34 +1,37 @@
 package com.syme.ui.screen.auth
 
 import android.util.Patterns
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.syme.R
 import com.syme.domain.model.LoginEvent
-import com.syme.ui.component.actionbutton.AppButton
-import com.syme.ui.component.animation.Animation
-import com.syme.ui.component.field.EmailField
-import com.syme.ui.component.field.PasswordField
-import com.syme.ui.component.actionbutton.LoginLinksRow
+import com.syme.ui.component.animation.banner.Banner
 import com.syme.ui.navigation.RootRoute
-import com.syme.ui.snapshot.GlobalMessageSnapshot
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
-import com.syme.ui.theme.SYMETheme
 import com.syme.ui.viewmodel.LoginViewModel
 import kotlinx.coroutines.flow.collectLatest
+import com.syme.R
+import com.syme.ui.component.actionbutton.AppButton
+import com.syme.ui.component.actionbutton.LoginLinksRow
+import com.syme.ui.component.field.EmailField
+import com.syme.ui.component.field.PasswordField
+import com.syme.ui.snapshot.GlobalMessageSnapshot
 
 @Composable
 fun LoginScreen(
@@ -37,28 +40,25 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit = {},
     onNavigateToResetPassword: () -> Unit = {}
 ) {
-
     val context = LocalContext.current
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
-    val emailErrorText = stringResource(R.string.login_email_error)
-    val passwordErrorText = stringResource(R.string.login_password_error)
-    val loginLabelText = stringResource(R.string.login_label)
-    val loginEmailText = stringResource(R.string.login_email)
-    val loginPasswordText = stringResource(R.string.login_password)
+    val emailErrorText       = stringResource(R.string.login_email_error)
+    val passwordErrorText    = stringResource(R.string.login_password_error)
+    val loginLabelText       = stringResource(R.string.login_label)
+    val loginEmailText       = stringResource(R.string.login_email)
+    val loginPasswordText    = stringResource(R.string.login_password)
     val loginForgetPasswordText = stringResource(R.string.login_forget_password)
-    val loginNotMemberText = stringResource(R.string.login_not_member)
-    val loginSignInText = stringResource(R.string.login_sign_in)
-    val emailFormatInvalid = stringResource(R.string.register_email_invalid_format)
+    val loginNotMemberText   = stringResource(R.string.login_not_member)
+    val loginSignInText      = stringResource(R.string.login_sign_in)
+    val emailFormatInvalid   = stringResource(R.string.register_email_invalid_format)
 
     val uiState by viewModel.uiState.collectAsState()
 
-    // 🎯 Écoute les événements pour afficher les messages globaux
     LaunchedEffect(viewModel) {
         viewModel.loginEvent.collectLatest { event ->
             when (event) {
@@ -71,95 +71,112 @@ fun LoginScreen(
                         popUpTo(RootRoute.Auth) { inclusive = true }
                     }
                 }
-
                 is LoginEvent.Error -> {
                     globalMessageManager.showMessage(
                         type = MessageType.ERROR,
-                        customText = context.getString(
-                            event.messageRes,
-                            event.arg
-                        )
+                        customText = context.getString(event.messageRes, event.arg)
                     )
                 }
             }
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+    // Dégradé de fond adaptatif clair/sombre
+    val bgTop    = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)
+    val bgBottom = MaterialTheme.colorScheme.background
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(listOf(bgTop, bgBottom, bgBottom))
+            )
     ) {
-        Animation(R.raw.login_animation)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // ── Animation ──────────────────────────────────────────
+            Banner(
+                id = R.raw.login_animation,
+            )
 
-        Text(
-            text = loginLabelText,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.ExtraBold
-        )
+            // ── Titre ──────────────────────────────────────────────
+            Text(
+                text = loginLabelText,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        EmailField(
-            value = email,
-            onValueChange = { email = it },
-            label = loginEmailText,
-            error = emailError
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        PasswordField(
-            value = password,
-            onValueChange = { password = it },
-            label = loginPasswordText,
-            error = passwordError,
-            passwordVisible = passwordVisible,
-            onToggleVisibility = { passwordVisible = !passwordVisible }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        AppButton(
-            text = loginLabelText,
-            onClick = {
-                // Validation rapide
-                emailError = when {
-                    email.isBlank() -> emailErrorText
-                    !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> emailFormatInvalid
-                    else -> ""
-                }
-                passwordError = if (password.isBlank()) passwordErrorText else ""
-
-                if (emailError.isEmpty() && passwordError.isEmpty()) {
-                    viewModel.login(email, password)
-                }
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_login_24),
-                    contentDescription = null
+            // ── Carte champs ───────────────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                    )
+                    .padding(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                EmailField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = loginEmailText,
+                    error = emailError
+                )
+                PasswordField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = loginPasswordText,
+                    error = passwordError,
+                    passwordVisible = passwordVisible,
+                    onToggleVisibility = { passwordVisible = !passwordVisible }
                 )
             }
-        )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        LoginLinksRow(
-            forgetPasswordText = loginForgetPasswordText,
-            notMemberText = loginNotMemberText,
-            signInText = loginSignInText,
-            onResetPassword = onNavigateToResetPassword,
-            onRegister = onNavigateToRegister
-        )
-    }
+            // ── Bouton ─────────────────────────────────────────────
+            AppButton(
+                text = loginLabelText,
+                onClick = {
+                    emailError = when {
+                        email.isBlank() -> emailErrorText
+                        !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> emailFormatInvalid
+                        else -> ""
+                    }
+                    passwordError = if (password.isBlank()) passwordErrorText else ""
+                    if (emailError.isEmpty() && passwordError.isEmpty()) {
+                        viewModel.login(email, password)
+                    }
+                },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_login_24),
+                        contentDescription = null
+                    )
+                }
+            )
 
-    GlobalMessageSnapshot()
-}
+            Spacer(modifier = Modifier.height(16.dp))
 
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    SYMETheme {
-        // Preview sans vrai ViewModel
+            LoginLinksRow(
+                forgetPasswordText = loginForgetPasswordText,
+                notMemberText = loginNotMemberText,
+                signInText = loginSignInText,
+                onResetPassword = onNavigateToResetPassword,
+                onRegister = onNavigateToRegister
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        GlobalMessageSnapshot()
     }
 }

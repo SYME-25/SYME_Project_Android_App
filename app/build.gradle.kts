@@ -2,10 +2,11 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application) // Obligatoire pour Hilt
-    alias(libs.plugins.kotlin.compose)      // Compose
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.google.services)
+    alias(libs.plugins.kotlin.android)
 }
 
 val localProperties = Properties().apply {
@@ -14,9 +15,7 @@ val localProperties = Properties().apply {
 
 android {
     namespace = "com.syme"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.syme"
@@ -51,6 +50,9 @@ android {
         buildConfig = true
         compose = true
     }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 dependencies {
@@ -71,6 +73,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.filament.android)
     implementation(libs.play.services.location)
+    implementation(libs.core.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -84,9 +87,6 @@ dependencies {
 
     //Pour l'animation au login
     implementation(libs.lottie.compose)
-
-    //Pour le chargement d'image
-    implementation("io.coil-kt:coil-compose:2.4.0")
 
     //Librairie de serialisation JSON
     implementation(libs.gson)
@@ -103,7 +103,18 @@ dependencies {
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.analytics.ktx)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.messaging.ktx)
 
     //Pour le chatBot Mistral
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Markdown renderer
+    implementation("com.mikepenz:multiplatform-markdown-renderer-android:0.31.0")
+    implementation("com.mikepenz:multiplatform-markdown-renderer-coil3:0.31.0")
+    implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.31.0")
+
+    // Coil pour les images (requis pour le plugin image du renderer)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.coil-kt:coil-gif:2.6.0") // si tu veux les GIFs
 }

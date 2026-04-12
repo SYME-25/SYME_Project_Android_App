@@ -13,6 +13,7 @@ fun User.toDomain(): User =
         gender = gender,
         phone = phone,
         address = address,
+        fcmTokens = fcmTokens,
         trace = trace,
         metadata = metadata,
     )

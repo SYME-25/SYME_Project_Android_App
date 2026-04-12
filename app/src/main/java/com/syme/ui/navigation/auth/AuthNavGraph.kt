@@ -10,10 +10,12 @@ import com.syme.ui.screen.auth.ResetPasswordStep1Screen
 import com.syme.ui.screen.auth.ResetPasswordStep2Screen
 import com.syme.ui.viewmodel.LoginViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
+import com.syme.ui.viewmodel.ResetPasswordViewModel
 
 fun NavGraphBuilder.authNavGraph(
     navController: NavHostController,
     registerViewModel: RegisterViewModel,
+    resetPasswordViewModel: ResetPasswordViewModel,
     loginViewModel: LoginViewModel
 ) {
 
@@ -38,7 +40,7 @@ fun NavGraphBuilder.authNavGraph(
         ResetPasswordStep1Screen(
             navController = navController,
             onBackToLogin = { navController.popBackStack() },
-            onNextStep = { navController.navigate(AuthRoute.ResetPasswordStep2.route) }
+            viewModel = resetPasswordViewModel
         )
     }
 

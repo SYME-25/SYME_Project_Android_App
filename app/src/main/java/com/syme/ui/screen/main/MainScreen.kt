@@ -3,7 +3,10 @@ package com.syme.ui.screen.main
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Scaffold
@@ -11,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -41,10 +45,8 @@ fun MainScreen(
     circuitViewModel: CircuitViewModel,
     billViewModel: BillViewModel,
     botViewModel: BotViewModel
-    ) {
-
+) {
     val mainNavController = rememberNavController()
-
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -53,14 +55,15 @@ fun MainScreen(
         MainRoute.ProfileScreen.route,
         MainRoute.BotScreen.route,
     )
-
     val routesWithoutBottomBar = emptySet<String>()
+    val routesWithoutFab = setOf(MainRoute.BotScreen.route)
 
-    val routesWithoutFab = setOf(
-        MainRoute.BotScreen.route
-    )
+    val navBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomBarTotalHeight = 72.dp + 24.dp + navBarHeight
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = Color.Transparent,
         topBar = {
             if (currentRoute !in routesWithoutTopBar) {
                 HomeHeader(
@@ -78,42 +81,20 @@ fun MainScreen(
                 )
             }
         },
-        bottomBar = {
-            if (currentRoute !in routesWithoutBottomBar) {
-                HomeBottomBar(
-                    currentRoute = currentRoute,
-                    onNavigate = { route ->
-                        mainNavController.navigate(route) {
-                            popUpTo(MainRoute.HomeScreen.route) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                )
-            }
-        },
-        floatingActionButton = {
-            if (currentRoute !in routesWithoutFab) {
-                BotFab {
-                    mainNavController.navigate(MainRoute.BotScreen.route) {
-                        launchSingleTop = true
-                    }
-                }
-            }
-        }
-    ) { padding ->
+        bottomBar = {},
+    ) { scaffoldPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
 
-        Box {
             NavHost(
                 navController = mainNavController,
                 startDestination = MainRoute.HomeScreen.route,
-                modifier = Modifier.padding(padding)
+                modifier = Modifier
+                    .padding(scaffoldPadding)
+                    .padding(bottom = bottomBarTotalHeight)
             ) {
                 mainNavGraph(
                     navController = mainNavController,
-                    paddingValues = padding,
+                    paddingValues = scaffoldPadding,
                     userViewModel = userViewModel,
                     installationViewModel = installationViewModel,
                     consumptionViewModel = consumptionViewModel,
@@ -125,14 +106,60 @@ fun MainScreen(
                 )
             }
 
-            // 🔹 Snapshot global pour messages CRUD
+            // ── Bottom Bar ────────────────────────────────────────────────────
+            if (currentRoute !in routesWithoutBottomBar) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = navBarHeight),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    HomeBottomBar(
+                        currentRoute = currentRoute,
+                        onNavigate = { route ->
+
+                            // Si on est sur BotScreen, on retire Bot de la stack avant de naviguer
+                            if (currentRoute == MainRoute.BotScreen.route) {
+                                mainNavController.popBackStack()
+                            }
+
+                            mainNavController.navigate(route) {
+                                popUpTo(MainRoute.HomeScreen.route) {
+                                    saveState = true
+                                    inclusive = false
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
+
+            // ── FAB ───────────────────────────────────────────────────────────
+            if (currentRoute !in routesWithoutFab) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(end = 16.dp, bottom = bottomBarTotalHeight + 16.dp),
+                    contentAlignment = Alignment.BottomEnd
+                ) {
+                    BotFab {
+                        mainNavController.navigate(MainRoute.BotScreen.route) {
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            }
+
+            // ── Snapshot ──────────────────────────────────────────────────────
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 GlobalMessageSnapshot(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 120.dp)
+                        .padding(horizontal = 16.dp, vertical = bottomBarTotalHeight + 8.dp)
                         .widthIn(max = 620.dp)
                 )
             }

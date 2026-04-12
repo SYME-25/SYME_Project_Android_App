@@ -43,7 +43,7 @@ fun buildSystemPrompt(ctx: UserContext): String {
         ctx.meterCount?.let          { appendLine("- Compteurs connectés : $it") }
     }
 
-    return $$"""
+    return """
 You are **SYME Bot**, an AI assistant integrated in the SYME electricity management app.
 You are an expert in electricity, energy consumption, and optimization.
 

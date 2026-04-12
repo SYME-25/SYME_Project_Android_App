@@ -1,7 +1,9 @@
 package com.syme.data.repository
 
+import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.toObject
 import com.syme.domain.model.Installation
 import kotlinx.coroutines.channels.awaitClose
@@ -35,15 +37,21 @@ class InstallationRepository @Inject constructor(
         val listener = collection(ownerId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    Log.e("InstallationRepository", "Erreur observeAll", error)
                     close(error)
                     return@addSnapshotListener
                 }
 
-                val list = snapshot?.documents
-                    ?.mapNotNull { it.toObject<Installation>() }
-                    ?: emptyList()
+                val list = snapshot?.documents?.mapNotNull {
+                    try {
+                        it.toObject<Installation>()
+                    } catch (e: Exception) {
+                        Log.e("InstallationRepository", "Erreur conversion document -> Installation", e)
+                        null
+                    }
+                } ?: emptyList()
 
-                trySend(list)
+                trySend(list).isSuccess
             }
 
         awaitClose { listener.remove() }
@@ -51,57 +59,92 @@ class InstallationRepository @Inject constructor(
 
     // 📥 GET ONCE
     suspend fun getAllOnce(ownerId: String): List<Installation> {
-        return collection(ownerId)
-            .get()
-            .await()
-            .documents
-            .mapNotNull { it.toObject<Installation>() }
+        return try {
+            collection(ownerId)
+                .get()
+                .await()
+                .documents
+                .mapNotNull {
+                    try {
+                        it.toObject<Installation>()
+                    } catch (e: Exception) {
+                        Log.e("InstallationRepository", "Erreur conversion document -> Installation", e)
+                        null
+                    }
+                }
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("InstallationRepository", "Erreur getAllOnce Firestore", e)
+            emptyList()
+        } catch (e: Exception) {
+            Log.e("InstallationRepository", "Erreur getAllOnce", e)
+            emptyList()
+        }
     }
 
     suspend fun getById(ownerId: String, id: String): Installation? {
-        return collection(ownerId)
-            .document(id)
-            .get()
-            .await()
-            .toObject()
+        return try {
+            collection(ownerId)
+                .document(id)
+                .get()
+                .await()
+                .toObject<Installation>()
+        } catch (e: Exception) {
+            Log.e("InstallationRepository", "Erreur getById", e)
+            null
+        }
     }
 
     // ➕ CREATE
     suspend fun insert(ownerId: String, installation: Installation) {
-        collection(ownerId)
-            .document(installation.installationId)
-            .set(installation)
-            .await()
+        try {
+            collection(ownerId)
+                .document(installation.installationId)
+                .set(installation)
+                .await()
 
-        realtimeRef(ownerId)
-            .child(installation.installationId)
-            .setValue(installation)
-            .await()
+            realtimeRef(ownerId)
+                .child(installation.installationId)
+                .setValue(installation)
+                .await()
+        } catch (e: Exception) {
+            Log.e("InstallationRepository", "Erreur insert", e)
+            throw e
+        }
     }
 
     // ✏️ UPDATE
     suspend fun update(ownerId: String, installation: Installation) {
-        collection(ownerId)
-            .document(installation.installationId)
-            .set(installation)
-            .await()
+        try {
+            collection(ownerId)
+                .document(installation.installationId)
+                .set(installation)
+                .await()
 
-        realtimeRef(ownerId)
-            .child(installation.installationId)
-            .setValue(installation)
-            .await()
+            realtimeRef(ownerId)
+                .child(installation.installationId)
+                .setValue(installation)
+                .await()
+        } catch (e: Exception) {
+            Log.e("InstallationRepository", "Erreur update", e)
+            throw e
+        }
     }
 
     // ❌ DELETE
     suspend fun delete(ownerId: String, installationId: String) {
-        collection(ownerId)
-            .document(installationId)
-            .delete()
-            .await()
+        try {
+            collection(ownerId)
+                .document(installationId)
+                .delete()
+                .await()
 
-        realtimeRef(ownerId)
-            .child(installationId)
-            .removeValue()
-            .await()
+            realtimeRef(ownerId)
+                .child(installationId)
+                .removeValue()
+                .await()
+        } catch (e: Exception) {
+            Log.e("InstallationRepository", "Erreur delete", e)
+            throw e
+        }
     }
 }

@@ -1,7 +1,9 @@
 package com.syme.data.repository
 
+import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.toObject
 import com.syme.domain.model.Consumption
 import kotlinx.coroutines.channels.awaitClose
@@ -35,73 +37,107 @@ class ConsumptionRepository @Inject constructor(
         val listener = collection(ownerId, installationId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    Log.e("ConsumptionRepository", "Erreur observeAll", error)
                     close(error)
                     return@addSnapshotListener
                 }
 
-                val list = snapshot?.documents
-                    ?.mapNotNull { it.toObject<Consumption>() }
-                    ?: emptyList()
+                val list = snapshot?.documents?.mapNotNull {
+                    try {
+                        it.toObject<Consumption>()
+                    } catch (e: Exception) {
+                        Log.e("ConsumptionRepository", "Erreur conversion document -> Consumption", e)
+                        null
+                    }
+                } ?: emptyList()
 
-                trySend(list)
+                trySend(list).isSuccess
             }
 
         awaitClose { listener.remove() }
     }
 
     // 📥 GET ONCE
-    suspend fun getAllOnce(ownerId: String, installationId: String): List<Consumption> =
-        collection(ownerId, installationId)
-            .get()
-            .await()
-            .documents
-            .mapNotNull { it.toObject<Consumption>() }
+    suspend fun getAllOnce(ownerId: String, installationId: String): List<Consumption> {
+        return try {
+            collection(ownerId, installationId)
+                .get()
+                .await()
+                .documents
+                .mapNotNull {
+                    try {
+                        it.toObject<Consumption>()
+                    } catch (e: Exception) {
+                        Log.e("ConsumptionRepository", "Erreur conversion document -> Consumption", e)
+                        null
+                    }
+                }
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ConsumptionRepository", "Erreur getAllOnce Firestore", e)
+            emptyList()
+        } catch (e: Exception) {
+            Log.e("ConsumptionRepository", "Erreur getAllOnce", e)
+            emptyList()
+        }
+    }
 
     // ➕ INSERT
     suspend fun insert(ownerId: String, installationId: String, consumption: Consumption) {
+        try {
+            // Firestore
+            collection(ownerId, installationId)
+                .document(consumption.consumptionId)
+                .set(consumption)
+                .await()
 
-        // Firestore
-        collection(ownerId, installationId)
-            .document(consumption.consumptionId)
-            .set(consumption)
-            .await()
-
-        // Realtime
-        realtimeRef(ownerId, installationId)
-            .child(consumption.consumptionId)
-            .setValue(consumption)
-            .await()
+            // Realtime
+            realtimeRef(ownerId, installationId)
+                .child(consumption.consumptionId)
+                .setValue(consumption)
+                .await()
+        } catch (e: Exception) {
+            Log.e("ConsumptionRepository", "Erreur insert", e)
+            throw e
+        }
     }
 
     // ✏️ UPDATE
     suspend fun update(ownerId: String, installationId: String, consumption: Consumption) {
+        try {
+            // Firestore
+            collection(ownerId, installationId)
+                .document(consumption.consumptionId)
+                .set(consumption)
+                .await()
 
-        // Firestore
-        collection(ownerId, installationId)
-            .document(consumption.consumptionId)
-            .set(consumption)
-            .await()
-
-        // Realtime
-        realtimeRef(ownerId, installationId)
-            .child(consumption.consumptionId)
-            .setValue(consumption)
-            .await()
+            // Realtime
+            realtimeRef(ownerId, installationId)
+                .child(consumption.consumptionId)
+                .setValue(consumption)
+                .await()
+        } catch (e: Exception) {
+            Log.e("ConsumptionRepository", "Erreur update", e)
+            throw e
+        }
     }
 
     // ❌ DELETE
     suspend fun delete(ownerId: String, installationId: String, consumptionId: String) {
+        try {
+            // Firestore
+            collection(ownerId, installationId)
+                .document(consumptionId)
+                .delete()
+                .await()
 
-        // Firestore
-        collection(ownerId, installationId)
-            .document(consumptionId)
-            .delete()
-            .await()
-
-        // Realtime
-        realtimeRef(ownerId, installationId)
-            .child(consumptionId)
-            .removeValue()
-            .await()
+            // Realtime
+            realtimeRef(ownerId, installationId)
+                .child(consumptionId)
+                .removeValue()
+                .await()
+        } catch (e: Exception) {
+            Log.e("ConsumptionRepository", "Erreur delete", e)
+            throw e
+        }
     }
 }

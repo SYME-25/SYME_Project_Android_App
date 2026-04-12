@@ -11,7 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,6 +35,7 @@ import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.LoginViewModel
 import com.syme.ui.viewmodel.MeterViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
+import com.syme.ui.viewmodel.ResetPasswordViewModel
 import com.syme.ui.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 
@@ -65,6 +66,7 @@ fun RootNavGraph(
     val billViewModel: BillViewModel = hiltViewModel()
     val userViewModel: UserViewModel = hiltViewModel()
     val botViewModel: BotViewModel = hiltViewModel()
+    val resetPasswordViewModel: ResetPasswordViewModel = hiltViewModel()
 
     val isOnline by connectivityViewModel.isOnline.collectAsState()
 
@@ -105,7 +107,7 @@ fun RootNavGraph(
                 startDestination = AuthRoute.Login.route,
                 route = RootRoute.Auth
             ) {
-                authNavGraph(navController, registerViewModel, loginViewModel)
+                authNavGraph(navController, registerViewModel, resetPasswordViewModel, loginViewModel)
             }
 
             composable(MainRoute.MainScreen.route) {

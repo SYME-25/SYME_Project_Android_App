@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "607572699197",
+    "firebase_url": "https://syme-859df025-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "syme-859df025",
+    "storage_bucket": "syme-859df025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:607572699197:android:16111bf35f678c3d7de254",
+        "android_client_info": {
+          "package_name": "com.syme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMDNLxZN501IJW_Q86_myR3GkdkOubS1Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="password_reset_email_sent">A reset email has been sent.</string>
+    <string name="password_reset_check_email">Check your email</string>
+    <string name="password_reset_instructions">We have sent a reset link to your email address. Click on this link to choose a new password, then return here to log in.</string>
+</resources>
