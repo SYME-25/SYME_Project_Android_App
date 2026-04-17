@@ -1,5 +1,6 @@
 package com.syme.ui.navigation.auth
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
@@ -16,7 +17,8 @@ fun NavGraphBuilder.authNavGraph(
     navController: NavHostController,
     registerViewModel: RegisterViewModel,
     resetPasswordViewModel: ResetPasswordViewModel,
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    contentPadding: PaddingValues
 ) {
 
     composable(AuthRoute.Login.route) {

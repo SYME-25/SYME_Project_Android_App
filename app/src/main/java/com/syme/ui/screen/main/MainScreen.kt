@@ -72,7 +72,7 @@ fun MainScreen(
 
     Scaffold(
         containerColor = Color.Transparent,
-        contentWindowInsets = WindowInsets.systemBars,
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             if (currentRoute !in routesWithoutTopBar) {
                 HomeHeader(

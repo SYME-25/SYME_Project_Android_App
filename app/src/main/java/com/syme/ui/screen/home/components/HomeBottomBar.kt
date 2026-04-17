@@ -28,7 +28,6 @@ import com.syme.ui.navigation.main.MainRoute
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.hazeEffect
 
 @Composable
@@ -53,24 +52,22 @@ fun HomeBottomBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp), // réduit
         contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .clip(RoundedCornerShape(50.dp))
-                // ✅ hazeChild floute le contenu derrière
+                .clip(RoundedCornerShape(40.dp)) // légèrement réduit
                 .hazeEffect(
                     state = hazeState,
                     style = HazeStyle(
                         backgroundColor = surfaceColor,
                         tint = HazeTint(surfaceColor.copy(alpha = 0.4f)),
-                        blurRadius = 20.dp
+                        blurRadius = 16.dp // réduit léger
                     )
                 )
-                // ✅ Shimmer par-dessus le flou
                 .background(
                     Brush.verticalGradient(
                         colorStops = arrayOf(
@@ -83,7 +80,7 @@ fun HomeBottomBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 6.dp),
+                    .padding(horizontal = 4.dp, vertical = 4.dp), // réduit
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -101,7 +98,7 @@ fun HomeBottomBar(
                         label = "labelColor"
                     )
                     val boxSize by animateDpAsState(
-                        targetValue = if (selected) 42.dp else 38.dp,
+                        targetValue = if (selected) 38.dp else 34.dp, // réduit
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
                         label = "boxSize"
                     )
@@ -115,12 +112,12 @@ fun HomeBottomBar(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
                             ) { onNavigate(screen.route) }
-                            .padding(vertical = 6.dp)
+                            .padding(vertical = 4.dp) // réduit
                     ) {
                         Box(
                             modifier = Modifier
                                 .size(boxSize)
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(12.dp)) // réduit
                                 .background(
                                     if (selected)
                                         Brush.verticalGradient(
@@ -140,15 +137,15 @@ fun HomeBottomBar(
                                 painter = painterResource(screen.icon),
                                 contentDescription = screen.route,
                                 tint = iconTint,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp) // réduit
                             )
                         }
-                        Spacer(Modifier.height(4.dp))
+                        Spacer(Modifier.height(2.dp)) // réduit
                         Text(
                             text = stringResource(screen.title),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp, // réduit
                             fontWeight = if (selected) FontWeight.Black else FontWeight.SemiBold,
                             color = labelColor
                         )

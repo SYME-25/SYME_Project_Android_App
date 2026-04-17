@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -44,7 +45,6 @@ import java.util.Locale
 @Composable
 fun MessageBubble(message: ChatMessage) {
     val sdf = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-
     var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -61,12 +61,9 @@ fun MessageBubble(message: ChatMessage) {
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if (message.isUser) {
-                Arrangement.End
-            } else {
-                Arrangement.Start
-            }
+            horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
         ) {
+            // ── Avatar IA ────────────────────────────────────────────────────
             if (!message.isUser) {
                 Box(
                     modifier = Modifier
@@ -75,23 +72,25 @@ fun MessageBubble(message: ChatMessage) {
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "⚡",
-                        fontSize = 18.sp
-                    )
+                    Text(text = "⚡", fontSize = 18.sp)
                 }
-
                 Spacer(modifier = Modifier.width(8.dp))
             }
 
+            // ── Colonne du message ───────────────────────────────────────────
             Column(
-                modifier = Modifier.widthIn(max = 340.dp),
-                horizontalAlignment = if (message.isUser) {
-                    Alignment.End
+                modifier = if (message.isUser) {
+                    // Les bulles user gardent une largeur max fixe
+                    Modifier.widthIn(max = 340.dp)
                 } else {
-                    Alignment.Start
-                }
+                    // Les bulles IA prennent tout l'espace disponible
+                    // pour que les tableaux puissent s'étendre
+                    Modifier.weight(1f)
+                },
+                horizontalAlignment = if (message.isUser) Alignment.End else Alignment.Start
             ) {
+
+                // ── Message USER ─────────────────────────────────────────────
                 if (message.isUser) {
                     Surface(
                         shape = RoundedCornerShape(
@@ -102,45 +101,42 @@ fun MessageBubble(message: ChatMessage) {
                         ),
                         color = when {
                             message.isError -> MaterialTheme.colorScheme.errorContainer
-                            else -> MaterialTheme.colorScheme.primary
+                            else            -> MaterialTheme.colorScheme.primary
                         },
                         tonalElevation = 2.dp
                     ) {
                         Box(
-                            modifier = Modifier.padding(
-                                horizontal = 14.dp,
-                                vertical = 10.dp
-                            )
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
                         ) {
                             val textColor = when {
                                 message.isError -> MaterialTheme.colorScheme.onErrorContainer
-                                else -> MaterialTheme.colorScheme.onPrimary
+                                else            -> MaterialTheme.colorScheme.onPrimary
                             }
-
                             when {
                                 message.audioUri != null -> {
                                     AudioMessageBubble(
-                                        isUserMessage = true,
+                                        isUserMessage   = true,
                                         durationSeconds = message.audioDurationSec,
-                                        onPlayPause = {}
+                                        onPlayPause     = {}
                                     )
                                 }
-
                                 else -> {
                                     MarkdownText(
-                                        raw = message.content,
-                                        color = textColor,
+                                        raw      = message.content,
+                                        color    = textColor,
                                         modifier = Modifier.widthIn(max = 300.dp)
                                     )
                                 }
                             }
                         }
                     }
+
+                    // ── Message IA ───────────────────────────────────────────────
                 } else {
-                    Box(
+                    Column(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(end = 16.dp, bottom = 2.dp)
-                            .horizontalScroll(rememberScrollState(), enabled = false)
                     ) {
                         when {
                             message.isLoading -> {
@@ -155,13 +151,14 @@ fun MessageBubble(message: ChatMessage) {
                                     Box(
                                         modifier = Modifier.padding(
                                             horizontal = 12.dp,
-                                            vertical = 8.dp
+                                            vertical   = 8.dp
                                         )
                                     ) {
                                         MarkdownText(
-                                            raw = message.content,
-                                            color = MaterialTheme.colorScheme.onErrorContainer,
-                                            modifier = Modifier.widthIn(max = 320.dp)
+                                            raw      = message.content,
+                                            color    = MaterialTheme.colorScheme.onErrorContainer,
+                                            // Pas de widthIn fixe : laisse le contenu respirer
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
                                 }
@@ -169,39 +166,37 @@ fun MessageBubble(message: ChatMessage) {
 
                             message.audioUri != null -> {
                                 AudioMessageBubble(
-                                    isUserMessage = false,
+                                    isUserMessage   = false,
                                     durationSeconds = message.audioDurationSec,
-                                    onPlayPause = {}
+                                    onPlayPause     = {}
                                 )
                             }
 
                             else -> {
                                 MarkdownText(
-                                    raw = message.content,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.widthIn(max = 320.dp)
+                                    raw      = message.content,
+                                    color    = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.fillMaxWidth()   // plus de wrapContentWidth unbounded ici
                                 )
                             }
                         }
                     }
                 }
 
+                // ── Timestamp ────────────────────────────────────────────────
                 if (!message.isLoading) {
                     Text(
-                        text = sdf.format(Date(message.timestamp)),
+                        text  = sdf.format(Date(message.timestamp)),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.padding(
-                            horizontal = 4.dp,
-                            vertical = 2.dp
-                        )
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                     )
                 }
             }
 
+            // ── Avatar User ──────────────────────────────────────────────────
             if (message.isUser) {
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -210,10 +205,10 @@ fun MessageBubble(message: ChatMessage) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Person,
+                        imageVector        = Icons.Default.Person,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(20.dp)
+                        tint               = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier           = Modifier.size(20.dp)
                     )
                 }
             }

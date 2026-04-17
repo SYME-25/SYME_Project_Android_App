@@ -1,6 +1,8 @@
 package com.syme.ui.navigation.auth
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,6 +18,7 @@ fun AuthNavHost(
     val loginViewModel: LoginViewModel = hiltViewModel()
     val resetPasswordViewModel: ResetPasswordViewModel = hiltViewModel()
 
+    //Scaffold: contentPadding ->
     NavHost(
         navController = navController,
         startDestination = AuthRoute.Login.route
@@ -24,7 +27,8 @@ fun AuthNavHost(
             navController,
             registerViewModel,
             resetPasswordViewModel,
-            loginViewModel
+            loginViewModel,
+            contentPadding = PaddingValues() //contentPadding
         )
     }
 }
