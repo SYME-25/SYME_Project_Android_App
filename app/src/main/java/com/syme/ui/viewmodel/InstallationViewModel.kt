@@ -1,7 +1,9 @@
 package com.syme.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.syme.domain.model.Installation
 import com.syme.domain.state.UiState
 import com.syme.data.repository.InstallationRepository
@@ -9,12 +11,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class InstallationViewModel @Inject constructor(
-    private val repository: InstallationRepository
+    private val repository: InstallationRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<UiState<List<Installation>>>(UiState.Idle)
@@ -28,12 +32,27 @@ class InstallationViewModel @Inject constructor(
     // 👁 OBSERVE USER INSTALLATIONS
     fun observe(ownerId: String) {
         if (ownerId.isBlank()) return
+
+        // Vérifier que l'utilisateur est bien authentifié avant d'observer
+        if (auth.currentUser == null) {
+            Log.w("InstallationViewModel", "observe() appelé sans utilisateur authentifié")
+            _state.value = UiState.Error("Non authentifié")
+            return
+        }
+
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
             _state.value = UiState.Loading
-            repository.observeAll(ownerId).collect { list ->
-                _state.value = UiState.Success(list)
-            }
+            repository.observeAll(ownerId)
+                .catch { e ->
+                    // Capturer l'erreur Firestore (PERMISSION_DENIED, etc.)
+                    // pour éviter le crash fatal
+                    Log.e("InstallationViewModel", "Erreur observeAll", e)
+                    _state.value = UiState.Error(e.message ?: "Erreur de lecture")
+                }
+                .collect { list ->
+                    _state.value = UiState.Success(list)
+                }
         }
     }
 
@@ -43,6 +62,7 @@ class InstallationViewModel @Inject constructor(
             val item = repository.getById(ownerId, id)
             _selected.value = item
         } catch (e: Exception) {
+            Log.e("InstallationViewModel", "Erreur getById", e)
             _state.value = UiState.Error(e.message ?: "Load failed")
         }
     }
@@ -51,6 +71,7 @@ class InstallationViewModel @Inject constructor(
         try {
             repository.insert(ownerId, installation)
         } catch (e: Exception) {
+            Log.e("InstallationViewModel", "Erreur insert", e)
             _state.value = UiState.Error(e.message ?: "Insert failed")
         }
     }
@@ -59,6 +80,7 @@ class InstallationViewModel @Inject constructor(
         try {
             repository.update(ownerId, installation)
         } catch (e: Exception) {
+            Log.e("InstallationViewModel", "Erreur update", e)
             _state.value = UiState.Error(e.message ?: "Update failed")
         }
     }
@@ -67,6 +89,7 @@ class InstallationViewModel @Inject constructor(
         try {
             repository.delete(ownerId, installation.installationId)
         } catch (e: Exception) {
+            Log.e("InstallationViewModel", "Erreur delete", e)
             _state.value = UiState.Error(e.message ?: "Delete failed")
         }
     }
@@ -77,5 +100,10 @@ class InstallationViewModel @Inject constructor(
 
     fun clearSelected() {
         _selected.value = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        observeJob?.cancel()
     }
 }

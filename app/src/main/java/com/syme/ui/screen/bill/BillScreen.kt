@@ -2,6 +2,7 @@ package com.syme.ui.screen.bill
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,14 +35,14 @@ import androidx.compose.ui.unit.sp
 import com.syme.R
 import com.syme.domain.model.Bill
 import com.syme.domain.model.Installation
+import com.syme.domain.state.UiState
+import com.syme.ui.component.animation.banner.Banner
 import com.syme.ui.component.card.BillCardAdaptive
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.component.filter.FilterSection
 import com.syme.ui.component.text.Title
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
-import com.syme.domain.state.UiState
-import com.syme.ui.component.animation.banner.Banner
-import com.syme.ui.screen.consumption.InstallationFilterById
 import com.syme.ui.viewmodel.BillViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 
@@ -49,7 +50,8 @@ import com.syme.ui.viewmodel.InstallationViewModel
 fun BillScreen(
     installationViewModel: InstallationViewModel,
     billViewModel: BillViewModel,
-    onFilterSelected: (String?) -> Unit = {}
+    onFilterSelected: (String?) -> Unit = {},
+    contentPadding : PaddingValues
 ) {
 
     val currentUser = LocalCurrentUserSession.current
@@ -107,7 +109,8 @@ fun BillScreen(
     val billExportFailedMsg = stringResource(R.string.bill_export_failed)
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -125,17 +128,19 @@ fun BillScreen(
 
             if (installationNames.isNotEmpty()) {
 
-                InstallationFilterById(
+                FilterSection(
                     title = stringResource(R.string.consumption_filter_by_installation),
-                    installationIds = installationNames,
-                    selectedInstallationId = installationsMap.entries
+                    items = installationNames,
+                    selectedItem = installationsMap.entries
                         .firstOrNull { it.value == selectedInstallationId }?.key,
-                    onInstallationSelected = { selectedName ->
-
+                    onItemSelected = { selectedName ->
                         selectedInstallationId = installationsMap[selectedName]
-
                         onFilterSelected(selectedInstallationId)
-                    }
+                    },
+                    itemLabel = { name ->
+                        if (name.length > 12) name.take(12) + "…" else name
+                    },
+                    showAll = false // 👈 important
                 )
             }
         }
@@ -199,6 +204,14 @@ fun BillScreen(
 
         } else {
             item { NoBillsPlaceholder() }
+        }
+
+        item {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(contentPadding.calculateBottomPadding() + 32.dp)
+            )
         }
     }
 

@@ -3,17 +3,43 @@ package com.syme.ui.screen.installation
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ElectricBolt
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,21 +54,33 @@ import androidx.compose.ui.window.DialogProperties
 import com.syme.R
 import com.syme.domain.mapper.allowedApplianceTypes
 import com.syme.domain.mapper.imageResId
-import com.syme.domain.model.*
+import com.syme.domain.mapper.labelResId
+import com.syme.domain.model.Appliance
+import com.syme.domain.model.Circuit
+import com.syme.domain.model.Measurement
+import com.syme.domain.model.Meter
+import com.syme.domain.model.MeterEvent
 import com.syme.domain.model.enumeration.ApplianceHeatType
 import com.syme.domain.model.enumeration.InstallationType
-import com.syme.ui.component.card.*
-import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
-import com.syme.ui.component.text.SectionHeader
-import com.syme.ui.component.text.Title
-import com.syme.ui.screen.circuit.CircuitForm
-import com.syme.ui.screen.meter.MeterAddForm
 import com.syme.domain.state.UiState
 import com.syme.ui.component.animation.banner.BannerImage
-import com.syme.ui.screen.appliance.ApplianceHeatTypeFilter
-import com.syme.ui.screen.appliance.UserAppliancesList
-import com.syme.ui.screen.installation.components.InstallationTypeFilterByType
-import com.syme.ui.viewmodel.*
+import com.syme.ui.component.card.ApplianceRow
+import com.syme.ui.component.card.CircuitRow
+import com.syme.ui.component.card.InstallationOverviewCard
+import com.syme.ui.component.card.MeterCard
+import com.syme.ui.component.card.MeterListItemRow
+import com.syme.ui.component.card.PowerBalanceCard
+import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.component.filter.FilterSection
+import com.syme.ui.component.text.SectionHeader
+import com.syme.ui.component.text.Title
+import com.syme.ui.screen.appliance.components.UserAppliancesList
+import com.syme.ui.screen.circuit.CircuitForm
+import com.syme.ui.screen.meter.MeterAddForm
+import com.syme.ui.viewmodel.ApplianceViewModel
+import com.syme.ui.viewmodel.CircuitViewModel
+import com.syme.ui.viewmodel.InstallationViewModel
+import com.syme.ui.viewmodel.MeterViewModel
 import com.syme.utils.applianceCatalog
 import com.syme.utils.buildTraceability
 
@@ -56,6 +94,7 @@ fun UserInstallationDetailScreen(
     meterViewModel: MeterViewModel,
     circuitViewModel: CircuitViewModel,
     onApplianceClick: (Appliance) -> Unit = {},
+    contentPadding : PaddingValues
 ) {
     val currentUser = LocalCurrentUserSession.current
     val context = LocalContext.current
@@ -111,26 +150,30 @@ fun UserInstallationDetailScreen(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        item { Title(title = selectedInstallation?.name ?: "", fontSize = 30) }
+        item { Title(
+            title = stringResource(R.string.installation_detail),
+            padding = 16
+        ) }
 
-        item {
-            InstallationStatsRow(
-                powerSubscribed = selectedInstallation?.powerSubscribed ?: 0.0,
-                energyKwh = selectedInstallation?.energyWh?.div(1000.0) ?: 0.0
-            )
-        }
+        item { Spacer(Modifier.height(12.dp)) }
 
+        // ── Installation overview card ──────────────────────────────────────────
         item {
             selectedInstallation?.let { installation ->
-                BannerImage(
-                    id = installation.type.imageResId
+                InstallationOverviewCard(
+                    installation = installation,
+                    metersCount = meters.size,
+                    circuitsCount = circuits.size
                 )
             }
         }
+
+        item { Spacer(Modifier.height(8.dp)) }
 
         item {
             val userAppliances = (applianceState as? UiState.Success<List<Appliance>>)?.data
@@ -144,22 +187,37 @@ fun UserInstallationDetailScreen(
         item { Spacer(Modifier.height(16.dp)) }
 
         item {
-            InstallationTypeFilterByType(
-                title = stringResource(R.string.appliance_filter_type),
-                selectedType = selectedInstallationType,
-                onTypeSelected = { selectedInstallationType = it }
-            )
+            Column {
+                FilterSection(
+                    title = stringResource(R.string.appliance_filter_type),
+                    items = InstallationType.entries,
+                    selectedItem = selectedInstallationType,
+                    onItemSelected = { selectedInstallationType = it },
+                    itemLabel = { stringResource(it.labelResId) },
+                    allLabel = stringResource(R.string.home_installation_filter_all)
+                )
+
+                Spacer(Modifier.height(6.dp))
+
+                FilterSection(
+                    title = stringResource(R.string.appliance_filter_heat_type),
+                    items = ApplianceHeatType.entries,
+                    selectedItem = selectedHeatType,
+                    onItemSelected = { selectedHeatType = it },
+                    itemLabel = { stringResource(it.labelResId) }
+                )
+
+                Spacer(Modifier.height(6.dp))
+            }
         }
 
         item {
-            ApplianceHeatTypeFilter(
-                title = stringResource(R.string.appliance_filter_heat_type),
-                selectedHeatType = selectedHeatType,
-                onHeatTypeSelected = { selectedHeatType = it }
+            SectionHeader(
+                title = stringResource(R.string.appliance_add_title),
+                onAddClick = { },
+                isButton = false
             )
         }
-
-        item { Title(stringResource(R.string.appliance_add_title), 18) }
 
         item {
             val filteredCatalog = applianceCatalog
@@ -178,6 +236,14 @@ fun UserInstallationDetailScreen(
         }
 
         item { HorizontalDivider(Modifier.fillMaxWidth().padding(vertical = 16.dp)) }
+
+        item {
+            SectionHeader(
+                title = stringResource(R.string.home_your_appliances),
+                onAddClick = { },
+                isButton = false
+            )
+        }
 
         item {
             when (applianceState) {
@@ -244,6 +310,14 @@ fun UserInstallationDetailScreen(
             } else {
                 Text(stringResource(R.string.no_circuit_found))
             }
+        }
+
+        item {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(contentPadding.calculateBottomPadding() + 32.dp)
+            )
         }
 
     }
@@ -371,104 +445,4 @@ fun UserInstallationDetailScreen(
         }
     }
 
-}
-
-// ── InstallationStatsRow ──────────────────────────────────────────────────────
-@Composable
-private fun InstallationStatsRow(
-    powerSubscribed: Double,
-    energyKwh: Double
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        // Power — filled with primary
-        StatCard(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Default.ElectricBolt,
-            label = stringResource(R.string.stat_power_label),
-            value = stringResource(R.string.stat_power_value, powerSubscribed),
-            sublabel = stringResource(R.string.stat_power_sublabel),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            iconBgColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f)
-        )
-        // Energy — tonal surface
-        StatCard(
-            modifier = Modifier.weight(1f),
-            icon = Icons.Default.BarChart,
-            label = stringResource(R.string.stat_energy_label),
-            value = stringResource(R.string.stat_energy_value, energyKwh),
-            sublabel = stringResource(R.string.stat_energy_sublabel),
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            iconBgColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-            iconTint = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-@Composable
-private fun StatCard(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    label: String,
-    value: String,
-    sublabel: String,
-    containerColor: Color,
-    contentColor: Color,
-    iconBgColor: Color,
-    iconTint: Color = contentColor
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = containerColor
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = iconBgColor,
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = iconTint,
-                            modifier = Modifier.size(15.dp)
-                        )
-                    }
-                }
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = contentColor.copy(alpha = 0.7f),
-                    letterSpacing = 0.4.sp
-                )
-            }
-            Spacer(Modifier.height(2.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = contentColor
-            )
-            Text(
-                text = sublabel,
-                style = MaterialTheme.typography.labelSmall,
-                color = contentColor.copy(alpha = 0.6f)
-            )
-        }
-    }
 }

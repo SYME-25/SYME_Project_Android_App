@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="power">Puissance</string>
+    <string name="energy">Énergie</string>
+    <string name="voltage">Tension</string>
+    <string name="current">Courant</string>
+    <string name="meter_id">ID Compteur : %1$s</string>
+    <string name="meter_state">État : %1$s</string>
+    <string name="currency_unit">FCFA</string>
+    <string name="relays">Relais</string>
+    <string name="unit_watt">W</string>
+    <string name="unit_wh">Wh</string>
+    <string name="unit_v">V</string>
+    <string name="unit_a">A</string>
+
+    <string name="meter_add_title">Ajouter un compteur</string>
+
+    <string name="meter_id_label">ID du compteur</string>
+    <string name="meter_security_code_label">Code de sécurité</string>
+
+    <string name="meter_id_required_error">L\'ID du compteur est requis</string>
+    <string name="meter_security_code_required_error">Le code de sécurité est requis</string>
+
+    <string name="meter_add_button">Ajouter le compteur</string>
+
+    <string name="meter_type_master">MAÎTRE</string>
+    <string name="meter_type_slave">ESCLAVE</string>
+
+    <string name="meter_status_active">ACTIF</string>
+    <string name="meter_status_maintenance">MAINTENANCE</string>
+    <string name="meter_status_offline">HORS LIGNE</string>
+    <string name="your_meter">Vos compteurs</string>
+    <string name="no_meter_found">Aucun compteur trouvé</string>
+
+    <string name="meter_add_success">Compteur ajouté avec succès</string>
+    <string name="meter_error_loading_meters">Erreur lors du chargement des compteurs : %1$s</string>
+
+    <string name="meter_no_installation">Non assigné</string>
+    <string name="meter_connected">Connecté</string>
+    <string name="meter_disconnected">Déconnecté</string>
+    <string name="meter_relay_count">%1$d relais</string>
+
+</resources>

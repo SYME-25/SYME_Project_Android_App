@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_notification_channel_id">syme_notifications</string>
+    <string name="notification_power">Puissance</string>
+    <string name="notification_bill">Facture</string>
+    <string name="notification_meter">Compteur</string>
+    <string name="notification_consumption">Consommation</string>
+    <string name="notification_relay">Relais</string>
+    <string name="notification_demand">Demande</string>
+    <string name="notification_system">Système</string>
+    <string name="notification_bill_plural">Factures</string>
+    <string name="notification_meter_plural">Compteurs</string>
+    <string name="notification_info">Info</string>
+
+    <string name="time_now">À l\'instant</string>
+    <string name="time_minutes_ago">Il y a %1$d min</string>
+    <string name="time_hours_ago">Il y a %1$d h</string>
+
+    <string name="today">Aujourd\'hui</string>
+    <string name="yesterday">Hier</string>
+
+    <string name="notifications_title">Notifications</string>
+    <string name="back">Retour</string>
+    <string name="mark_all_read">Tout marquer comme lu</string>
+
+    <string name="all">Tout</string>
+
+    <string name="no_notifications">Aucune notification</string>
+    <string name="no_notifications_desc">Vous serez averti des événements importants ici.</string>
+
+    <string name="notification_filter_type">Filtrer par type</string>
+
+</resources>

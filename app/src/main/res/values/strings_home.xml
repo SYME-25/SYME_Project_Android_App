@@ -80,7 +80,7 @@
     This location will be used as the position of your house for energy analysis and recommendations.
     </string>
 
-    <string name="installation_add_title">Add installation</string>
+    <string name="installation_add_title">Click an item below to add an installation</string>
 
     <string name="installation_longitude">Longitude</string>
     <string name="installation_latitude">Latitude</string>
@@ -116,5 +116,27 @@
     <string name="power_balance_pf_good">Good</string>
     <string name="power_balance_current">Current</string>
     <string name="power_balance_footnote">* Current estimated at %1$d V single-phase</string>
+
+    <string name="home_greeting_morning">Good morning</string>
+    <string name="home_greeting_afternoon">Good afternoon</string>
+    <string name="home_greeting_evening">Good evening</string>
+
+    <string name="home_greeting_subtitle">Ready to monitor your energy usage?</string>
+
+    <string name="home_greeting_subtitle_morning">Track your energy for the day</string>
+    <string name="home_greeting_subtitle_afternoon">Monitor your current consumption</string>
+    <string name="home_greeting_subtitle_evening">Review today’s consumption</string>
+
+    <string name="installation_detail">Installation details</string>
+
+    <!-- Installation Overview Card -->
+    <string name="installation_card_power_subscribed">Subscribed power</string>
+    <string name="installation_card_power_value">%.1f kVA</string>
+    <string name="installation_card_energy_day">Energy today</string>
+    <string name="installation_card_energy_value">%.2f kWh</string>
+    <string name="installation_card_solar_power">Solar production</string>
+    <string name="installation_card_solar_value">%.1f kW</string>
+    <string name="installation_card_meters">Meters</string>
+    <string name="installation_card_circuits">Circuits</string>
 
 </resources>

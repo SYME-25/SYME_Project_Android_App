@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="consumption_label">Consommation</string>
+    <string name="consumption_filter_by_installation">"Sélectionner l\'installation"</string>
+    <string name="consumption_label_day">Jour</string>
+    <string name="consumption_label_month">Mois</string>
+    <string name="consumption_label_year">Année</string>
+
+    <string name="subscription_title">Nouvel abonnement</string>
+    <string name="consumption_subtitle">Saisir les détails de l\'abonnement</string>
+
+    <string name="consumption_label_installation">Installation</string>
+    <string name="consumption_label_start_date">Date de début</string>
+    <string name="consumption_label_end_date">Date de fin</string>
+    <string name="consumption_label_amount">Montant (%1$s)</string>
+
+    <string name="consumption_price_info">1 %1$s = %2$.0f %3$s</string>
+    <string name="consumption_energy_result">Énergie obtenue : %1$d %2$s</string>
+
+    <string name="consumption_button_submit">Créer l\'abonnement</string>
+    <string name="consumption_button_add">Ajouter un abonnement</string>
+
+    <string name="consumption_error_installation_required">Choisissez une installation</string>
+    <string name="consumption_error_start_date_invalid">La date de début doit être aujourd\'hui ou ultérieure</string>
+    <string name="consumption_error_start_after_last">Doit être après la fin du dernier abonnement</string>
+    <string name="consumption_error_end_date_invalid">La date de fin doit être après la date de début</string>
+    <string name="consumption_error_start_date_overlap">La date de début doit être après le : %1$s.</string>
+
+    <string name="consumption_label_Wh">Wh</string>
+
+    <string name="no_subscriptions_found">Aucun abonnement trouvé</string>
+
+    <string name="your_consumption_planning">Votre planification de consommation</string>
+
+    <string name="consumption_warning_power_reduction">"Cette puissance mettra à jour l\'installation si cet abonnement est actif"</string>
+
+    <string name="consumption_label_consumed">Consommé</string>
+    <string name="consumption_label_remaining_time">Temps restant</string>
+    <string name="consumption_label_period">Période</string>
+    <string name="consumption_label_power">Puissance</string>
+    <string name="consumption_type_on_demand">À la demande</string>
+    <string name="consumption_type_subscription">Abonnement</string>
+    <string name="consumption_injection">Injection</string>
+
+    <string name="consumption_power_requested">%1$d %2$s demandé</string>
+</resources>

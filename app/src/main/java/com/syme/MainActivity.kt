@@ -11,17 +11,37 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.core.content.ContextCompat
+import androidx.core.os.LocaleListCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.rememberNavController
+import com.syme.data.preferences.UserPreferencesRepository
+import com.syme.domain.model.enumeration.AppTheme
+import com.syme.ui.navigation.RootNavGraph
 import com.syme.ui.theme.SYMETheme
-import com.syme.ui.viewmodel.SplashViewModel
+import com.syme.ui.viewmodel.SettingsViewModel
+import com.syme.utils.LocaleHelper
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val splashScreenViewModel : SplashViewModel by viewModels()
+    @Inject
+    lateinit var preferencesRepository: UserPreferencesRepository
+    // SettingsViewModel est scoped à l'Activity — il survit aux recompositions
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -36,24 +56,40 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         askNotificationPermission()
-
-        // 🔹 Splash screen
-        installSplashScreen().apply {
-            setKeepOnScreenCondition {
-                splashScreenViewModel.isSplashScreenVisible.value
-            }
-        }
-
+        installSplashScreen()
         enableEdgeToEdge()
+
         setContent {
-            SYMETheme {
-                App()
+            val language by settingsViewModel.language.collectAsStateWithLifecycle()
+            val theme by settingsViewModel.theme.collectAsStateWithLifecycle()
+            val systemInDarkTheme = isSystemInDarkTheme()
+
+            // ✅ Applique la locale DANS le thread principal, de façon synchrone
+            // key(language) force la destruction/recréation du sous-arbre Compose
+            val locale = java.util.Locale(language.tag)
+            val config = resources.configuration
+            config.setLocale(locale)
+            @Suppress("DEPRECATION")
+            resources.updateConfiguration(config, resources.displayMetrics)
+
+            val isDark = when (theme) {
+                AppTheme.DARK   -> true
+                AppTheme.LIGHT  -> false
+                AppTheme.SYSTEM -> systemInDarkTheme
+            }
+
+            val navController = rememberNavController()
+
+            // ✅ key(language) : quand la langue change, tout le sous-arbre
+            //    est recréé → les stringResource() sont relus dans la bonne locale
+            key(language) {
+                SYMETheme(darkTheme = isDark) {
+                    RootNavGraph(navController = navController)
+                }
             }
         }
     }
-
     private fun askNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             when {

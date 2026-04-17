@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="password_reset_email_sent">Un e-mail de réinitialisation a été envoyé.</string>
+    <string name="password_reset_check_email">Vérifiez vos e-mails</string>
+    <string name="password_reset_instructions">Nous avons envoyé un lien de réinitialisation à votre adresse e-mail. Cliquez sur ce lien pour choisir un nouveau mot de passe, puis revenez ici pour vous connecter.</string>
+</resources>

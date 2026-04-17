@@ -117,4 +117,9 @@ dependencies {
     // Coil pour les images (requis pour le plugin image du renderer)
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("io.coil-kt:coil-gif:2.6.0") // si tu veux les GIFs
+
+    implementation("androidx.datastore:datastore-preferences")
+    implementation("dev.chrisbanes.haze:haze:1.3.1")
+
+    implementation(libs.androidx.appcompat)
 }

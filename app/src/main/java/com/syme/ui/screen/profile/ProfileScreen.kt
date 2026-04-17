@@ -86,7 +86,10 @@ import com.syme.utils.TimeUtils.formatDateTime
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 @Composable
-fun ProfileScreen(userViewModel: UserViewModel) {
+fun ProfileScreen(
+    userViewModel: UserViewModel,
+    contentPadding : PaddingValues
+    ) {
     val currentUser = LocalCurrentUserSession.current
     val context     = LocalContext.current
     val userState   by userViewModel.userState.collectAsState()
@@ -108,12 +111,18 @@ fun ProfileScreen(userViewModel: UserViewModel) {
 
     when (userState) {
         is UiState.Loading, UiState.Idle -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(Modifier
+                .fillMaxSize()
+                .padding(contentPadding),
+                contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
         is UiState.Error -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(Modifier
+                .fillMaxSize()
+                .padding(contentPadding),
+                contentAlignment = Alignment.Center) {
                 Text((userState as UiState.Error).message)
             }
         }
@@ -140,7 +149,8 @@ fun ProfileScreen(userViewModel: UserViewModel) {
                             address       = address
                         )
                     }
-                }
+                },
+                contentPadding = contentPadding
             )
         }
         else -> {}
@@ -153,7 +163,8 @@ fun ProfileScreen(userViewModel: UserViewModel) {
 private fun ProfileContent(
     user: User,
     onUpdatePersonal: (String, String, Long?, String) -> Unit,
-    onUpdateContact: (String, String) -> Unit
+    onUpdateContact: (String, String) -> Unit,
+    contentPadding : PaddingValues
 ) {
     var showPersonalDialog by remember { mutableStateOf(false) }
     var showContactDialog  by remember { mutableStateOf(false) }
@@ -227,6 +238,14 @@ private fun ProfileContent(
                     valueColor = if (user.trace.active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
             }
+        }
+
+        item {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(contentPadding.calculateBottomPadding() + 32.dp)
+            )
         }
     }
 
@@ -494,7 +513,8 @@ private fun ProfileAvatar(user: User) {
         Spacer(Modifier.height(12.dp))
 
         Text(
-            "${user.firstName} ${user.lastName}".trim().ifBlank { "—" },
+            text = "${user.firstName} ${user.lastName}".trim().ifBlank { "—" },
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )

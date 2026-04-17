@@ -29,10 +29,8 @@ class MeterRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val realtimeDb: FirebaseDatabase
 ) {
-
     private val globalMeters = firestore.collection("meters_global")
     private val relayMutex = Mutex()
-
     private fun installationMeters(userId: String, installationId: String) =
         firestore.collection("users")
             .document(userId)

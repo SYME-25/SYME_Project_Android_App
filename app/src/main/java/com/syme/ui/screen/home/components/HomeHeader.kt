@@ -28,6 +28,8 @@ fun HomeHeader(
     onProfileClick: () -> Unit = {},
     unreadCount: Int = 0
 ) {
+    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
     // Couleurs provenant du thème
     val colorPrimary   = MaterialTheme.colorScheme.primary
     val colorAccent    = MaterialTheme.colorScheme.secondary
@@ -45,7 +47,7 @@ fun HomeHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 48.dp, bottom = 8.dp),
+            .padding(start = 16.dp, end = 16.dp, top = statusBarHeight + 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // ── Left: brand + greeting ────────────────────────────────────────

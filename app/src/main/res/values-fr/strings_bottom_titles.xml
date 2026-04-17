@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bottom_title_home">Accueil</string>
+    <string name="bottom_title_consumption">Consommation</string>
+    <string name="bottom_title_analysis">Analyse</string>
+    <string name="bottom_title_bill">Facture</string>
+    <string name="bottom_title_settings">Paramètres</string>
+</resources>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_cancel">Cancel</string>
+
+    <!-- Section headers -->
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_section_about">About</string>
+
+    <!-- Theme -->
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+
+    <!-- Language -->
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_french">Français</string>
+
+    <!-- Notifications -->
+    <string name="settings_notifications_push">Push notifications</string>
+    <string name="settings_notifications_push_subtitle">Receive alerts and reminders</string>
+
+    <!-- Account -->
+    <string name="settings_change_password">Change password</string>
+    <string name="settings_change_password_subtitle">Update your login credentials</string>
+
+    <!-- About -->
+    <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_terms_of_service">Terms of service</string>
+    <string name="settings_app_version">App version</string>
+
+    <!-- Logout -->
+    <string name="settings_logout">Log out</string>
+    <string name="settings_logout_confirm_title">Log out?</string>
+    <string name="settings_logout_confirm_message">You will be signed out and your local session will be cleared.</string>
+    <string name="settings_logout_confirm">Log out</string>
+</resources>

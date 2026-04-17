@@ -1,4 +1,4 @@
-package com.syme.ui.screen.appliance
+package com.syme.ui.screen.appliance.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,25 +16,17 @@ import androidx.compose.ui.unit.sp
 import com.syme.R
 import com.syme.domain.model.Appliance
 import com.syme.ui.component.card.ApplianceRow
+import com.syme.ui.screen.bill.SectionLabel
 
 @Composable
 fun UserAppliancesList(items: List<Appliance>, onClick: (Appliance) -> Unit) {
 
-    val yourAppliancesMsg = stringResource(R.string.home_your_appliances)
     val noAppliancesFoundMsg = stringResource(R.string.home_no_appliances_found)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, top = 24.dp, end = 16.dp)
     ) {
-        Text(
-            text = yourAppliancesMsg,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
         if (items.isEmpty()) {
             Column(
                 modifier = Modifier

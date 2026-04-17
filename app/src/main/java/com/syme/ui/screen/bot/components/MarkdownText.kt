@@ -14,54 +14,59 @@ import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
 
 // ─── Math / LaTeX pre-processing (garde ta logique existante) ────────────────
-
 fun cleanMathText(text: String): String {
     var t = text
 
-    // Remplacements simples
     t = t
-        .replace("\\times", "×")
-        .replace("\\cdot", "·")
-        .replace("\\div", "÷")
-        .replace("\\neq", "≠")
-        .replace("\\leq", "≤")
-        .replace("\\geq", "≥")
-        .replace("\\approx", "≈")
-        .replace("\\infty", "∞")
-        .replace("\\pi", "π")
-        .replace("\\alpha", "α")
-        .replace("\\beta", "β")
-        .replace("\\gamma", "γ")
-        .replace("\\theta", "θ")
-        .replace("\\lambda", "λ")
-        .replace("\\mu", "μ")
-        .replace("\\sigma", "σ")
-        .replace("\\Delta", "Δ")
-        .replace("\\sqrt", "√")
-        .replace("\\rightarrow", "→")
-        .replace("\\leftarrow", "←")
-        .replace("\\leftrightarrow", "↔")
-        .replace("\\degree", "°")
-        .replace("\\%", "%")
-        .replace("\\sum", "Σ")
-        .replace("\\int", "∫")
-        .replace("\\lim", "lim")
-        .replace("\\in", "∈")
-        .replace("\\forall", "∀")
-        .replace("\\exists", "∃")
+        .replace("\\\\times", "×")
+        .replace("\\\\cdot", "·")
+        .replace("\\\\div", "÷")
+        .replace("\\\\neq", "≠")
+        .replace("\\\\leq", "≤")
+        .replace("\\\\geq", "≥")
+        .replace("\\\\approx", "≈")
+        .replace("\\\\infty", "∞")
+        .replace("\\\\pi", "π")
+        .replace("\\\\alpha", "α")
+        .replace("\\\\beta", "β")
+        .replace("\\\\gamma", "γ")
+        .replace("\\\\theta", "θ")
+        .replace("\\\\lambda", "λ")
+        .replace("\\\\mu", "μ")
+        .replace("\\\\sigma", "σ")
+        .replace("\\\\Delta", "Δ")
+        .replace("\\\\sqrt", "√")
+        .replace("\\\\rightarrow", "→")
+        .replace("\\\\leftarrow", "←")
+        .replace("\\\\leftrightarrow", "↔")
+        .replace("\\\\degree", "°")
+        .replace("\\\\%", "%")
+        .replace("\\\\sum", "Σ")
+        .replace("\\\\int", "∫")
+        .replace("\\\\lim", "lim")
+        .replace("\\\\in", "∈")
+        .replace("\\\\forall", "∀")
+        .replace("\\\\exists", "∃")
 
-    // Remplacements de fractions \frac{a}{b} → a/b
-    t = Regex("""\\frac\{([^{}]*)}\{([^{}]*)}""").replace(t) { match ->
-        "${match.groupValues[1]}/${match.groupValues[2]}"
+    // ─── FRACTION SAFE ─────────────────────────────────────
+    val fracRegex = Regex("""\\\\frac\{([^{}]+)\}\{([^{}]+)\}""")
+
+    t = fracRegex.replace(t) {
+        "${it.groupValues[1]}/${it.groupValues[2]}"
     }
 
-    // Nettoyage de commandes textuelles
-    t = Regex("""\\text\{([^{}]*)}""").replace(t) { it.groupValues[1] }
-    t = Regex("""\\mathrm\{([^{}]*)}""").replace(t) { it.groupValues[1] }
-    t = Regex("""\\textrm\{([^{}]*)}""").replace(t) { it.groupValues[1] }
-    t = Regex("""\\boxed\{([^{}]*)}""").replace(t) { it.groupValues[1] }
+    // ─── COMMANDES TEXTE (SAFE ICU) ───────────────────────
+    fun stripCommand(command: String, input: String): String {
+        val regex = Regex("""\\\\$command\{([^{}]*)\}""")
+        return regex.replace(input) { it.groupValues[1] }
+    }
 
-    // Suppression des accolades restantes
+    t = stripCommand("text", t)
+    t = stripCommand("mathrm", t)
+    t = stripCommand("textrm", t)
+    t = stripCommand("boxed", t)
+
+    // ─── Nettoyage final ───────────────────────────────────
     t = t.replace("{", "").replace("}", "")
 
     return t

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_appliance_filter_refrigerator">Réfrigérateur</string>
+    <string name="home_appliance_filter_freezer">Congélateur</string>
+    <string name="home_appliance_filter_washing_machine">Lave-linge</string>
+    <string name="home_appliance_filter_dishwasher">Lave-vaisselle</string>
+    <string name="home_appliance_filter_microwave">Four à micro-ondes</string>
+    <string name="home_appliance_filter_oven">Four</string>
+    <string name="home_appliance_filter_cooking_stove">Cuisinière</string>
+    <string name="home_appliance_filter_toaster">Grille-pain</string>
+    <string name="home_appliance_filter_mixer">Mixeur</string>
+    <string name="home_appliance_filter_coffee_maker">Machine à café</string>
+    <string name="home_appliance_filter_iron">Fer à repasser</string>
+    <string name="home_appliance_filter_vacuum">Aspirateur</string>
+    <string name="home_appliance_filter_hair_dryer">Sèche-cheveux</string>
+    <string name="home_appliance_filter_shaver">Rasoir électrique</string>
+    <string name="home_appliance_filter_fan">Ventilateur</string>
+    <string name="home_appliance_filter_tower_fan">Ventilateur colonne</string>
+    <string name="home_appliance_filter_air_conditioner">Climatiseur</string>
+    <string name="home_appliance_filter_radiator">Radiateur électrique</string>
+    <string name="home_appliance_filter_electric_vehicle">Véhicule électrique</string>
+
+    <string name="home_appliance_filter_lighting">Éclairage</string>
+    <string name="home_appliance_filter_power_socket">Prise de courant</string>
+
+    <string name="home_appliance_filter_tv">Télévision</string>
+    <string name="home_appliance_filter_desktop_computer">Ordinateur de bureau</string>
+    <string name="home_appliance_filter_laptop_computer">Ordinateur portable</string>
+    <string name="home_appliance_filter_printer">Imprimante</string>
+    <string name="home_appliance_filter_server">Serveur</string>
+
+    <string name="home_appliance_filter_motor">Moteur électrique</string>
+    <string name="home_appliance_filter_pump">Pompe</string>
+    <string name="home_appliance_filter_robotic_arm">Bras robotisé</string>
+    <string name="home_appliance_filter_conveyor_belt">Bande transporteuse</string>
+    <string name="home_appliance_filter_packing_machine">Machine d\'emballage</string>
+    <string name="home_appliance_filter_factory_machine">Machine industrielle</string>
+    <string name="home_appliance_filter_cooling_unit">Unité de refroidissement</string>
+    <string name="home_appliance_filter_hvac">Système CVC (HVAC)</string>
+
+    <string name="home_appliance_filter_elevator">Ascenseur</string>
+    <string name="home_appliance_filter_escalator">Escalier mécanique</string>
+
+    <string name="home_appliance_filter_solar_panel">Panneau solaire</string>
+    <string name="home_appliance_filter_electric_meter">Compteur électrique</string>
+    <string name="home_appliance_filter_generator">Générateur</string>
+    <string name="home_appliance_filter_power_source">Source d\'énergie</string>
+
+    <string name="home_appliance_filter_soft_drink_machine">Distributeur de boissons fraîches</string>
+    <string name="home_appliance_filter_vending_machine">Distributeur automatique</string>
+
+    <string name="home_appliance_filter_house">Maison</string>
+    <string name="home_appliance_filter_farm">Ferme</string>
+    <string name="home_appliance_filter_shop">Magasin</string>
+    <string name="home_appliance_filter_office">Immeuble de bureaux</string>
+    <string name="home_appliance_filter_factory_building">Bâtiment industriel</string>
+    <string name="home_appliance_filter_hospital">Hôpital</string>
+    <string name="home_appliance_filter_skyscraper">Gratte-ciel</string>
+
+    <string name="home_appliance_filter_other">Autre</string>
+
+    <string name="home_appliance_desc_refrigerator">Maintient les aliments et les boissons au frais pour préserver leur fraîcheur.</string>
+    <string name="home_appliance_desc_freezer">Conserve les aliments à des températures très basses pour une conservation à long terme.</string>
+    <string name="home_appliance_desc_washing_machine">Nettoie les vêtements automatiquement à l\'aide d\'eau et d\'électricité.</string>
+    <string name="home_appliance_desc_dishwasher">Lave la vaisselle et les ustensiles automatiquement.</string>
+    <string name="home_appliance_desc_microwave">Chauffe ou cuit les aliments grâce aux rayonnements micro-ondes.</string>
+    <string name="home_appliance_desc_oven">Cuit et rôtit les aliments par chaleur électrique.</string>
+    <string name="home_appliance_desc_cooking_stove">Utilisé pour la cuisson des aliments sur des plaques électriques.</string>
+    <string name="home_appliance_desc_toaster">Grille le pain à l\'aide d\'éléments chauffants électriques.</string>
+    <string name="home_appliance_desc_mixer">Mélange ou mixe les ingrédients alimentaires.</string>
+    <string name="home_appliance_desc_coffee_maker">Prépare le café en utilisant de l\'eau chauffée.</string>
+    <string name="home_appliance_desc_iron">Élimine les plis des vêtements grâce à la chaleur.</string>
+    <string name="home_appliance_desc_vacuum">Nettoie les sols et les surfaces par aspiration.</string>
+    <string name="home_appliance_desc_hair_dryer">Sèche les cheveux à l\'aide d\'air chaud ou tiède.</string>
+    <string name="home_appliance_desc_shaver">Rase les poils à l\'aide d\'un moteur électrique.</string>
+    <string name="home_appliance_desc_fan">Déplace l\'air pour améliorer la ventilation et le confort.</string>
+    <string name="home_appliance_desc_tower_fan">Assure une circulation d\'air verticale pour le refroidissement.</string>
+    <string name="home_appliance_desc_air_conditioner">Refroidit et déshumidifie l\'air intérieur.</string>
+    <string name="home_appliance_desc_radiator">Chauffe les pièces par résistance électrique.</string>
+    <string name="home_appliance_desc_electric_vehicle">Véhicules alimentés par l\'électricité.</string>
+
+    <string name="home_appliance_desc_lighting">Fournit un éclairage artificiel.</string>
+    <string name="home_appliance_desc_power_socket">Fournit de l\'énergie électrique aux appareils connectés.</string>
+
+    <string name="home_appliance_desc_tv">Affiche du contenu audiovisuel pour le divertissement ou l\'information.</string>
+    <string name="home_appliance_desc_desktop_computer">Utilisé pour l\'informatique, le travail de bureau et le traitement de données.</string>
+    <string name="home_appliance_desc_laptop_computer">Ordinateur portable pour le travail et la communication.</string>
+    <string name="home_appliance_desc_printer">Imprime des documents et des images sur papier.</string>
+    <string name="home_appliance_desc_server">Assure le stockage des données et les services réseau.</string>
+
+    <string name="home_appliance_desc_motor">Convertit l\'énergie électrique en mouvement mécanique.</string>
+    <string name="home_appliance_desc_pump">Déplace des liquides ou des gaz à travers un système.</string>
+    <string name="home_appliance_desc_robotic_arm">Automatise les tâches industrielles avec des mouvements précis.</string>
+    <string name="home_appliance_desc_conveyor_belt">Transporte les matériaux automatiquement dans les usines.</string>
+    <string name="home_appliance_desc_packing_machine">Emballe les marchandises automatiquement pour la distribution.</string>
+    <string name="home_appliance_desc_factory_machine">Effectue des tâches de production industrielle.</string>
+    <string name="home_appliance_desc_cooling_unit">Refroidit les machines, les pièces ou les processus industriels.</string>
+    <string name="home_appliance_desc_hvac">Contrôle le chauffage, la ventilation et la climatisation.</string>
+
+    <string name="home_appliance_desc_elevator">Déplace des personnes ou des marchandises verticalement entre les étages.</string>
+    <string name="home_appliance_desc_escalator">Transporte des personnes en continu entre différents niveaux.</string>
+
+    <string name="home_appliance_desc_solar_panel">Convertit la lumière du soleil en énergie électrique.</string>
+    <string name="home_appliance_desc_electric_meter">Mesure la consommation d\'énergie électrique.</string>
+    <string name="home_appliance_desc_generator">Produit de l\'électricité pour l\'alimentation de secours ou principale.</string>
+    <string name="home_appliance_desc_power_source">Fournit de l\'énergie électrique aux systèmes.</string>
+
+    <string name="home_appliance_desc_soft_drink_machine">Distribue automatiquement des boissons fraîches.</string>
+    <string name="home_appliance_desc_vending_machine">Distribue automatiquement de la nourriture ou des boissons.</string>
+
+    <string name="home_appliance_desc_house">Bâtiment résidentiel consommant de l\'énergie électrique.</string>
+    <string name="home_appliance_desc_farm">Installation agricole utilisant des équipements électriques.</string>
+    <string name="home_appliance_desc_shop">Espace commercial doté d\'installations électriques.</string>
+    <string name="home_appliance_desc_office">Bâtiment de travail utilisant des équipements de bureau.</string>
+    <string name="home_appliance_desc_factory_building">Bâtiment industriel abritant des machines et des systèmes.</string>
+    <string name="home_appliance_desc_hospital">Établissement médical doté d\'équipements électriques critiques.</string>
+    <string name="home_appliance_desc_skyscraper">Immeuble de grande hauteur avec des besoins énergétiques complexes.</string>
+    <string name="home_appliance_desc_other">Appareil personnalisé. Veuillez fournir un nom et une description.</string>
+
+    <string name="appliance_create_title">Ajouter un appareil</string>
+
+    <string name="appliance_circuit_label">Circuit</string>
+    <string name="appliance_type_label">Type d\'appareil</string>
+    <string name="appliance_power_label">Puissance (W)</string>
+    <string name="appliance_power_factor_label">Facteur de puissance</string>
+    <string name="appliance_quantity_label">Quantité</string>
+    <string name="appliance_usage_hours_label">Heures d\'utilisation quotidiennes</string>
+
+    <string name="appliance_other_name_label">Nom de l\'appareil</string>
+    <string name="appliance_other_description_label">Description de l\'appareil</string>
+
+    <string name="appliance_create_button">Enregistrer l\'appareil</string>
+
+    <string name="appliance_not_ready_message">Veuillez remplir tous les champs obligatoires pour continuer.</string>
+
+    <string name="appliance_energy_estimation">Énergie quotidienne estimée : %1$s Wh</string>
+
+    <string name="home_appliance_circuit_error">Veuillez sélectionner un circuit.</string>
+
+    <string name="home_appliance_type_error">Veuillez sélectionner un type d\'appareil.</string>
+
+    <string name="home_appliance_power_error">Veuillez saisir la puissance de l\'appareil en watts.</string>
+
+    <string name="home_appliance_power_factor_error">Veuillez saisir un facteur de puissance valide.</string>
+
+    <string name="home_appliance_quantity_error">La quantité doit être d\'au moins 1.</string>
+
+    <string name="home_appliance_usage_hours_error">Les heures d\'utilisation doivent être comprises entre 0 et 24.</string>
+
+    <string name="home_appliance_other_error">Veuillez fournir un nom et une description pour cet appareil.</string>
+
+    <string name="appliance_heat_type_heating">Chauffage</string>
+    <string name="appliance_heat_type_cooling">Refroidissement</string>
+    <string name="appliance_heat_type_non_heating">Non-chauffant</string>
+
+    <string name="home_your_appliances">Vos appareils</string>
+    <string name="home_no_appliances_found">Aucun appareil trouvé</string>
+    <string name="home_appliance_power">Puissance : %s W</string>
+
+    <string name="appliance_filter_type">Filtrer par type d\'installation</string>
+    <string name="appliance_filter_heat_type">Filtrer par type de chaleur</string>
+
+    <string name="appliance_add_title">Cliquez sur un élément ci-dessous pour ajouter un appareil</string>
+    <string name="appliance_your_appliances">Vos appareils</string>
+
+    <string name="appliance_smart">Intelligent (Smart)</string>
+    <string name="appliance_standard">Standard</string>
+    <string name="appliance_usage_hours">%1$.1f h/jour</string>
+
+</resources>

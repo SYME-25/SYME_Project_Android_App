@@ -5,75 +5,36 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.navigation
 import com.syme.R
+import com.syme.domain.state.AuthState
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
-import com.syme.ui.navigation.auth.AuthRoute
-import com.syme.ui.navigation.auth.authNavGraph
-import com.syme.ui.navigation.main.MainRoute
-import com.syme.ui.screen.main.MainScreen
+import com.syme.ui.navigation.auth.AuthNavHost
+import com.syme.ui.navigation.main.MainNavHost
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
-import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.ui.viewmodel.AuthViewModel
-import com.syme.ui.viewmodel.BillViewModel
-import com.syme.ui.viewmodel.BotViewModel
-import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConnectivityViewModel
-import com.syme.ui.viewmodel.ConsumptionViewModel
-import com.syme.ui.viewmodel.InstallationViewModel
-import com.syme.ui.viewmodel.LoginViewModel
-import com.syme.ui.viewmodel.MeterViewModel
-import com.syme.ui.viewmodel.RegisterViewModel
-import com.syme.ui.viewmodel.ResetPasswordViewModel
-import com.syme.ui.viewmodel.UserViewModel
 import kotlinx.coroutines.delay
 
-
-/**
- * RootNavGraph : centralise toutes les features de navigation
- *
- * Point d’entrée unique pour NavHost
- * - Auth
- * - Main (Home, Profile, etc.)
- */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RootNavGraph(
-    navController: NavHostController,
-    startDestination: String
+    navController: NavHostController
 ) {
-    val installationViewModel: InstallationViewModel = hiltViewModel()
-    val registerViewModel: RegisterViewModel = hiltViewModel()
-    val loginViewModel: LoginViewModel = hiltViewModel()
     val authViewModel: AuthViewModel = hiltViewModel()
-    val consumptionViewModel: ConsumptionViewModel = hiltViewModel()
-    val session by authViewModel.currentSession.collectAsState()
-    val connectivityViewModel: ConnectivityViewModel = hiltViewModel()
-    val applianceViewModel : ApplianceViewModel = hiltViewModel()
-    val meterViewModel: MeterViewModel = hiltViewModel()
-    val circuitViewModel: CircuitViewModel = hiltViewModel()
-    val billViewModel: BillViewModel = hiltViewModel()
-    val userViewModel: UserViewModel = hiltViewModel()
-    val botViewModel: BotViewModel = hiltViewModel()
-    val resetPasswordViewModel: ResetPasswordViewModel = hiltViewModel()
+    val authState by authViewModel.authState.collectAsState()
 
+    val connectivityViewModel: ConnectivityViewModel = hiltViewModel()
     val isOnline by connectivityViewModel.isOnline.collectAsState()
 
     val noInternetMsg = stringResource(R.string.No_internet_connection)
     val connectionRestoredMsg = stringResource(R.string.Connection_restored)
 
-    // 🌍 Écoute globale du réseau
+    // 🌍 Réseau global
     LaunchedEffect(isOnline) {
         if (!isOnline) {
             globalMessageManager.showMessage(
@@ -96,30 +57,23 @@ fun RootNavGraph(
         }
     }
 
-    CompositionLocalProvider(
-        LocalCurrentUserSession provides session
-    ) {
-        NavHost(
-            navController = navController,
-            startDestination = startDestination
-        ) {
-            navigation(
-                startDestination = AuthRoute.Login.route,
-                route = RootRoute.Auth
-            ) {
-                authNavGraph(navController, registerViewModel, resetPasswordViewModel, loginViewModel)
-            }
+    when (authState) {
 
-            composable(MainRoute.MainScreen.route) {
-                MainScreen(
-                    userViewModel = userViewModel,
-                    installationViewModel = installationViewModel,
-                    consumptionViewModel = consumptionViewModel,
-                    meterViewModel = meterViewModel,
-                    applianceViewModel = applianceViewModel,
-                    circuitViewModel = circuitViewModel,
-                    billViewModel = billViewModel,
-                    botViewModel = botViewModel
+        is AuthState.Loading -> {}
+
+        is AuthState.Unauthenticated -> {
+            AuthNavHost(navController)
+        }
+
+        is AuthState.Authenticated -> {
+            val user = (authState as AuthState.Authenticated).user
+
+            CompositionLocalProvider(
+                LocalCurrentUserSession provides user
+            ) {
+                MainNavHost(
+                    navController = navController,
+                    authViewModel = authViewModel
                 )
             }
         }

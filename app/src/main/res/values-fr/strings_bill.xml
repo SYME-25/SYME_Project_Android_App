@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bill_title">Factures</string>
+
+    <string name="bill_paid">PAYÉE</string>
+    <string name="bill_unpaid">IMPAYÉE</string>
+
+    <string name="bill_number">Facture n°%1$s</string>
+
+    <string name="bill_energy">⚡ %1$d kWh</string>
+    <string name="bill_hours">⏱ %1$d h</string>
+    <string name="bill_peak">📈 Pic %1$d kW</string>
+
+    <string name="bill_amount">%1$d %2$s</string>
+
+    <string name="no_bills">Aucune facture pour le moment</string>
+
+    <string name="no_bills_description">Vos factures apparaîtront ici une fois générées.\nRevenez bientôt !</string>
+
+    <string name="current_bill">Facture actuelle</string>
+
+    <string name="history_bills">Historique</string>
+
+    <string name="no_history_bills">Aucun historique de facturation</string>
+
+    <string name="bill_energy_value">Énergie : %1$d kWh</string>
+    <string name="bill_peak_power_value">Puissance de crête : %1$d kW</string>
+    <string name="bill_duration_value">Durée : %1$d h</string>
+
+    <string name="bill_total_value">Total : %1$d %2$s</string>
+
+    <string name="bill_calculation_trace">Détail du calcul</string>
+
+    <string name="bill_no_trace_available">Aucun détail disponible</string>
+
+    <string name="bill_trace_item">• %1$s</string>
+
+    <string name="export_pdf">Exporter en PDF</string>
+
+    <string name="cancel">Annuler</string>
+
+    <string name="bill_details">Détails de la facture</string>
+
+    <string name="enter_email">Entrez l\'adresse e-mail</string>
+
+    <string name="error_invalid_email">Adresse e-mail invalide</string>
+
+    <string name="bill_tariff_section">Détails du tarif</string>
+
+    <string name="bill_price_per_kwh">Prix de l\'énergie : %1$d %2$s / kWh</string>
+    <string name="bill_penalty_price_per_kwh">Prix de pénalité : %1$d %2$s / kWh</string>
+
+    <string name="bill_vat_rate">TVA : %1$d %%</string>
+    <string name="bill_other_taxes_rate">Autres taxes : %1$d %%</string>
+    <string name="bill_bonus_rate">Bonus : −%1$d %%</string>
+    <string name="bill_social_discount_rate">Remise sociale : −%1$d %%</string>
+
+    <string name="bill_network_factor">Facteur réseau : × %1$.2f</string>
+
+    <string name="bill_export">Exportation de facture</string>
+    <string name="bill_export_success">La facture a été exportée avec succès.</string>
+    <string name="bill_export_failed">Échec de l\'exportation de la facture.</string>
+
+    <string name="bill_id">ID Facture : %1$s</string>
+    <string name="bill_installation_id">ID Installation : %1$s</string>
+    <string name="bill_owner_id">ID Propriétaire : %1$s</string>
+
+    <string name="bill_identification">Identification de la facture</string>
+    <string name="bill_consumption">Consommation de la facture</string>
+
+    <string name="bill_export_indication">Entrez votre adresse e-mail pour exporter la facture.</string>
+
+    <string name="company_name">SYME Energy</string>
+    <string name="invoice_tagline">Système de facturation d\'énergie intelligent</string>
+    <string name="invoice_label">FACTURE</string>
+
+    <string name="section_consumption">Résumé de la consommation</string>
+    <string name="section_tariff">Configuration des tarifs et taxes</string>
+    <string name="section_trace">Détail des calculs</string>
+
+    <string name="label_owner_id">ID Propriétaire</string>
+    <string name="label_installation_id">ID Installation</string>
+    <string name="label_bill_id">N° de facture</string>
+    <string name="label_currency">Devise</string>
+
+    <string name="label_energy_kwh">Énergie consommée</string>
+    <string name="label_peak_power_kw">Puissance de crête</string>
+    <string name="label_duration_h">Durée</string>
+
+    <string name="label_price_per_kwh">Prix par kWh</string>
+    <string name="label_penalty_per_kwh">Prix de pénalité par kWh</string>
+    <string name="label_vat_rate">Taux de TVA</string>
+    <string name="label_other_taxes">Taux des autres taxes</string>
+    <string name="label_bonus_rate">Taux de bonus</string>
+    <string name="label_social_discount">Taux de remise sociale</string>
+    <string name="label_network_factor">Facteur d\'équilibrage réseau</string>
+
+    <string name="label_total_due">Montant total dû</string>
+    <string name="label_status_generated">● GÉNÉRÉE</string>
+
+</resources>

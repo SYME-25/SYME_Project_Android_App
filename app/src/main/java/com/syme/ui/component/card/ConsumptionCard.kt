@@ -397,7 +397,6 @@ fun ConsumptionRow(
             }
         } else {
             LazyRow(
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 items(limitedList, key = { it.consumptionId }) { cons ->

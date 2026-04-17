@@ -21,7 +21,8 @@ import com.syme.ui.theme.SYMETheme
 fun SectionHeader(
     title: String,
     onAddClick: () -> Unit,
-    color: Color = MaterialTheme.colorScheme.primary
+    color: Color = MaterialTheme.colorScheme.primary,
+    isButton: Boolean = true
 ) {
     Row(
         modifier = Modifier
@@ -38,10 +39,13 @@ fun SectionHeader(
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.weight(1f)
         )
-        AppIconButton(
-            onClick = onAddClick,
-            color = color
-        )
+
+        if(isButton) {
+            AppIconButton(
+                onClick = onAddClick,
+                color = color
+            )
+        }
     }
 }
 

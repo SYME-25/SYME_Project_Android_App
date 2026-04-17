@@ -15,10 +15,10 @@ data class Notification(
     val category: NotificationCategory = NotificationCategory.SYSTEM,
 
     val isRead: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis(),
 
     val targetScreen: String? = null,
     val targetId: String? = null,
 
+    val trace: Traceability = Traceability(),
     val metadata: Map<String, String> = emptyMap()
 )

@@ -37,6 +37,7 @@ fun WelcomeScreen(
         ) {
             Text(
                 text = String.format(stringResource(R.string.user_firstname), user?.firstName),
+                color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.headlineSmall
             )
             Text(
@@ -58,6 +59,7 @@ fun WelcomeScreen(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = stringResource(R.string.suggestions_title),
+                color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )

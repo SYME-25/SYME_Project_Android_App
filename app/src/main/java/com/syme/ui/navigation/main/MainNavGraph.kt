@@ -16,23 +16,26 @@ import com.syme.ui.screen.consumption.ConsumptionScreen
 import com.syme.ui.screen.home.HomeScreen
 import com.syme.ui.screen.installation.InstallationDetailScreen
 import com.syme.ui.screen.installation.UserInstallationDetailScreen
-import com.syme.ui.screen.notification.NotificationScreen
+import com.syme.ui.screen.notification.NotificationsScreen
 import com.syme.ui.screen.profile.ProfileScreen
 import com.syme.ui.screen.settings.SettingsScreen
 import com.syme.ui.viewmodel.ApplianceViewModel
+import com.syme.ui.viewmodel.AuthViewModel
 import com.syme.ui.viewmodel.BillViewModel
 import com.syme.ui.viewmodel.BotViewModel
 import com.syme.ui.viewmodel.CircuitViewModel
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.MeterViewModel
+import com.syme.ui.viewmodel.NotificationsViewModel
+import com.syme.ui.viewmodel.SettingsViewModel
 import com.syme.ui.viewmodel.UserViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.mainNavGraph(
     navController: NavHostController,
-    paddingValues: PaddingValues,
+    authViewModel: AuthViewModel,
     userViewModel: UserViewModel,
     installationViewModel: InstallationViewModel,
     consumptionViewModel: ConsumptionViewModel,
@@ -40,13 +43,17 @@ fun NavGraphBuilder.mainNavGraph(
     applianceViewModel: ApplianceViewModel,
     circuitViewModel: CircuitViewModel,
     billViewModel: BillViewModel,
-    botViewModel: BotViewModel
+    botViewModel: BotViewModel,
+    notificationsViewModel: NotificationsViewModel,
+    settingsViewModel: SettingsViewModel,
+    contentPadding: PaddingValues
     ) {
 
     composable (MainRoute.BillScreen.route) {
         BillScreen(
             installationViewModel = installationViewModel,
-            billViewModel = billViewModel
+            billViewModel = billViewModel,
+            contentPadding = contentPadding
         )
     }
 
@@ -54,7 +61,8 @@ fun NavGraphBuilder.mainNavGraph(
         ConsumptionScreen(
             installationViewModel = installationViewModel,
             consumptionViewModel = consumptionViewModel,
-            meterViewModel = meterViewModel
+            meterViewModel = meterViewModel,
+            contentPadding = contentPadding
         )
     }
 
@@ -66,24 +74,37 @@ fun NavGraphBuilder.mainNavGraph(
             },
             onNavigateToUserInstallationDetail = { installation ->
                 navController.navigateToUserInstallationDetail(installation)
-            }
+            },
+            contentPadding = contentPadding
         )
     }
 
     composable (MainRoute.ProfileScreen.route) {
-        ProfileScreen(userViewModel)
+        ProfileScreen(
+            userViewModel = userViewModel,
+            contentPadding = contentPadding)
     }
 
-    composable (MainRoute.NotificationScreen.route) {
-        NotificationScreen()
+    composable(MainRoute.NotificationScreen.route) {
+        NotificationsScreen(
+            viewModel = notificationsViewModel,
+            contentPadding = contentPadding
+        )
     }
 
     composable (MainRoute.BotScreen.route) {
-        BotScreen(viewModel = botViewModel)
+        BotScreen(
+            viewModel = botViewModel,
+            contentPadding = contentPadding
+            )
     }
 
     composable (MainRoute.SettingsScreen.route) {
-        SettingsScreen()
+        SettingsScreen(
+            settingsViewModel = settingsViewModel,
+            authViewModel = authViewModel,
+            contentPadding = contentPadding
+        )
     }
 
     composable(MainRoute.InstallationDetailScreen.route) { backStackEntry ->
@@ -98,6 +119,7 @@ fun NavGraphBuilder.mainNavGraph(
                 installationId = installationId,
                 installationViewModel = installationViewModel,
                 onBack = { navController.popBackStack() },
+                contentPadding = contentPadding
             )
         }
     }
@@ -118,7 +140,8 @@ fun NavGraphBuilder.mainNavGraph(
                 circuitViewModel = circuitViewModel,
                 onApplianceClick = { appliance ->
                     navController.navigateToApplianceDetail(appliance, installationId)
-                }
+                },
+                contentPadding = contentPadding
             )
         }
     }
@@ -140,6 +163,7 @@ fun NavGraphBuilder.mainNavGraph(
                 circuitViewModel = circuitViewModel,
                 applianceViewModel = applianceViewModel,
                 onBack = { navController.popBackStack() },
+                contentPadding = contentPadding
             )
         }
     }

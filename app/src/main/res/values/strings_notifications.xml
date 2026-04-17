@@ -1,4 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="default_notification_channel_id">syme_notifications</string>
+    <string name="notification_power">Power</string>
+    <string name="notification_bill">Bill</string>
+    <string name="notification_meter">Meter</string>
+    <string name="notification_consumption">Consumption</string>
+    <string name="notification_relay">Relay</string>
+    <string name="notification_demand">Demand</string>
+    <string name="notification_system">System</string>
+    <string name="notification_bill_plural">Bills</string>
+    <string name="notification_meter_plural">Meters</string>
+    <string name="notification_info">Info</string>
+
+    <!-- Relative time -->
+    <string name="time_now">Just now</string>
+    <string name="time_minutes_ago">%1$d min ago</string>
+    <string name="time_hours_ago">%1$d h ago</string>
+
+    <!-- Day labels -->
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+
+    <!-- Header -->
+    <string name="notifications_title">Notifications</string>
+    <string name="back">Back</string>
+    <string name="mark_all_read">Mark all as read</string>
+
+    <!-- Filters -->
+    <string name="all">All</string>
+
+    <!-- Empty state -->
+    <string name="no_notifications">No notifications</string>
+    <string name="no_notifications_desc">You will be notified of important events here.</string>
+
+    <string name="notification_filter_type">Filter by type</string>
+
 </resources>

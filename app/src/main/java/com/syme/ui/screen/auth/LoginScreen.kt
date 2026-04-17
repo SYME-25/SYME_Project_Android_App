@@ -36,7 +36,6 @@ import com.syme.ui.snapshot.GlobalMessageSnapshot
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    navController: NavController,
     onNavigateToRegister: () -> Unit = {},
     onNavigateToResetPassword: () -> Unit = {}
 ) {
@@ -57,8 +56,6 @@ fun LoginScreen(
     val loginSignInText      = stringResource(R.string.login_sign_in)
     val emailFormatInvalid   = stringResource(R.string.register_email_invalid_format)
 
-    val uiState by viewModel.uiState.collectAsState()
-
     LaunchedEffect(viewModel) {
         viewModel.loginEvent.collectLatest { event ->
             when (event) {
@@ -67,9 +64,6 @@ fun LoginScreen(
                         type = MessageType.SUCCESS,
                         customText = context.getString(event.messageRes)
                     )
-                    navController.navigate(RootRoute.Main) {
-                        popUpTo(RootRoute.Auth) { inclusive = true }
-                    }
                 }
                 is LoginEvent.Error -> {
                     globalMessageManager.showMessage(

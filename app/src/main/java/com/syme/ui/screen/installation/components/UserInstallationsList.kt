@@ -23,10 +23,7 @@ fun UserInstallationsList(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        SectionLabel(label = stringResource(R.string.home_your_installations))
-
         if (items.isEmpty()) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

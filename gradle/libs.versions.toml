@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.2"                   # ✅ stable, compatible Hilt
+appcompat = "1.7.0"
 kotlin = "2.0.0"
 ksp = "2.0.0-1.0.24"           # ✅ doit matcher kotlin exactement
 hiltAndroid = "2.51.1"           # ✅ compatible AGP 8.x
@@ -24,6 +25,7 @@ google-services = "4.4.2"
 coreKtxVersion = "1.18.0"
 
 [libraries]
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="system_message">Message système</string>
+
+    <string name="success">%1$s</string>
+    <string name="created_success">%1$s créé avec succès</string>
+    <string name="updated_success">%1$s mis à jour avec succès</string>
+    <string name="deleted_success">%1$s supprimé avec succès</string>
+
+    <string name="error">%1$s</string>
+    <string name="create_failed">Échec de la création de %1$s</string>
+    <string name="update_failed">Échec de la mise à jour de %1$s</string>
+    <string name="delete_failed">Échec de la suppression de %1$s</string>
+
+    <string name="information">%1$s</string>
+
+    <string name="system_no_internet">Pas de connexion internet</string>
+    <string name="system_connection_restored">Connexion rétablie</string>
+
+    <string name="preview_item_room">Pièce</string>
+
+    <string name="No_internet_connection">Pas de connexion internet</string>
+    <string name="Connection_restored">Connexion rétablie</string>
+</resources>

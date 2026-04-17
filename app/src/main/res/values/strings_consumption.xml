@@ -41,6 +41,7 @@
     <string name="consumption_label_power">Power</string>
     <string name="consumption_type_on_demand">On Demand</string>
     <string name="consumption_type_subscription">Subscription</string>
+    <string name="consumption_injection">Injection</string>
 
     <string name="consumption_power_requested">%1$d %2$s requested</string>
 </resources>

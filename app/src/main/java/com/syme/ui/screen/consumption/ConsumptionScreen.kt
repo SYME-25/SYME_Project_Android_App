@@ -31,6 +31,7 @@ import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
 import com.syme.domain.state.UiState
 import com.syme.ui.component.animation.banner.BannerConsumption
+import com.syme.ui.component.filter.FilterSection
 import com.syme.ui.screen.consumption.components.PeriodFilterSegmented
 import com.syme.ui.screen.consumption.components.PeriodSwitcher
 import com.syme.ui.viewmodel.ConsumptionViewModel
@@ -48,7 +49,8 @@ fun ConsumptionScreen(
     installationViewModel: InstallationViewModel,
     consumptionViewModel: ConsumptionViewModel,
     meterViewModel: MeterViewModel,
-    onFilterSelected: (String?) -> Unit = {}
+    onFilterSelected: (String?) -> Unit = {},
+    contentPadding : PaddingValues
 ) {
     val currentUser = LocalCurrentUserSession.current
     val userId = currentUser?.userId ?: ""
@@ -232,15 +234,19 @@ fun ConsumptionScreen(
         // 🔹 Filtre installation
         item {
             if (installationNames.isNotEmpty()) {
-                InstallationFilterById(
+                FilterSection(
                     title = stringResource(R.string.consumption_filter_by_installation),
-                    installationIds = installationNames,
-                    selectedInstallationId = installationsMap.entries
+                    items = installationNames,
+                    selectedItem = installationsMap.entries
                         .firstOrNull { it.value == selectedInstallationId }?.key,
-                    onInstallationSelected = { selectedName ->
+                    onItemSelected = { selectedName ->
                         selectedInstallationId = installationsMap[selectedName]
                         onFilterSelected(selectedInstallationId)
-                    }
+                    },
+                    itemLabel = { name ->
+                        if (name.length > 12) name.take(12) + "…" else name
+                    },
+                    showAll = false // 👈 important ici
                 )
             }
         }
@@ -302,6 +308,14 @@ fun ConsumptionScreen(
                     )
                     consumptionViewModel.updateConsumption(userId, instId, updated)
                 }
+            )
+        }
+
+        item {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(contentPadding.calculateBottomPadding() + 32.dp)
             )
         }
     }

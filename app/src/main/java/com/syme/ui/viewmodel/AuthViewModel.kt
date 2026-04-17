@@ -9,6 +9,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.syme.data.repository.UserRepository
 import com.syme.domain.mapper.toDomain
 import com.syme.domain.model.User
+import com.syme.domain.state.AuthState
 import com.syme.service.FcmTokenHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,75 +25,99 @@ class AuthViewModel @Inject constructor(
     private val firestore: FirebaseFirestore,
 ) : ViewModel() {
 
-    private val _currentSession = MutableStateFlow<User?>(null)
-    val currentSession: StateFlow<User?> = _currentSession
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
+    val authState: StateFlow<AuthState> = _authState
 
-    init {
-        observeAuthState()
+    private val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        val firebaseUser = firebaseAuth.currentUser
+
+        Log.d("AUTH_DEBUG", "Firebase user: ${firebaseUser?.uid}")
+
+        if (firebaseUser == null) {
+            _authState.value = AuthState.Unauthenticated
+        } else {
+            _authState.value = AuthState.Loading
+
+            viewModelScope.launch {
+                loadUserSession(firebaseUser.uid)
+            }
+        }
     }
 
-    private fun observeAuthState() {
-        auth.addAuthStateListener { firebaseAuth ->
-            val firebaseUser = firebaseAuth.currentUser
+    init {
+        auth.addAuthStateListener(authStateListener)
+    }
 
-            if (firebaseUser == null) {
-                _currentSession.value = null
-            } else {
-                viewModelScope.launch {
-                    // 1️⃣ Récupérer l'utilisateur Firestore
-                    val querySnapshot = firestore
-                        .collection("users")
-                        .whereEqualTo("metadata.firebaseUid", firebaseUser.uid)
-                        .limit(1)
-                        .get()
-                        .await()
+    private suspend fun loadUserSession(uid: String) {
+        try {
+            val querySnapshot = firestore
+                .collection("users")
+                .whereEqualTo("metadata.firebaseUid", uid)
+                .limit(1)
+                .get()
+                .await()
 
-                    val userFirebase = querySnapshot.documents
-                        .firstOrNull()
-                        ?.toObject(User::class.java)
+            val userFirebase = querySnapshot.documents
+                .firstOrNull()
+                ?.toObject(User::class.java)
 
-                    _currentSession.value = userFirebase?.toDomain()
+            if (userFirebase == null) {
+                Log.w("AuthViewModel", "Utilisateur Firestore introuvable pour uid=$uid")
+                _authState.value = AuthState.Unauthenticated
+                return
+            }
 
-                    if (userFirebase == null) {
-                        Log.w("AuthViewModel", "Utilisateur Firestore introuvable pour uid=${firebaseUser.uid}")
-                        return@launch
-                    }
+            val domainUser = userFirebase.toDomain()
 
-                    // 2️⃣ Forcer la récupération du token FCM frais à chaque session
-                    try {
-                        val freshToken = FirebaseMessaging.getInstance().token.await()
-                        Log.d("FCM_TOKEN", "Token session: $freshToken")
+            _authState.value = AuthState.Authenticated(domainUser)
 
-                        // Mettre à jour le holder global
-                        FcmTokenHolder.token = freshToken
+            Log.d("AuthViewModel", "Session chargée pour userId=${domainUser.userId}")
 
-                        // Sauvegarder dans Firestore
-                        userRepository.addFcmToken(userFirebase.userId, freshToken)
+            refreshFcmToken(domainUser.userId)
 
-                    } catch (e: Exception) {
-                        Log.e("FCM_TOKEN", "Échec récupération token FCM", e)
+        } catch (e: Exception) {
+            Log.e("AuthViewModel", "Erreur chargement session Firestore", e)
 
-                        // Fallback : utiliser le token en cache si disponible
-                        val cachedToken = FcmTokenHolder.token
-                        if (cachedToken != null) {
-                            Log.d("FCM_TOKEN", "Utilisation du token en cache: $cachedToken")
-                            userRepository.addFcmToken(userFirebase.userId, cachedToken)
-                        }
-                    }
+            // Ici on considère que la session n'est pas exploitable
+            _authState.value = AuthState.Unauthenticated
+        }
+    }
+
+    private suspend fun refreshFcmToken(userId: String) {
+        try {
+            val freshToken = FirebaseMessaging.getInstance().token.await()
+
+            Log.d("FCM_TOKEN", "Token session: $freshToken")
+
+            FcmTokenHolder.token = freshToken
+            userRepository.addFcmToken(userId, freshToken)
+
+        } catch (e: Exception) {
+            Log.e("FCM_TOKEN", "Échec récupération token FCM", e)
+
+            val cachedToken = FcmTokenHolder.token
+
+            if (cachedToken != null) {
+                try {
+                    userRepository.addFcmToken(userId, cachedToken)
+                } catch (e2: Exception) {
+                    Log.e("FCM_TOKEN", "Échec sauvegarde token en cache", e2)
                 }
             }
         }
     }
 
     fun logout() {
-        val user = _currentSession.value
         val token = FcmTokenHolder.token
 
-        if (user != null && token != null) {
+        _authState.value = AuthState.Unauthenticated
+
+        val firebaseUser = auth.currentUser
+
+        if (firebaseUser != null && token != null) {
             viewModelScope.launch {
                 try {
-                    userRepository.removeFcmToken(user.userId, token)
-                    Log.d("AuthViewModel", "Token FCM supprimé pour userId=${user.userId}")
+                    userRepository.removeFcmToken(firebaseUser.uid, token)
                 } catch (e: Exception) {
                     Log.e("AuthViewModel", "Échec suppression token FCM", e)
                 }
@@ -100,5 +125,10 @@ class AuthViewModel @Inject constructor(
         }
 
         auth.signOut()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        auth.removeAuthStateListener(authStateListener)
     }
 }

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_welcome_message">Salut %s ! \nBienvenue chez vous !</string>
+    <string name="home_section_header_see_all">Voir tout</string>
+    <string name="home_installation_type">Type d\'installation</string>
+    <string name="home_installation_filter_residential">Résidentiel</string>
+    <string name="home_installation_filter_industrial">Industriel</string>
+    <string name="home_installation_filter_commercial">Commercial</string>
+    <string name="home_installation_filter_agricultural">Agricole</string>
+    <string name="home_installation_filter_public">Public</string>
+    <string name="home_installation_filter_other">Autre</string>
+    <string name="home_installation_filter_all">Tout</string>
+    <string name="home_installation">Installation</string>
+    <string name="home_installation_electrical">installation électrique</string>
+    <string name="home_installation_energy">Énergie : %s kWh/J</string>
+    <string name="home_your_installations">Vos installations</string>
+    <string name="home_installation_power_subscribed_label">Puissance souscrite</string>
+    <string name="home_installation_power_subscribed">Puissance souscrite : %s kW</string>
+    <string name="home_no_installations_found">Aucune installation trouvée</string>
+    <string name="installation_use_my_location">Utiliser ma position actuelle</string>
+    <string name="installation_residential_desc">
+        Installation domestique ou appartement pour le suivi de la consommation électrique du foyer.
+    </string>
+
+    <string name="installation_commercial_desc">
+        Installation conçue pour les magasins et bureaux afin d\'analyser et optimiser l\'usage énergétique.
+    </string>
+
+    <string name="installation_industrial_desc">
+        Installation pour usines et sites industriels avec surveillance avancée des circuits.
+    </string>
+
+    <string name="installation_agricultural_desc">
+        Installation agricole pour surveiller l\'utilisation de l\'énergie dans les fermes et les installations d\'élevage.
+    </string>
+
+    <string name="installation_public_desc">
+        Installation pour écoles, hôpitaux et bâtiments publics afin de suivre la consommation d\'énergie.
+    </string>
+
+    <string name="installation_other_desc">
+        Installation personnalisée pour des besoins de surveillance énergétique spécifiques ou non standards.
+    </string>
+
+    <string name="installation_not_ready_title">Installation non prête</string>
+
+    <string name="installation_address_not_defined">Adresse non définie</string>
+
+    <string name="installation_power_label">Puissance</string>
+    <string name="installation_energy_label">Énergie</string>
+    <string name="installation_energy_placeholder">Non disponible</string>
+    <string name="installation_rating_label">Classement</string>
+
+    <string name="installation_configure_button">Continuer la configuration</string>
+    <string name="installation_configure_later_button">Configurer plus tard</string>
+
+    <string name="installation_name_label">Nom de l\'installation</string>
+    <string name="installation_name_error">Le nom de l\'installation est requis</string>
+
+    <string name="installation_address_label">Adresse de l\'installation</string>
+    <string name="installation_address_error">L\'adresse de l\'installation est requise</string>
+
+    <string name="installation_not_ready_message">
+        Cette installation n\'est pas encore active. Vous devrez ajouter un compteur et terminer sa configuration.
+    </string>
+
+    <string name="installation_create_button">Créer l\'installation</string>
+
+    <string name="installation_error_loading_installations">Erreur lors du chargement des installations</string>
+
+    <string name="installation_location_card_title">Localisation de la maison</string>
+    <string name="installation_location_card_description">
+    Cette localisation sera utilisée comme position de votre maison pour les analyses énergétiques et les recommandations.
+    </string>
+
+    <string name="installation_add_title">Cliquez sur un élément ci-dessous pour ajouter une installation</string>
+
+    <string name="installation_longitude">Longitude</string>
+    <string name="installation_latitude">Latitude</string>
+
+    <string name="installation_longitude_error">La longitude est requise</string>
+    <string name="installation_latitude_error">La latitude est requise</string>
+
+    <string name="installation_state_on">ACTIVE</string>
+    <string name="installation_state_off">HORS LIGNE</string>
+
+    <string name="installation_no_address">Pas d\'adresse</string>
+
+    <string name="home_greeting_hello">Bonjour,</string>
+    <string name="home_greeting_fallback">vous</string>
+
+    <string name="stat_power_label">Puissance</string>
+    <string name="stat_power_value">%1$.1f kW</string>
+    <string name="stat_power_sublabel">Souscrite</string>
+    <string name="stat_energy_label">Énergie</string>
+    <string name="stat_energy_value">%1$.2f kWh</string>
+    <string name="stat_energy_sublabel">Consommation journalière</string>
+
+    <string name="power_balance_title">Bilan de puissance</string>
+    <string name="power_balance_active">Active</string>
+    <string name="power_balance_reactive">Réactive</string>
+    <string name="power_balance_apparent">Apparente</string>
+    <string name="power_balance_pf">cos φ %1$s</string>
+    <string name="power_balance_pf_label">Facteur de puissance</string>
+    <string name="power_balance_pf_poor">Faible</string>
+    <string name="power_balance_pf_fair">Moyen</string>
+    <string name="power_balance_pf_good">Bon</string>
+    <string name="power_balance_current">Courant</string>
+    <string name="power_balance_footnote">* Courant estimé à %1$d V monophasé</string>
+
+    <string name="home_greeting_morning">Bon matin</string>
+    <string name="home_greeting_afternoon">Bon après-midi</string>
+    <string name="home_greeting_evening">Bonsoir</string>
+
+    <string name="home_greeting_subtitle">Prêt à surveiller votre consommation ?</string>
+
+    <string name="home_greeting_subtitle_morning">Suivez votre énergie pour la journée</string>
+    <string name="home_greeting_subtitle_afternoon">Surveillez votre consommation actuelle</string>
+    <string name="home_greeting_subtitle_evening">Consultez la consommation d\'aujourd\'hui</string>
+
+    <string name="installation_detail">Détails de l\'installation</string>
+
+    <string name="installation_card_power_subscribed">Puissance souscrite</string>
+    <string name="installation_card_power_value">%.1f kVA</string>
+    <string name="installation_card_energy_day">Énergie aujourd\'hui</string>
+    <string name="installation_card_energy_value">%.2f kWh</string>
+    <string name="installation_card_solar_power">Production solaire</string>
+    <string name="installation_card_solar_value">%.1f kW</string>
+    <string name="installation_card_meters">Compteurs</string>
+    <string name="installation_card_circuits">Circuits</string>
+
+</resources>

@@ -165,7 +165,7 @@
     <string name="appliance_filter_type">Filter by installation type</string>
     <string name="appliance_filter_heat_type">Filter by heat type</string>
 
-    <string name="appliance_add_title">Add an appliance</string>
+    <string name="appliance_add_title">Click an item below to add an appliance</string>
     <string name="appliance_your_appliances">Your appliances</string>
 
     <string name="appliance_smart">Smart</string>

@@ -1,5 +1,6 @@
 package com.syme.ui.component.actionbutton
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,6 +26,8 @@ import androidx.compose.ui.unit.sp
 fun AppButton(
     text: String,
     onClick: () -> Unit,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    border: BorderStroke? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
@@ -35,7 +40,9 @@ fun AppButton(
             .fillMaxWidth()
             .height(50.dp)
             .padding(vertical = 4.dp, horizontal = 20.dp),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.medium,
+        colors = colors,
+        border = border
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

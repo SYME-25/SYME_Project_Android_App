@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Écran paramètres -->
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_cancel">Annuler</string>
+
+    <!-- En-têtes de section -->
+    <string name="settings_section_appearance">Apparence</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_section_account">Compte</string>
+    <string name="settings_section_about">À propos</string>
+
+    <!-- Thème -->
+    <string name="settings_theme_title">Thème</string>
+    <string name="settings_theme_system">Thème du téléphone</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+
+    <!-- Langue -->
+    <string name="settings_language_title">Langue</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_french">Français</string>
+
+    <!-- Notifications -->
+    <string name="settings_notifications_push">Notifications push</string>
+    <string name="settings_notifications_push_subtitle">Recevoir des alertes et rappels</string>
+
+    <!-- Compte -->
+    <string name="settings_change_password">Changer le mot de passe</string>
+    <string name="settings_change_password_subtitle">Mettre à jour vos identifiants</string>
+
+    <!-- À propos -->
+    <string name="settings_privacy_policy">Politique de confidentialité</string>
+    <string name="settings_terms_of_service">Conditions d\'utilisation</string>
+    <string name="settings_app_version">Version de l\'application</string>
+
+    <!-- Déconnexion -->
+    <string name="settings_logout">Se déconnecter</string>
+    <string name="settings_logout_confirm_title">Se déconnecter ?</string>
+    <string name="settings_logout_confirm_message">Vous serez déconnecté et votre session locale sera effacée.</string>
+    <string name="settings_logout_confirm">Se déconnecter</string>
+</resources>

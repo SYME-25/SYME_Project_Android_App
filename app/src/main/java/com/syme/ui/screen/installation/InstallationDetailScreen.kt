@@ -19,7 +19,8 @@ import com.syme.utils.installationCatalog
 fun InstallationDetailScreen(
     installationId: String,
     installationViewModel: InstallationViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    contentPadding : PaddingValues
 ) {
     val ownerId = LocalCurrentUserSession.current?.userId
     val installation = installationCatalog.find { it.installationId == installationId }
@@ -33,6 +34,7 @@ fun InstallationDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .padding(contentPadding)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             ItemDetailHeader(

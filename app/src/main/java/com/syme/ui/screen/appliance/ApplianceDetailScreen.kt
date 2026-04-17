@@ -2,6 +2,7 @@ package com.syme.ui.screen.appliance
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,7 +28,8 @@ fun ApplianceDetailScreen(
     installationId: String?,
     circuitViewModel: CircuitViewModel,
     applianceViewModel: ApplianceViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    contentPadding : PaddingValues
 ) {
 
     val ownerId = LocalCurrentUserSession.current?.userId
@@ -47,6 +49,7 @@ fun ApplianceDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .padding(contentPadding)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
 

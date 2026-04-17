@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="bot_label">Discuter avec l\'assistant Syme</string>
+    <string name="bot_message_1">Besoin d\'aide ? 🤔</string>
+    <string name="bot_message_2">Une question ? ❓</string>
+    <string name="bot_message_3">Parlons un peu ! 💬</string>
+    <string name="bot_message_4">Votre consommation aujourd\'hui ? 📊</string>
+    <string name="bot_message_5">Économies possibles ! 💰</string>
+    <string name="bot_message_6">Pic de consommation détecté ⚡</string>
+    <string name="bot_message_7">Optimisons cela ensemble !</string>
+    <string name="bot_message_8">Votre facture estimée ? 🧾</string>
+    <string name="bot_message_9">Comparer vos données ? 📈</string>
+    <string name="bot_message_10">Astuce énergie 💡</string>
+
+    <string name="bot_title">SymeBot</string>
+    <string name="bot_tagline">Votre assistant électrique est prêt à vous aider.</string>
+
+    <string name="cd_history">Historique</string>
+    <string name="action_new_conversation">Nouvelle conversation</string>
+
+    <string name="input_placeholder">Posez une question sur l\'électricité…</string>
+    <string name="cd_attach">Joindre un fichier</string>
+    <string name="cd_voice">Saisie vocale</string>
+    <string name="cd_send">Envoyer</string>
+    <string name="attach_pdf">PDF</string>
+    <string name="attach_image">Image</string>
+    <string name="attach_document">Document</string>
+
+    <string name="suggestions_title">Suggestions</string>
+
+    <string name="history_title">Historique</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="conversation_meta">%1$d messages • %2$s</string>
+
+    <string name="conversation_default_title">Nouvelle conversation</string>
+    <string name="conversation_file_analysis_title">Analyse de fichier</string>
+
+    <string name="message_file_joined_prefix">📎 Fichier joint :</string>
+    <string name="message_file_analysis_note">[Analyse de document électrique]</string>
+    <string name="message_file_received">J\'ai bien reçu votre fichier **{fileName}**. Pour analyser un document électrique, veuillez décrire ce que vous aimeriez savoir (schéma, calculs, normes, etc.).</string>
+
+    <string name="error_prefix">⚠️</string>
+
+    <string-array name="bot_suggestions">
+        <item>Comparer vos données ? 📈</item>
+        <item>Votre facture estimée ? 🧾</item>
+        <item>⚡ Qu\'est-ce que la loi d\'Ohm ?</item>
+        <item>🔌 Comment câbler une prise électrique ?</item>
+        <item>Optimisons cela ensemble !</item>
+        <item>💡 Différence entre AC et DC ?</item>
+        <item>🔋 Comment fonctionne un disjoncteur ?</item>
+        <item>☀️ Comment installer des panneaux solaires ?</item>
+    </string-array>
+
+    <string name="user_firstname">"Bienvenue %s !"</string>
+
+    <string name="bot_warning_title">⚠️ Avertissement</string>
+    <string name="bot_warning_consent">
+        En envoyant un message, vous acceptez nos Conditions d\'Utilisation.
+    </string>
+    <string name="bot_warning_accuracy">
+        SymeBot fournit des conseils sur l\'électricité mais peut faire des erreurs. Vérifiez toujours les informations critiques.
+    </string>
+    <string name="bot_warning_safety">
+        Ne réalisez jamais de travaux électriques sans les précautions de sécurité appropriées ou la supervision d\'un professionnel.
+    </string>
+    <string name="bot_warning_general">
+        Les messages sont fournis à titre informatif uniquement.
+    </string>
+
+    <string name="listening">Écoute en cours...</string>
+
+</resources>

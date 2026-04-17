@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="demand_title">Nouvelle requête</string>
+    <string name="demand_subtitle">Réduisez votre puissance et économisez</string>
+
+    <string name="demand_label_power">Puissance demandée</string>
+    <string name="demand_label_or_custom">Ou entrez une valeur personnalisée :</string>
+    <string name="demand_label_power_input">Puissance (%1$s)</string>
+
+    <string name="demand_start_date_hint">Date de début minimale : %1$s</string>
+
+    <string name="demand_power_summary">%1$d %2$s demandé — réduction de %3$d%% sur votre puissance souscrite</string>
+
+    <string name="demand_button_submit">Soumettre la requête</string>
+
+    <string name="demand_error_start_date_invalid">La date de début doit être ≥ %1$s</string>
+    <string name="demand_error_power_required">Veuillez saisir une puissance demandée</string>
+    <string name="demand_error_power_exceeds_subscription">La puissance doit être inférieure à %1$.0f %2$s (votre puissance souscrite)</string>
+
+    <string name="demande_price_info">1 %1$s = %2$.0f %3$s</string>
+    <string name="demand_price_info">Coût de la puissance demandée : %1$.0f %2$s</string>
+    <string name="demand_error_no_subscription">Vous devez avoir un abonnement actif avant de soumettre une demande.</string>
+</resources>

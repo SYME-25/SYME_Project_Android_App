@@ -22,7 +22,6 @@ fun NavGraphBuilder.authNavGraph(
     composable(AuthRoute.Login.route) {
         LoginScreen(
             viewModel = loginViewModel,
-            navController = navController,
             onNavigateToRegister = { navController.navigate(AuthRoute.Register.route) },
             onNavigateToResetPassword = { navController.navigate(AuthRoute.ResetPasswordStep1.route) }
         )

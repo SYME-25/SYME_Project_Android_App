@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="circuit_title">Ajouter un circuit</string>
+    <string name="circuit_label_meter">Compteur</string>
+    <string name="circuit_label_relay">Canal de relais</string>
+    <string name="circuit_label_name">Nom du circuit</string>
+    <string name="circuit_label_priority">Priorité</string>
+    <string name="circuit_label_protected">Circuit critique</string>
+
+    <string name="circuit_error_meter_required">Veuillez sélectionner un compteur</string>
+    <string name="circuit_error_relay_required">Veuillez sélectionner un canal de relais</string>
+    <string name="circuit_error_name_required">Veuillez saisir un nom de circuit</string>
+    <string name="circuit_error_priority_required">Veuillez sélectionner une priorité</string>
+
+    <string name="circuit_button_submit">Enregistrer le circuit</string>
+
+    <string name="home_circuit_protected">Circuit protégé</string>
+    <string name="home_circuit_unprotected">Circuit non protégé</string>
+    <string name="relay_channel">Canal de relais : %1$s</string>
+    <string name="circuit_state">%1$s</string>
+
+    <string name="your_circuits">Vos circuits</string>
+    <string name="add_circuit">Ajouter un circuit</string>
+    <string name="no_circuit_found">Aucun circuit trouvé</string>
+
+    <string name="circuit_footer_on">Actif</string>
+    <string name="circuit_footer_off">Inactif</string>
+    <string name="circuit_priority">Priorité %1$d</string>
+
+</resources>

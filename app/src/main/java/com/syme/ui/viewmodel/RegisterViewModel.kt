@@ -46,6 +46,7 @@ class RegisterViewModel @Inject constructor(
                 )
 
                 val metadata = mapOf(
+                    "lang" to "en",
                     "privacyPolicy" to mapOf(
                         "accepted" to true,
                         "acceptedAt" to TimeUtils.currentTimestamp,

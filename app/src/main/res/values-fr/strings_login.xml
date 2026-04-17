@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login_label">Connexion</string>
+    <string name="login_email">E-mail</string>
+    <string name="login_password">Mot de passe</string>
+    <string name="login_forget_password">Mot de passe oublié ?</string>
+    <string name="login_password_error">Le mot de passe est requis</string>
+    <string name="login_email_error">L\'e-mail est requis</string>
+    <string name="login_not_member">Pas encore membre ?</string>
+    <string name="login_sign_in">Inscrivez-vous maintenant !</string>
+    <string name="login_success">Connexion réussie !</string>
+    <string name="login_failed">Échec de la connexion</string>
+    <string name="login_error_with_message">Erreur : %1$s</string>
+</resources>
