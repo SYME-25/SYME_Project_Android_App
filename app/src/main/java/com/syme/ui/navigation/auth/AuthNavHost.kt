@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.syme.ui.screen.auth.AuthScreen
 import com.syme.ui.viewmodel.LoginViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
 import com.syme.ui.viewmodel.ResetPasswordViewModel
@@ -18,17 +19,19 @@ fun AuthNavHost(
     val loginViewModel: LoginViewModel = hiltViewModel()
     val resetPasswordViewModel: ResetPasswordViewModel = hiltViewModel()
 
-    //Scaffold: contentPadding ->
-    NavHost(
-        navController = navController,
-        startDestination = AuthRoute.Login.route
-    ) {
-        authNavGraph(
-            navController,
-            registerViewModel,
-            resetPasswordViewModel,
-            loginViewModel,
-            contentPadding = PaddingValues() //contentPadding
-        )
+    AuthScreen { contentPadding ->
+
+        NavHost(
+            navController = navController,
+            startDestination = AuthRoute.Login.route
+        ) {
+            authNavGraph(
+                navController = navController,
+                registerViewModel =  registerViewModel,
+                resetPasswordViewModel = resetPasswordViewModel,
+                loginViewModel = loginViewModel,
+                contentPadding = contentPadding // ✅ vrai padding
+            )
+        }
     }
 }

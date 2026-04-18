@@ -213,7 +213,8 @@ fun BillCard(
                         .size(
                             width = if (compact) 70.dp else 100.dp,
                             height = 28.dp
-                        )
+                        ),
+                    contentAlignment = Alignment.BottomEnd
                 ) {
                     TextWithBackground(
                         text = paidLabel,

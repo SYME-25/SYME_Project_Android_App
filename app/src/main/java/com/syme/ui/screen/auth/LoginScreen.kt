@@ -37,7 +37,8 @@ import com.syme.ui.snapshot.GlobalMessageSnapshot
 fun LoginScreen(
     viewModel: LoginViewModel,
     onNavigateToRegister: () -> Unit = {},
-    onNavigateToResetPassword: () -> Unit = {}
+    onNavigateToResetPassword: () -> Unit = {},
+    contentPadding: PaddingValues
 ) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
@@ -81,6 +82,7 @@ fun LoginScreen(
 
     Box(
         modifier = Modifier
+            .padding(contentPadding)
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(listOf(bgTop, bgBottom, bgBottom))

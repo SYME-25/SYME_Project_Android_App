@@ -1,10 +1,7 @@
 // TableParser.kt
 package com.syme.ui.screen.bot.components
 
-data class MarkdownSegment(
-    val content: String,
-    val isTable: Boolean
-)
+import com.syme.domain.model.MarkdownSegment
 
 fun parseMarkdownSegments(raw: String): List<MarkdownSegment> {
     val lines = raw.lines()
@@ -13,7 +10,6 @@ fun parseMarkdownSegments(raw: String): List<MarkdownSegment> {
     var inTable = false
 
     fun isTableRow(line: String) = line.trim().startsWith("|") && line.trim().endsWith("|")
-    fun isSeparatorRow(line: String) = isTableRow(line) && line.replace("|", "").replace("-", "").replace(":", "").replace(" ", "").isEmpty()
 
     for (line in lines) {
         if (isTableRow(line)) {

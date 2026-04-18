@@ -71,6 +71,10 @@ import com.syme.ui.component.card.MeterCard
 import com.syme.ui.component.card.MeterListItemRow
 import com.syme.ui.component.card.PowerBalanceCard
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.component.dialog.ApplianceDeleteDialog
+import com.syme.ui.component.dialog.ApplianceEditDialog
+import com.syme.ui.component.dialog.CircuitDeleteDialog
+import com.syme.ui.component.dialog.CircuitEditDialog
 import com.syme.ui.component.filter.FilterSection
 import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
@@ -114,6 +118,12 @@ fun UserInstallationDetailScreen(
     var selectedMeter by remember { mutableStateOf<Meter?>(null) }
     var showMeterDialog by remember { mutableStateOf(false) }
     var showAddCircuitDialog by remember { mutableStateOf(false) }
+
+    // Pour le CRUD
+    var circuitToEdit   by remember { mutableStateOf<Circuit?>(null) }
+    var circuitToDelete by remember { mutableStateOf<Circuit?>(null) }
+    var applianceToEdit   by remember { mutableStateOf<Appliance?>(null) }
+    var applianceToDelete by remember { mutableStateOf<Appliance?>(null) }
 
     val latestMeasurement = measurements.lastOrNull() ?: Measurement(meterId = selectedMeter?.meterId ?: "", installationId = installationId)
     val liveSelectedMeter = meters.find { it.meterId == selectedMeter?.meterId }
@@ -251,7 +261,12 @@ fun UserInstallationDetailScreen(
                 is UiState.Success -> {
                     val userAppliances =
                         (applianceState as UiState.Success<List<Appliance>>).data
-                    UserAppliancesList(userAppliances, onApplianceClick)
+                    UserAppliancesList(
+                        items = userAppliances,
+                        onClick = onApplianceClick,
+                        onEdit = { applianceToEdit   = it },
+                        onDelete = { applianceToDelete = it }
+                    )
                 }
                 is UiState.Error ->
                     Text(stringResource(R.string.installation_error_loading_installations))
@@ -305,7 +320,9 @@ fun UserInstallationDetailScreen(
             if (circuits.isNotEmpty()) {
                 CircuitRow(
                     items = circuits,
-                    onClick = { /* futur détail */ }
+                    onClick = { /* futur détail */ },
+                    onEdit = { circuitToEdit   = it },
+                    onDelete = { circuitToDelete = it }
                 )
             } else {
                 Text(stringResource(R.string.no_circuit_found))
@@ -444,5 +461,59 @@ fun UserInstallationDetailScreen(
             }
         }
     }
+
+    // ── Circuit edit ──
+    circuitToEdit?.let { circuit ->
+        CircuitEditDialog (
+            circuit  = circuit,
+            meters   = meters,
+            onDismiss = { circuitToEdit = null },
+            onConfirm = { updated ->
+                val userId = currentUser?.userId ?: return@CircuitEditDialog
+                circuitViewModel.updateCircuit(userId, installationId, updated)
+                circuitToEdit = null
+            }
+        )
+    }
+
+    // ── Circuit delete ──
+    circuitToDelete?.let { circuit ->
+        CircuitDeleteDialog (
+            circuit   = circuit,
+            onDismiss = { circuitToDelete = null },
+            onConfirm = {
+                val userId = currentUser?.userId ?: return@CircuitDeleteDialog
+                circuitViewModel.deleteCircuit(userId, installationId, circuit.circuitId.toString())
+                circuitToDelete = null
+            }
+        )
+    }
+
+    // ── Appliance edit ──
+    applianceToEdit?.let { appliance ->
+        ApplianceEditDialog(
+            appliance = appliance,
+            onDismiss = { applianceToEdit = null },
+            onConfirm = { updated ->
+                val userId = currentUser?.userId ?: return@ApplianceEditDialog
+                applianceViewModel.update(userId, installationId, updated)
+                applianceToEdit = null
+            }
+        )
+    }
+
+    // ── Appliance delete ──
+    applianceToDelete?.let { appliance ->
+        ApplianceDeleteDialog(
+            appliance = appliance,
+            onDismiss = { applianceToDelete = null },
+            onConfirm = {
+                val userId = currentUser?.userId ?: return@ApplianceDeleteDialog
+                applianceViewModel.delete(userId, installationId, appliance)
+                applianceToDelete = null
+            }
+        )
+    }
+
 
 }

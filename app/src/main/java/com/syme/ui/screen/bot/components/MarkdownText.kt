@@ -52,7 +52,7 @@ fun cleanMathText(text: String): String {
         .replace("\\\\exists", "∃")
 
     // ─── FRACTION SAFE ─────────────────────────────────────
-    val fracRegex = Regex("""\\\\frac\{([^{}]+)\}\{([^{}]+)\}""")
+    val fracRegex = Regex("""\\\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}""")
 
     t = fracRegex.replace(t) {
         "${it.groupValues[1]}/${it.groupValues[2]}"
@@ -68,9 +68,6 @@ fun cleanMathText(text: String): String {
     t = stripCommand("mathrm", t)
     t = stripCommand("textrm", t)
     t = stripCommand("boxed", t)
-
-    // ─── Nettoyage final ───────────────────────────────────
-    t = t.replace("{", "").replace("}", "")
 
     return t
 }

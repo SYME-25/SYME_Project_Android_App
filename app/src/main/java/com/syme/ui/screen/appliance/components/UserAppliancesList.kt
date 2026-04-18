@@ -19,7 +19,12 @@ import com.syme.ui.component.card.ApplianceRow
 import com.syme.ui.screen.bill.SectionLabel
 
 @Composable
-fun UserAppliancesList(items: List<Appliance>, onClick: (Appliance) -> Unit) {
+fun UserAppliancesList(
+    items: List<Appliance>,
+    onClick: (Appliance) -> Unit,
+    onEdit: ((Appliance) -> Unit)? = null,
+    onDelete: ((Appliance) -> Unit)? = null
+) {
 
     val noAppliancesFoundMsg = stringResource(R.string.home_no_appliances_found)
 
@@ -46,6 +51,8 @@ fun UserAppliancesList(items: List<Appliance>, onClick: (Appliance) -> Unit) {
             ApplianceRow(
                 items = items,
                 onClick = onClick,
+                onEdit = onEdit,
+                onDelete = onDelete,
                 contentAction = { Text("") } // Placeholder si action supplémentaire
             )
         }

@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
+import androidx.compose.ui.graphics.toArgb
 import com.syme.R
 import com.syme.domain.mapper.toTariffConfig
 import com.syme.domain.model.Bill
@@ -16,68 +17,109 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.roundToInt
 
+/**
+ * Générateur de factures PDF — style rapport financier.
+ *
+ * Palette : charbon foncé (#1C1C1E) + ivoire chaud (#F7F4EF)
+ *           + cuivre accent (#B87333) + gris neutre (#6B6B6B)
+ * Mise en page : grille stricte, lignes droites, typographie serrée.
+ */
 object BillPdfGenerator {
 
-    // ── Palette ───────────────────────────────────────────────────────────────
-    private val COLOR_PRIMARY  = Color.parseColor("#1A237E")
-    private val COLOR_ACCENT   = Color.parseColor("#283593")
-    private val COLOR_LIGHT_BG = Color.parseColor("#F5F7FF")
-    private val COLOR_ROW_ALT  = Color.parseColor("#ECEFFE")
-    private val COLOR_DIVIDER  = Color.parseColor("#C5CAE9")
-    private val COLOR_TEXT_DARK = Color.parseColor("#1A1A2E")
-    private val COLOR_TEXT_GRAY = Color.parseColor("#5C6BC0")
-    private val COLOR_WHITE    = Color.WHITE
-    private val COLOR_SUCCESS  = Color.parseColor("#2E7D32")
-    private val COLOR_TOTAL_BG = Color.parseColor("#1A237E")
+    // ── Palette manuelle (pas de dépendances thème pour le PDF) ──────────────
+    private val C_CHARCOAL      = Color.parseColor("#1C1C1E")   // noir charbon
+    private val C_CHARCOAL_SOFT = Color.parseColor("#2E2E30")   // charbon adouci
+    private val C_COPPER        = Color.parseColor("#B87333")   // cuivre accent
+    private val C_COPPER_LIGHT  = Color.parseColor("#D4956A")   // cuivre clair
+    private val C_IVORY         = Color.parseColor("#F7F4EF")   // fond ivoire
+    private val C_IVORY_DARK    = Color.parseColor("#ECEAE4")   // ivoire foncé (zébrage)
+    private val C_RULE          = Color.parseColor("#D8D4CC")   // filet séparateur
+    private val C_TEXT_BODY     = Color.parseColor("#2A2A2A")   // texte corps
+    private val C_TEXT_MUTED    = Color.parseColor("#6B6B6B")   // texte secondaire
+    private val C_TEXT_FAINT    = Color.parseColor("#A0A0A0")   // texte discret
+    private val C_WHITE         = Color.WHITE
+    private val C_SUCCESS       = Color.parseColor("#2D7A4F")   // vert sobre
 
-    // ── Page constants ────────────────────────────────────────────────────────
-    private const val PAGE_W   = 595f
-    private const val PAGE_H   = 842f
-    private const val MARGIN   = 48f
-    private const val CONTENT_W = PAGE_W - MARGIN * 2
+    // ── Constantes de mise en page ────────────────────────────────────────────
+    private const val PAGE_W          = 595f
+    private const val PAGE_H          = 842f
+    private const val MARGIN_L        = 52f    // marge gauche (plus large)
+    private const val MARGIN_R        = 44f    // marge droite
+    private const val CONTENT_W       = PAGE_W - MARGIN_L - MARGIN_R
+    private const val BOTTOM_RESERVED = 120f
+    private const val LAST_Y          = PAGE_H - BOTTOM_RESERVED - 8f
 
-    // Zone réservée en bas pour le bloc total + footer (page finale uniquement)
-    private const val BOTTOM_RESERVED = 130f
-    // Limite de contenu sur les pages intermédiaires (sans bloc total)
-    private const val CONTENT_MAX_Y   = PAGE_H - 40f
-    // Limite de contenu sur la dernière page (laisse place au bloc total)
-    private const val LAST_PAGE_MAX_Y = PAGE_H - BOTTOM_RESERVED - 10f
+    // Bande latérale gauche
+    private const val STRIPE_W        = 4f
 
-    // ── State partagé entre pages ─────────────────────────────────────────────
-    private var currentPage: PdfDocument.Page? = null
-    private var currentCanvas: Canvas? = null
+    // ── État interne ──────────────────────────────────────────────────────────
+    private var currentPage:   PdfDocument.Page? = null
+    private var currentCanvas: Canvas?            = null
     private var pageNumber = 1
 
+    private fun ts(millis: Long) = TimeUtils.formatDate(millis, "dd/MM/yyyy HH:mm:ss")
+
+    // =========================================================================
     fun generate(context: Context, bill: Bill): File {
+        val generatedAt = System.currentTimeMillis()
         val dir = File(context.cacheDir, "invoices")
         if (!dir.exists() && !dir.mkdirs())
             throw IllegalStateException("Cannot create invoices cache directory")
         dir.listFiles()?.forEach { it.delete() }
 
-        val file     = File(dir, "bill_${bill.billId}.pdf")
+        val file     = File(dir, "bill_SYME_${bill.billId}.pdf")
         val document = PdfDocument()
-        val paint    = Paint(Paint.ANTI_ALIAS_FLAG)
+        val p        = Paint(Paint.ANTI_ALIAS_FLAG)
 
         pageNumber = 1
-        startPage(document, paint)
+        startPage(document)
 
-        var y = drawHeader(context, currentCanvas!!, paint, bill)
-        y = drawInfoBlock(context, currentCanvas!!, paint, bill, y)
-        y = ensureSpace(document, paint, y, 80f)
-        y = drawConsumptionSection(context, document, paint, bill, y)
+        var y = drawHeader(context, currentCanvas!!, p, bill)
+        y = drawPeriodBanner(context, currentCanvas!!, p, bill, y)
+        y = drawMetaStrip(context, currentCanvas!!, p, bill, y)
+        y += 28f
+
+        y = drawSection(context, document, p,
+            title       = context.getString(R.string.section_consumption),
+            startY      = y,
+            minHeight   = 80f
+        ) { cv, paint, sy ->
+            var iy = sy
+            iy = row(cv, paint, context.getString(R.string.label_energy_kwh),
+                "${(bill.energyWh / 1000).roundToInt()} kWh", iy, false)
+            iy = row(cv, paint, context.getString(R.string.label_peak_power_kw),
+                "${(bill.peakPowerW / 1000).roundToInt()} kW", iy, true)
+            iy = row(cv, paint, context.getString(R.string.label_duration_h),
+                "${bill.hours.roundToInt()} h", iy, false)
+            iy
+        }
 
         val tariff = (bill.metadata?.tariffSnapshot as? Map<String, Any>)?.toTariffConfig()
         if (tariff != null) {
-            y = ensureSpace(document, paint, y, 220f)
-            y = drawTariffSection(context, document, paint, bill, tariff, y)
+            y = ensureSpace(document, p, y, 220f)
+            y = drawSection(context, document, p,
+                title     = context.getString(R.string.section_tariff),
+                startY    = y,
+                minHeight = 200f
+            ) { cv, paint, sy ->
+                var iy = sy; var alt = false
+                fun r(lbl: String, v: String) { iy = row(cv, paint, lbl, v, iy, alt.also { alt = !alt }) }
+                r(context.getString(R.string.label_price_per_kwh),   "${tariff.pricePerKwh.roundToInt()} ${bill.currency}/kWh")
+                r(context.getString(R.string.label_penalty_per_kwh), "${tariff.penaltyPricePerKwh.roundToInt()} ${bill.currency}/kWh")
+                r(context.getString(R.string.label_vat_rate),        "${(tariff.vatRate * 100).roundToInt()}%")
+                r(context.getString(R.string.label_other_taxes),     "${(tariff.otherTaxesRate * 100).roundToInt()}%")
+                r(context.getString(R.string.label_bonus_rate),      "${(tariff.bonusRate * 100).roundToInt()}%")
+                r(context.getString(R.string.label_social_discount), "${(tariff.socialDiscountRate * 100).roundToInt()}%")
+                r(context.getString(R.string.label_network_factor),  "${tariff.networkBalancingFactor}")
+                iy
+            }
         }
 
-        y = ensureSpace(document, paint, y, 80f)
-        y = drawTraceSection(context, document, paint, bill, y)
+        y = ensureSpace(document, p, y, 80f)
+        y = drawTraceSection(context, document, p, bill, y)
 
-        // S'assurer qu'il y a assez de place pour le bloc total
-        y = ensureSpace(document, paint, y, BOTTOM_RESERVED)
-        drawBottomArea(context, currentCanvas!!, paint, bill)
+        y = ensureSpace(document, p, y, BOTTOM_RESERVED)
+        drawFooterArea(context, currentCanvas!!, p, bill, generatedAt)
 
         document.finishPage(currentPage!!)
         document.writeTo(FileOutputStream(file))
@@ -85,355 +127,610 @@ object BillPdfGenerator {
         return file
     }
 
-    // ── Gestion des pages ─────────────────────────────────────────────────────
-    private fun startPage(document: PdfDocument, paint: Paint) {
-        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, pageNumber).create()
-        currentPage   = document.startPage(pageInfo)
+    // =========================================================================
+    // Gestion des pages
+    // =========================================================================
+
+    private fun startPage(document: PdfDocument) {
+        val info    = PdfDocument.PageInfo.Builder(595, 842, pageNumber).create()
+        currentPage = document.startPage(info)
         currentCanvas = currentPage!!.canvas
+
+        // Fond ivoire chaud sur toute la page
+        val p = Paint()
+        p.color = C_IVORY
+        currentCanvas!!.drawRect(0f, 0f, PAGE_W, PAGE_H, p)
     }
 
-    private fun newPage(document: PdfDocument, paint: Paint): Float {
+    private fun newPage(document: PdfDocument, p: Paint): Float {
         document.finishPage(currentPage!!)
         pageNumber++
-        startPage(document, paint)
-        // Mini header de continuation
-        paint.color = COLOR_PRIMARY
-        currentCanvas!!.drawRect(0f, 0f, PAGE_W, 32f, paint)
-        paint.color = COLOR_ACCENT
-        currentCanvas!!.drawRect(0f, 0f, 6f, 32f, paint)
-        paint.color = Color.parseColor("#9FA8DA")
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 9f
-        paint.textAlign = Paint.Align.RIGHT
-        currentCanvas!!.drawText("Page $pageNumber", PAGE_W - MARGIN, 21f, paint)
-        paint.textAlign = Paint.Align.LEFT
-        return 50f // y de départ sur nouvelle page
+        startPage(document)
+
+        // Bandeau continuité en haut — simple règle et numéro de page
+        p.color  = C_RULE
+        p.strokeWidth = 0.5f
+        currentCanvas!!.drawLine(MARGIN_L, 36f, PAGE_W - MARGIN_R, 36f, p)
+
+        p.color    = C_TEXT_FAINT
+        p.typeface = Typeface.create("serif", Typeface.NORMAL)
+        p.textSize = 8f
+        p.textAlign = Paint.Align.RIGHT
+        currentCanvas!!.drawText("— $pageNumber —", PAGE_W - MARGIN_R, 32f, p)
+        p.textAlign = Paint.Align.LEFT
+
+        return 52f
     }
 
-    /**
-     * Vérifie si [neededHeight] tient encore sur la page courante.
-     * Si non, crée une nouvelle page et retourne le nouveau y.
-     */
-    private fun ensureSpace(document: PdfDocument, paint: Paint, y: Float, neededHeight: Float): Float {
-        return if (y + neededHeight > LAST_PAGE_MAX_Y) newPage(document, paint) else y
-    }
+    private fun ensureSpace(document: PdfDocument, p: Paint, y: Float, need: Float): Float =
+        if (y + need > LAST_Y) newPage(document, p) else y
 
-    // ── HEADER (page 1 uniquement) ────────────────────────────────────────────
-    private fun drawHeader(context: Context, canvas: Canvas, paint: Paint, bill: Bill): Float {
-        paint.color = COLOR_PRIMARY
-        canvas.drawRect(0f, 0f, PAGE_W, 140f, paint)
+    // =========================================================================
+    // En-tête
+    // =========================================================================
 
-        paint.color = COLOR_ACCENT
-        canvas.drawRect(0f, 0f, 6f, 140f, paint)
+    private fun drawHeader(context: Context, cv: Canvas, p: Paint, bill: Bill): Float {
+        // Fond sombre en-tête
+        p.color = C_CHARCOAL
+        cv.drawRect(0f, 0f, PAGE_W, 118f, p)
 
-        // ── Logo (gauche) ─────────────────────────────────────────────────────
-        val logoSize = 70f
-        val logoLeft = MARGIN
-        val logoTop  = 35f
+        // Bande cuivre gauche
+        p.color = C_COPPER
+        cv.drawRect(0f, 0f, STRIPE_W, 118f, p)
 
-        val logoResId = context.resources.getIdentifier("ic_syme_logo", "drawable", context.packageName)
+        // Logo
+        val logoResId = context.resources
+            .getIdentifier("ic_syme_logo", "drawable", context.packageName)
             .takeIf { it != 0 }
-            ?: context.resources.getIdentifier("ic_launcher", "mipmap", context.packageName)
+            ?: context.resources
+                .getIdentifier("ic_launcher", "mipmap", context.packageName)
                 .takeIf { it != 0 }
 
+        val logoSize = 52f
+        val logoTop  = (118f - logoSize) / 2f
         if (logoResId != null) {
-            val bitmap = BitmapFactory.decodeResource(context.resources, logoResId)
-            if (bitmap != null) {
-                val scaled = Bitmap.createScaledBitmap(bitmap, logoSize.toInt(), logoSize.toInt(), true)
-                canvas.drawBitmap(scaled, logoLeft, logoTop, paint)
-            } else {
-                drawLogoPlaceholder(canvas, paint, logoLeft, logoTop, logoLeft + logoSize, logoTop + logoSize)
-            }
+            val bmp = BitmapFactory.decodeResource(context.resources, logoResId)
+            if (bmp != null) {
+                cv.drawBitmap(
+                    Bitmap.createScaledBitmap(bmp, logoSize.toInt(), logoSize.toInt(), true),
+                    MARGIN_L, logoTop, p
+                )
+            } else drawLogoMark(cv, p, MARGIN_L, logoTop, logoSize)
+        } else drawLogoMark(cv, p, MARGIN_L, logoTop, logoSize)
+
+        // Séparateur vertical léger entre logo et texte
+        p.color       = Color.argb(60, 255, 255, 255)
+        p.strokeWidth = 0.5f
+        cv.drawLine(MARGIN_L + logoSize + 18f, logoTop + 4f,
+            MARGIN_L + logoSize + 18f, logoTop + logoSize - 4f, p)
+
+        // Nom société
+        val tx = MARGIN_L + logoSize + 30f
+        p.color    = C_WHITE
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = 19f
+        cv.drawText(context.getString(R.string.company_name), tx, logoTop + 22f, p)
+
+        // Sous-titre
+        p.color    = C_COPPER_LIGHT
+        p.typeface = Typeface.create("serif", Typeface.NORMAL)
+        p.textSize = 8.5f
+        cv.drawText(
+            context.getString(R.string.invoice_tagline).uppercase(),
+            tx, logoTop + 36f, p
+        )
+
+        // Ligne de séparation fine entre nom et tagline
+        p.color       = Color.argb(50, 184, 115, 51)
+        p.strokeWidth = 0.5f
+        cv.drawLine(tx, logoTop + 40f, tx + 120f, logoTop + 40f, p)
+
+        // FACTURE / Invoice type (droite)
+        p.color     = C_WHITE
+        p.typeface  = Typeface.create("serif", Typeface.BOLD)
+        p.textSize  = 22f
+        p.textAlign = Paint.Align.RIGHT
+        cv.drawText(
+            context.getString(R.string.invoice_label).uppercase(),
+            PAGE_W - MARGIN_R, logoTop + 26f, p
+        )
+
+        // N° facture
+        p.color    = C_COPPER_LIGHT
+        p.typeface = Typeface.create("serif", Typeface.NORMAL)
+        p.textSize = 9f
+        cv.drawText("#${bill.billId}", PAGE_W - MARGIN_R, logoTop + 42f, p)
+
+        p.textAlign = Paint.Align.LEFT
+        return 140f
+    }
+
+    // =========================================================================
+    // Bandeau période (affiché juste sous l'en-tête sombre)
+    // =========================================================================
+
+    private fun drawPeriodBanner(
+        context: Context, cv: Canvas, p: Paint, bill: Bill, startY: Float
+    ): Float {
+        val h = 46f
+
+        // Fond blanc pur pour contraster avec l'ivoire du corps
+        p.color = C_WHITE
+        cv.drawRect(0f, startY, PAGE_W, startY + h, p)
+
+        // Filet cuivre en bas du bandeau
+        p.color       = C_COPPER
+        p.strokeWidth = 0.8f
+        cv.drawLine(0f, startY + h, PAGE_W, startY + h, p)
+
+        // Bande latérale cuivre (continuité avec header)
+        p.color = C_COPPER
+        cv.drawRect(0f, startY, STRIPE_W, startY + h, p)
+
+        val dateStart = TimeUtils.formatDate(bill.periodStart, "dd MMM yyyy")
+        val dateEnd   = TimeUtils.formatDate(bill.periodEnd,   "dd MMM yyyy")
+
+        // Label gauche
+        val lx = MARGIN_L
+        p.color    = C_TEXT_MUTED
+        p.typeface = Typeface.DEFAULT
+        p.textSize = 7.5f
+        cv.drawText(
+            context.getString(R.string.label_period).uppercase(),
+            lx, startY + 16f, p
+        )
+
+        // Période : "01 juin 2024  →  30 juin 2024"  (ou periodLabel si dispo)
+        val periodText = if (bill.periodLabel.isNotBlank()) {
+            bill.periodLabel
         } else {
-            drawLogoPlaceholder(canvas, paint, logoLeft, logoTop, logoLeft + logoSize, logoTop + logoSize)
+            "$dateStart  →  $dateEnd"
+        }
+        p.color    = C_CHARCOAL
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = 13f
+        cv.drawText(periodText, lx, startY + 34f, p)
+
+        // Dates individuelles en petit (start / end) si periodLabel utilisé
+        if (bill.periodLabel.isNotBlank()) {
+            p.color    = C_TEXT_MUTED
+            p.typeface = Typeface.DEFAULT
+            p.textSize = 8f
+            cv.drawText("$dateStart  —  $dateEnd", lx + p.measureText(periodText) + 12f, startY + 34f, p)
         }
 
-        // ── Textes centre ─────────────────────────────────────────────────────
-        paint.color = Color.parseColor("#9FA8DA")
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 9f
-        canvas.drawText(context.getString(R.string.invoice_tagline).uppercase(), MARGIN + 86f, 52f, paint)
+        // Échéance (dueDate) à droite si non nulle
+        if (bill.dueDate > 0L) {
+            val dueLabel = context.getString(R.string.label_due_date)
+            val dueValue = TimeUtils.formatDate(bill.dueDate, "dd MMM yyyy")
 
-        paint.color = COLOR_WHITE
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 22f
-        canvas.drawText(context.getString(R.string.company_name), MARGIN + 86f, 76f, paint)
+            p.color     = C_TEXT_MUTED
+            p.typeface  = Typeface.DEFAULT
+            p.textSize  = 7.5f
+            p.textAlign = Paint.Align.RIGHT
+            cv.drawText(dueLabel.uppercase(), PAGE_W - MARGIN_R, startY + 16f, p)
 
-        paint.color = Color.parseColor("#7986CB")
-        paint.strokeWidth = 1f
-        canvas.drawLine(MARGIN + 86f, 82f, MARGIN + 86f + 160f, 82f, paint)
+            p.color    = C_COPPER
+            p.typeface = Typeface.create("serif", Typeface.BOLD)
+            p.textSize = 12f
+            cv.drawText(dueValue, PAGE_W - MARGIN_R, startY + 34f, p)
 
-        paint.color = Color.parseColor("#9FA8DA")
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 10f
-        canvas.drawText(context.getString(R.string.bill_title), MARGIN + 86f, 98f, paint)
-
-        // ── Image rapport_financier (droite) ──────────────────────────────────
-        val imgSize  = 70f
-        val imgRight = PAGE_W - MARGIN
-        val imgLeft  = imgRight - imgSize
-        val imgTop   = 35f
-
-        val rapportBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.rapport_financier)
-        if (rapportBitmap != null) {
-            val scaledRapport = Bitmap.createScaledBitmap(rapportBitmap, imgSize.toInt(), imgSize.toInt(), true)
-            canvas.drawBitmap(scaledRapport, imgLeft, imgTop, paint)
+            p.textAlign = Paint.Align.LEFT
         }
 
-        // ── INVOICE label + bill ID (sous l'image) ────────────────────────────
-        paint.color = COLOR_WHITE
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 13f
-        paint.textAlign = Paint.Align.RIGHT
-        canvas.drawText(context.getString(R.string.invoice_label), PAGE_W - MARGIN, 118f, paint)
-
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 10f
-        paint.color = Color.parseColor("#9FA8DA")
-        canvas.drawText("#${bill.billId}", PAGE_W - MARGIN, 132f, paint)
-
-        paint.textAlign = Paint.Align.LEFT
-        return 158f
+        return startY + h
     }
 
-    // ── LOGO PLACEHOLDER ──────────────────────────────────────────────────────
-    private fun drawLogoPlaceholder(
-        canvas: Canvas, paint: Paint,
-        left: Float, top: Float, right: Float, bottom: Float
-    ) {
-        val cx = (left + right) / 2f
-        val cy = (top + bottom) / 2f
-        val r  = (right - left) / 2f
-
-        // Cercle de fond semi-transparent
-        paint.color = Color.parseColor("#33FFFFFF")
-        canvas.drawCircle(cx, cy, r, paint)
-
-        // Anneau (stroke)
-        paint.color = Color.parseColor("#7986CB")
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2f
-        canvas.drawCircle(cx, cy, r - 2f, paint)
-        paint.style = Paint.Style.FILL
-
-        // Initiale "S" centrée
-        paint.color = COLOR_WHITE
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 28f
-        paint.textAlign = Paint.Align.CENTER
-        val textY = cy - (paint.descent() + paint.ascent()) / 2f
-        canvas.drawText("S", cx, textY, paint)
-        paint.textAlign = Paint.Align.LEFT
+    private fun drawLogoMark(cv: Canvas, p: Paint, x: Float, y: Float, size: Float) {
+        // Carré géométrique simple comme marque
+        p.color = Color.argb(40, 255, 255, 255)
+        cv.drawRect(x, y, x + size, y + size, p)
+        p.color       = C_COPPER
+        p.style       = Paint.Style.STROKE
+        p.strokeWidth = 1.5f
+        cv.drawRect(x + 3f, y + 3f, x + size - 3f, y + size - 3f, p)
+        p.style     = Paint.Style.FILL
+        p.color     = C_WHITE
+        p.typeface  = Typeface.create("serif", Typeface.BOLD)
+        p.textSize  = 24f
+        p.textAlign = Paint.Align.CENTER
+        cv.drawText("S", x + size / 2f, y + size / 2f - (p.descent() + p.ascent()) / 2f, p)
+        p.textAlign = Paint.Align.LEFT
     }
 
-    // ── INFO BLOCK ────────────────────────────────────────────────────────────
-    private fun drawInfoBlock(context: Context, canvas: Canvas, paint: Paint, bill: Bill, startY: Float): Float {
-        val y = startY
-        paint.color = COLOR_LIGHT_BG
-        canvas.drawRoundRect(RectF(MARGIN, y, PAGE_W - MARGIN, y + 80f), 8f, 8f, paint)
+    // =========================================================================
+    // Bande méta (IDs, devise, etc.)
+    // =========================================================================
 
-        paint.color = COLOR_TEXT_GRAY
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 9f
-        val leftX  = MARGIN + 12f
-        val rightX = PAGE_W / 2 + 12f
+    private fun drawMetaStrip(
+        context: Context, cv: Canvas, p: Paint, bill: Bill, startY: Float
+    ): Float {
+        val h = 58f
 
-        canvas.drawText(context.getString(R.string.label_owner_id).uppercase(),        leftX,  y + 18f, paint)
-        canvas.drawText(context.getString(R.string.label_installation_id).uppercase(), leftX,  y + 44f, paint)
-        canvas.drawText(context.getString(R.string.label_bill_id).uppercase(),         rightX, y + 18f, paint)
-        canvas.drawText(context.getString(R.string.label_currency).uppercase(),        rightX, y + 44f, paint)
+        // Fond légèrement plus foncé que l'ivoire
+        p.color = C_IVORY_DARK
+        cv.drawRect(0f, startY, PAGE_W, startY + h, p)
 
-        paint.color = COLOR_TEXT_DARK
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 12f
-        canvas.drawText(bill.ownerId,        leftX,  y + 32f, paint)
-        canvas.drawText(bill.installationId, leftX,  y + 58f, paint)
-        canvas.drawText(bill.billId,         rightX, y + 32f, paint)
-        canvas.drawText(bill.currency,       rightX, y + 58f, paint)
+        // Filet supérieur cuivre très fin
+        p.color       = C_COPPER
+        p.strokeWidth = 0.8f
+        cv.drawLine(0f, startY, PAGE_W, startY, p)
 
-        paint.color = COLOR_DIVIDER
-        paint.strokeWidth = 1f
-        canvas.drawLine(PAGE_W / 2, y + 10f, PAGE_W / 2, y + 70f, paint)
+        // Filet inférieur neutre
+        p.color       = C_RULE
+        p.strokeWidth = 0.5f
+        cv.drawLine(0f, startY + h, PAGE_W, startY + h, p)
 
-        return y + 100f
-    }
+        val cols = floatArrayOf(MARGIN_L, PAGE_W * 0.32f, PAGE_W * 0.58f, PAGE_W * 0.78f)
+        val labels = arrayOf(
+            context.getString(R.string.label_owner_id),
+            context.getString(R.string.label_installation_id),
+            context.getString(R.string.label_bill_id),
+            context.getString(R.string.label_currency)
+        )
+        val values = arrayOf(bill.ownerId, bill.installationId, bill.billId, bill.currency)
 
-    // ── SECTION HEADER ────────────────────────────────────────────────────────
-    private fun drawSectionHeader(canvas: Canvas, paint: Paint, title: String, y: Float): Float {
-        paint.color = COLOR_ACCENT
-        canvas.drawRect(MARGIN, y, MARGIN + 4f, y + 22f, paint)
+        labels.forEachIndexed { i, lbl ->
+            val cx = cols[i]
+            p.color    = C_TEXT_MUTED
+            p.typeface = Typeface.DEFAULT
+            p.textSize = 7.5f
+            cv.drawText(lbl.uppercase(), cx, startY + 18f, p)
 
-        paint.color = COLOR_TEXT_DARK
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 13f
-        canvas.drawText(title, MARGIN + 12f, y + 15f, paint)
-
-        paint.color = COLOR_DIVIDER
-        paint.strokeWidth = 0.8f
-        canvas.drawLine(MARGIN + 12f, y + 24f, PAGE_W - MARGIN, y + 24f, paint)
-
-        return y + 36f
-    }
-
-    // ── ROW helper ────────────────────────────────────────────────────────────
-    private fun drawRow(canvas: Canvas, paint: Paint, label: String, value: String, y: Float, alt: Boolean): Float {
-        if (alt) {
-            paint.color = COLOR_ROW_ALT
-            canvas.drawRect(MARGIN, y - 14f, PAGE_W - MARGIN, y + 6f, paint)
+            p.color    = C_TEXT_BODY
+            p.typeface = Typeface.create("serif", Typeface.BOLD)
+            p.textSize = 11f
+            cv.drawText(values[i], cx, startY + 36f, p)
         }
-        paint.color = COLOR_TEXT_GRAY
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 11f
-        canvas.drawText(label, MARGIN + 8f, y, paint)
 
-        paint.color = COLOR_TEXT_DARK
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textAlign = Paint.Align.RIGHT
-        canvas.drawText(value, PAGE_W - MARGIN - 8f, y, paint)
-        paint.textAlign = Paint.Align.LEFT
+        // Séparateurs verticaux discrets entre colonnes
+        p.color       = C_RULE
+        p.strokeWidth = 0.4f
+        for (i in 1 until cols.size) {
+            cv.drawLine(cols[i] - 10f, startY + 10f, cols[i] - 10f, startY + h - 10f, p)
+        }
 
+        return startY + h
+    }
+
+    // =========================================================================
+    // Section générique avec callback
+    // =========================================================================
+
+    private fun drawSection(
+        context: Context,
+        document: PdfDocument,
+        p: Paint,
+        title: String,
+        startY: Float,
+        minHeight: Float,
+        content: (Canvas, Paint, Float) -> Float
+    ): Float {
+        var y = ensureSpace(document, p, startY, minHeight)
+
+        // Titre de section
+        p.color    = C_CHARCOAL
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = 11.5f
+        currentCanvas!!.drawText(title.uppercase(), MARGIN_L, y, p)
+
+        // Filet sous le titre
+        y += 6f
+        p.color       = C_COPPER
+        p.strokeWidth = 0.8f
+        currentCanvas!!.drawLine(MARGIN_L, y, PAGE_W - MARGIN_R, y, p)
+        y += 14f
+
+        y = content(currentCanvas!!, p, y)
+
+        // Espace après section
         return y + 20f
     }
 
-    // ── CONSUMPTION SECTION ───────────────────────────────────────────────────
-    private fun drawConsumptionSection(
-        context: Context, document: PdfDocument, paint: Paint, bill: Bill, startY: Float
-    ): Float {
-        var y = drawSectionHeader(currentCanvas!!, paint, context.getString(R.string.section_consumption), startY)
-        y = ensureSpace(document, paint, y, 20f)
-        y = drawRow(currentCanvas!!, paint, context.getString(R.string.label_energy_kwh),   "${(bill.energyWh / 1000).roundToInt()} kWh", y, false)
-        y = ensureSpace(document, paint, y, 20f)
-        y = drawRow(currentCanvas!!, paint, context.getString(R.string.label_peak_power_kw),"${(bill.peakPowerW / 1000).roundToInt()} kW",  y, true)
-        y = ensureSpace(document, paint, y, 20f)
-        y = drawRow(currentCanvas!!, paint, context.getString(R.string.label_duration_h),   "${bill.hours.roundToInt()} h",                y, false)
-        return y + 16f
+    private fun drawSectionHeader(cv: Canvas, p: Paint, title: String, y: Float): Float {
+        p.color    = C_CHARCOAL
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = 11.5f
+        cv.drawText(title.uppercase(), MARGIN_L, y, p)
+
+        val ry = y + 6f
+        p.color       = C_COPPER
+        p.strokeWidth = 0.8f
+        cv.drawLine(MARGIN_L, ry, PAGE_W - MARGIN_R, ry, p)
+        return ry + 14f
     }
 
-    // ── TARIFF SECTION ────────────────────────────────────────────────────────
-    private fun drawTariffSection(
-        context: Context, document: PdfDocument, paint: Paint,
-        bill: Bill, tariff: com.syme.domain.model.TariffConfig, startY: Float
-    ): Float {
-        var y = drawSectionHeader(currentCanvas!!, paint, context.getString(R.string.section_tariff), startY)
-        var alt = false
+    // =========================================================================
+    // Ligne de données
+    // =========================================================================
 
-        fun row(label: String, value: String) {
-            y = ensureSpace(document, paint, y, 20f)
-            y = drawRow(currentCanvas!!, paint, label, value, y, alt.also { alt = !alt })
+    private fun row(
+        cv: Canvas, p: Paint,
+        label: String, value: String,
+        y: Float, alt: Boolean
+    ): Float {
+        val rowH = 21f
+        val top  = y - 13f
+
+        if (alt) {
+            p.color = C_IVORY_DARK
+            cv.drawRect(MARGIN_L - 4f, top, PAGE_W - MARGIN_R + 4f, top + rowH, p)
         }
 
-        row(context.getString(R.string.label_price_per_kwh),   "${tariff.pricePerKwh.roundToInt()} ${bill.currency}/kWh")
-        row(context.getString(R.string.label_penalty_per_kwh), "${tariff.penaltyPricePerKwh.roundToInt()} ${bill.currency}/kWh")
-        row(context.getString(R.string.label_vat_rate),        "${(tariff.vatRate * 100).roundToInt()}%")
-        row(context.getString(R.string.label_other_taxes),     "${(tariff.otherTaxesRate * 100).roundToInt()}%")
-        row(context.getString(R.string.label_bonus_rate),      "${(tariff.bonusRate * 100).roundToInt()}%")
-        row(context.getString(R.string.label_social_discount), "${(tariff.socialDiscountRate * 100).roundToInt()}%")
-        row(context.getString(R.string.label_network_factor),  "${tariff.networkBalancingFactor}")
+        // Filet horizontal discret
+        p.color       = C_RULE
+        p.strokeWidth = 0.3f
+        cv.drawLine(MARGIN_L, top + rowH, PAGE_W - MARGIN_R, top + rowH, p)
 
-        return y + 16f
+        p.color    = C_TEXT_MUTED
+        p.typeface = Typeface.DEFAULT
+        p.textSize = 10.5f
+        cv.drawText(label, MARGIN_L + 4f, y, p)
+
+        p.color     = C_TEXT_BODY
+        p.typeface  = Typeface.create("serif", Typeface.BOLD)
+        p.textSize  = 10.5f
+        p.textAlign = Paint.Align.RIGHT
+        cv.drawText(value, PAGE_W - MARGIN_R - 4f, y, p)
+        p.textAlign = Paint.Align.LEFT
+
+        return y + rowH
     }
 
-    // ── TRACE SECTION ─────────────────────────────────────────────────────────
-    private fun drawTraceSection(
-        context: Context, document: PdfDocument, paint: Paint, bill: Bill, startY: Float
-    ): Float {
-        var y = drawSectionHeader(currentCanvas!!, paint, context.getString(R.string.section_trace), startY)
-        val trace = bill.metadata?.trace ?: emptyList()
+    // =========================================================================
+    // Section trace
+    // =========================================================================
 
-        if (trace.isEmpty()) {
-            y += 6f  // petit espace entre la ligne du header et le texte
-            paint.color = COLOR_TEXT_GRAY
-            paint.typeface = Typeface.DEFAULT
-            paint.textSize = 11f
-            currentCanvas!!.drawText(context.getString(R.string.bill_no_trace_available), MARGIN + 8f, y, paint)
-            y += 18f
-        } else {
-            y += 6f  // espace entre la ligne du header et le premier item
-            trace.forEachIndexed { index, step ->
-                y = ensureSpace(document, paint, y, 26f)
+    private fun drawTraceSection(
+        context: Context, document: PdfDocument, p: Paint, bill: Bill, startY: Float
+    ): Float {
+        var y = ensureSpace(document, p, startY, 80f)
+        y = drawSectionHeader(currentCanvas!!, p, context.getString(R.string.section_trace), y)
+
+        val trace = bill.trace
+
+        // ── Bloc dates ───────────────────────────────────────────────────────
+        val bTop = y
+        val bH   = 62f
+
+        // Fond bloc
+        p.color = C_IVORY_DARK
+        currentCanvas!!.drawRect(MARGIN_L - 4f, bTop, PAGE_W - MARGIN_R + 4f, bTop + bH, p)
+
+        // Bande cuivre gauche très fine
+        p.color = C_COPPER
+        currentCanvas!!.drawRect(MARGIN_L - 4f, bTop, MARGIN_L - 4f + 3f, bTop + bH, p)
+
+        val bx = MARGIN_L + 8f
+
+        // Colonne gauche — créé le
+        p.color    = C_TEXT_MUTED
+        p.typeface = Typeface.DEFAULT
+        p.textSize = 8f
+        currentCanvas!!.drawText(
+            context.getString(R.string.label_trace_created_at).uppercase(),
+            bx, bTop + 16f, p
+        )
+        p.color    = C_TEXT_BODY
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = 10.5f
+        currentCanvas!!.drawText(ts(trace.createdAt), bx, bTop + 30f, p)
+
+        // Colonne gauche — mis à jour le
+        p.color    = C_TEXT_MUTED
+        p.typeface = Typeface.DEFAULT
+        p.textSize = 8f
+        currentCanvas!!.drawText(
+            context.getString(R.string.label_trace_updated_at).uppercase(),
+            bx, bTop + 46f, p
+        )
+        p.color    = C_TEXT_BODY
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = 10.5f
+        currentCanvas!!.drawText(ts(trace.updatedAt), bx, bTop + 60f, p)
+
+        // Colonne droite — version et statut
+        p.color     = C_TEXT_MUTED
+        p.typeface  = Typeface.DEFAULT
+        p.textSize  = 8f
+        p.textAlign = Paint.Align.RIGHT
+        currentCanvas!!.drawText(
+            context.getString(R.string.label_trace_version).uppercase(),
+            PAGE_W - MARGIN_R - 8f, bTop + 16f, p
+        )
+        p.color    = C_TEXT_BODY
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = 10.5f
+        currentCanvas!!.drawText("v${trace.version}", PAGE_W - MARGIN_R - 8f, bTop + 30f, p)
+
+        val statusLabel = if (trace.active)
+            context.getString(R.string.label_trace_active)
+        else
+            context.getString(R.string.label_trace_inactive)
+
+        p.color    = if (trace.active) C_SUCCESS else C_TEXT_FAINT
+        p.typeface = Typeface.DEFAULT
+        p.textSize = 8.5f
+        currentCanvas!!.drawText(statusLabel, PAGE_W - MARGIN_R - 8f, bTop + 56f, p)
+        p.textAlign = Paint.Align.LEFT
+
+        y = bTop + bH + 18f
+
+        // ── Acteurs ───────────────────────────────────────────────────────────
+        if (trace.createdById.isNotBlank() || trace.updatedById.isNotBlank()) {
+            y = ensureSpace(document, p, y, 50f)
+
+            val lx = MARGIN_L
+            val rx = PAGE_W / 2 + 8f
+
+            if (trace.createdById.isNotBlank()) {
+                p.color    = C_TEXT_MUTED
+                p.typeface = Typeface.DEFAULT
+                p.textSize = 8f
+                currentCanvas!!.drawText(
+                    context.getString(R.string.label_trace_created_by).uppercase(),
+                    lx, y, p
+                )
+                p.color    = C_TEXT_BODY
+                p.typeface = Typeface.create("serif", Typeface.BOLD)
+                p.textSize = 10.5f
+                currentCanvas!!.drawText(trace.createdById, lx, y + 14f, p)
+                if (trace.createdByRole.isNotBlank()) {
+                    p.color    = C_TEXT_FAINT
+                    p.typeface = Typeface.DEFAULT
+                    p.textSize = 8.5f
+                    currentCanvas!!.drawText(trace.createdByRole, lx, y + 26f, p)
+                }
+            }
+
+            if (trace.updatedById.isNotBlank()) {
+                p.color    = C_TEXT_MUTED
+                p.typeface = Typeface.DEFAULT
+                p.textSize = 8f
+                currentCanvas!!.drawText(
+                    context.getString(R.string.label_trace_updated_by).uppercase(),
+                    rx, y, p
+                )
+                p.color    = C_TEXT_BODY
+                p.typeface = Typeface.create("serif", Typeface.BOLD)
+                p.textSize = 10.5f
+                currentCanvas!!.drawText(trace.updatedById, rx, y + 14f, p)
+                if (trace.updatedByRole.isNotBlank()) {
+                    p.color    = C_TEXT_FAINT
+                    p.typeface = Typeface.DEFAULT
+                    p.textSize = 8.5f
+                    currentCanvas!!.drawText(trace.updatedByRole, rx, y + 26f, p)
+                }
+            }
+
+            // Filet séparateur entre colonnes
+            p.color       = C_RULE
+            p.strokeWidth = 0.4f
+            currentCanvas!!.drawLine(PAGE_W / 2 - 2f, y - 4f, PAGE_W / 2 - 2f, y + 34f, p)
+
+            y += 44f
+        }
+
+        // ── Étapes (steps) ────────────────────────────────────────────────────
+        val steps = bill.metadata?.trace ?: emptyList()
+        if (steps.isNotEmpty()) {
+            y += 10f
+            steps.forEachIndexed { idx, step ->
+                y = ensureSpace(document, p, y, 24f)
+
                 val cv = currentCanvas!!
 
-                // Bulle numérotée
-                paint.color = COLOR_ACCENT
-                paint.style = Paint.Style.FILL
-                cv.drawCircle(MARGIN + 10f, y - 4f, 9f, paint)
+                // Numéro dans carré cuivre
+                p.color = C_COPPER
+                p.style = Paint.Style.FILL
+                cv.drawRect(MARGIN_L, y - 12f, MARGIN_L + 14f, y + 2f, p)
 
-                paint.color = COLOR_WHITE
-                paint.typeface = Typeface.DEFAULT_BOLD
-                paint.textSize = 8f
-                paint.textAlign = Paint.Align.CENTER
-                cv.drawText("${index + 1}", MARGIN + 10f, y - 4f - (paint.descent() + paint.ascent()) / 2f, paint)
-                paint.textAlign = Paint.Align.LEFT
+                p.color     = C_WHITE
+                p.typeface  = Typeface.DEFAULT_BOLD
+                p.textSize  = 7.5f
+                p.textAlign = Paint.Align.CENTER
+                cv.drawText(
+                    "${idx + 1}",
+                    MARGIN_L + 7f,
+                    y - 12f + 7f - (p.descent() + p.ascent()) / 2f,
+                    p
+                )
+                p.textAlign = Paint.Align.LEFT
 
-                // Texte du step
-                paint.color = COLOR_TEXT_DARK
-                paint.typeface = Typeface.DEFAULT
-                paint.textSize = 11f
-                cv.drawText(step, MARGIN + 26f, y, paint)
+                p.color    = C_TEXT_BODY
+                p.typeface = Typeface.DEFAULT
+                p.textSize = 10f
+                cv.drawText(step, MARGIN_L + 22f, y, p)
+
+                // Filet fin sous chaque étape
+                p.color       = C_RULE
+                p.strokeWidth = 0.3f
+                cv.drawLine(MARGIN_L + 22f, y + 4f, PAGE_W - MARGIN_R, y + 4f, p)
 
                 y += 22f
             }
         }
-        return y + 14f
+
+        return y + 16f
     }
 
-    // ── BOTTOM AREA (total + footer, ancrés en bas de la page courante) ───────
-    private fun drawBottomArea(context: Context, canvas: Canvas, paint: Paint, bill: Bill) {
-        val footerH  = 50f
-        val blockH   = 64f
-        val gap      = 12f
-        val blockTop = PAGE_H - footerH - gap - blockH
+    // =========================================================================
+    // Zone de pied de page (total + footer)
+    // =========================================================================
 
-        // ── Total block ───────────────────────────────────────────────────────
-        // Shadow
-        paint.color = Color.parseColor("#1A1A2E22")
-        canvas.drawRoundRect(RectF(MARGIN + 3f, blockTop + 3f, PAGE_W - MARGIN + 3f, blockTop + blockH + 3f), 10f, 10f, paint)
+    private fun drawFooterArea(
+        context: Context, cv: Canvas, p: Paint, bill: Bill, generatedAt: Long
+    ) {
+        val totalH   = 52f
+        val footerH  = 36f
+        val totalTop = PAGE_H - footerH - totalH - 6f
 
-        // Background
-        paint.color = COLOR_TOTAL_BG
-        canvas.drawRoundRect(RectF(MARGIN, blockTop, PAGE_W - MARGIN, blockTop + blockH), 10f, 10f, paint)
+        // ── Bloc total ────────────────────────────────────────────────────────
+        // Fond charbon
+        p.color = C_CHARCOAL
+        cv.drawRect(0f, totalTop, PAGE_W, totalTop + totalH, p)
 
-        // Accent stripe
-        paint.color = Color.parseColor("#7986CB")
-        canvas.drawRoundRect(RectF(MARGIN, blockTop, MARGIN + 8f, blockTop + blockH), 10f, 10f, paint)
-        canvas.drawRect(MARGIN + 4f, blockTop, MARGIN + 8f, blockTop + blockH, paint)
+        // Bande cuivre gauche
+        p.color = C_COPPER
+        cv.drawRect(0f, totalTop, STRIPE_W, totalTop + totalH, p)
 
-        // Label
-        paint.color = Color.parseColor("#9FA8DA")
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 10f
-        canvas.drawText(context.getString(R.string.label_total_due).uppercase(), MARGIN + 20f, blockTop + 22f, paint)
+        // Filet cuivre supérieur
+        p.color       = C_COPPER
+        p.strokeWidth = 1f
+        cv.drawLine(0f, totalTop, PAGE_W, totalTop, p)
 
-        // Amount — repli automatique si trop long
-        val amountText = "${bill.amountToPay.roundToInt()} ${bill.currency}"
-        paint.color = COLOR_WHITE
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 20f
-        if (paint.measureText(amountText) > CONTENT_W - 120f) paint.textSize = 16f
-        canvas.drawText(amountText, MARGIN + 20f, blockTop + 48f, paint)
+        // Label total
+        p.color    = C_COPPER_LIGHT
+        p.typeface = Typeface.DEFAULT
+        p.textSize = 8.5f
+        cv.drawText(
+            context.getString(R.string.label_total_due).uppercase(),
+            MARGIN_L, totalTop + 18f, p
+        )
 
-        // Status
-        paint.color = COLOR_SUCCESS
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 10f
-        paint.textAlign = Paint.Align.RIGHT
-        canvas.drawText(context.getString(R.string.label_status_generated), PAGE_W - MARGIN - 12f, blockTop + blockH / 2 + 4f, paint)
-        paint.textAlign = Paint.Align.LEFT
+        // Montant
+        val amount = "${bill.amountToPay.roundToInt()} ${bill.currency}"
+        p.color    = C_WHITE
+        p.typeface = Typeface.create("serif", Typeface.BOLD)
+        p.textSize = if (p.measureText(amount) > CONTENT_W - 130f) 17f else 22f
+        cv.drawText(amount, MARGIN_L, totalTop + 40f, p)
+
+        // Statut (droite)
+        p.color     = C_SUCCESS
+        p.typeface  = Typeface.DEFAULT
+        p.textSize  = 9f
+        p.textAlign = Paint.Align.RIGHT
+        cv.drawText(
+            context.getString(R.string.label_status_generated),
+            PAGE_W - MARGIN_R, totalTop + totalH / 2 + 4f, p
+        )
+        p.textAlign = Paint.Align.LEFT
 
         // ── Footer ────────────────────────────────────────────────────────────
-        val footerTop = PAGE_H - footerH
-        paint.color = COLOR_DIVIDER
-        paint.strokeWidth = 0.6f
-        canvas.drawLine(MARGIN, footerTop, PAGE_W - MARGIN, footerTop, paint)
+        val ftop = PAGE_H - footerH
 
-        paint.color = COLOR_TEXT_GRAY
-        paint.typeface = Typeface.DEFAULT
-        paint.textSize = 8f
-        paint.textAlign = Paint.Align.CENTER
-        canvas.drawText(
-            "Generated by SYME · Confidential document · Do not distribute",
-            PAGE_W / 2, footerTop + 20f, paint
+        p.color       = C_RULE
+        p.strokeWidth = 0.4f
+        cv.drawLine(MARGIN_L, ftop + 4f, PAGE_W - MARGIN_R, ftop + 4f, p)
+
+        p.color     = C_TEXT_MUTED
+        p.typeface  = Typeface.DEFAULT
+        p.textSize  = 7.5f
+        p.textAlign = Paint.Align.CENTER
+        cv.drawText(
+            context.getString(R.string.pdf_footer_confidential),
+            PAGE_W / 2f, ftop + 17f, p
         )
-        paint.textAlign = Paint.Align.LEFT
+
+        p.color    = C_TEXT_FAINT
+        p.textSize = 7f
+        cv.drawText(
+            context.getString(
+                R.string.label_pdf_generated_at,
+                TimeUtils.formatDate(generatedAt, "dd/MM/yyyy HH:mm:ss")
+            ),
+            PAGE_W / 2f, ftop + 28f, p
+        )
+        p.textAlign = Paint.Align.LEFT
     }
 }

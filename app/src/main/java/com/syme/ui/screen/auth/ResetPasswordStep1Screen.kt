@@ -32,7 +32,8 @@ import com.syme.ui.viewmodel.ResetPasswordViewModel
 fun ResetPasswordStep1Screen(
     viewModel: ResetPasswordViewModel,
     navController: NavController,
-    onBackToLogin: () -> Unit = {}
+    onBackToLogin: () -> Unit = {},
+    contentPadding: PaddingValues
 ) {
     val context = LocalContext.current
     var email      by remember { mutableStateOf("") }
@@ -73,7 +74,7 @@ fun ResetPasswordStep1Screen(
         onDispose { viewModel.resetState() }
     }
 
-    AuthBackground {
+    AuthBackground (contentPadding = contentPadding) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -125,17 +126,5 @@ fun ResetPasswordStep1Screen(
         }
 
         GlobalMessageSnapshot()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ResetPasswordStep1ScreenPreview() {
-    SYMETheme {
-        // Preview sans ViewModel — utilise un NavController local
-        ResetPasswordStep1Screen(
-            viewModel  = androidx.lifecycle.viewmodel.compose.viewModel(),
-            navController = NavController(LocalContext.current)
-        )
     }
 }

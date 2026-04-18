@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,13 +15,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.syme.ui.component.animation.banner.Banner
 
+@Composable
+fun AuthScreen(
+    content: @Composable (PaddingValues) -> Unit
+) {
+    Scaffold(
+        contentWindowInsets = WindowInsets.systemBars // 🔥 important
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            content(innerPadding)
+        }
+    }
+}
+
 // Fond dégradé commun à tous les screens auth
 @Composable
-fun AuthBackground(content: @Composable BoxScope.() -> Unit) {
+fun AuthBackground(contentPadding: PaddingValues, content: @Composable BoxScope.() -> Unit) {
     val bgTop    = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)
     val bgBottom = MaterialTheme.colorScheme.background
     Box(
         modifier = Modifier
+            .padding(contentPadding)
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(bgTop, bgBottom, bgBottom))),
         content = content

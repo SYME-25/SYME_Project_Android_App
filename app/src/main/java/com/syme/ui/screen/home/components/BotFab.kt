@@ -1,4 +1,4 @@
-package com.syme.ui.screen.home
+package com.syme.ui.screen.home.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -16,14 +16,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.syme.R
 import com.syme.ui.component.animation.Animation
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.delay
 
 private val BOT_MESSAGES = listOf(
@@ -40,12 +46,16 @@ private val BOT_MESSAGES = listOf(
 )
 
 @Composable
-fun BotFab(onClick: () -> Unit) {
-    val colorPrimary   = MaterialTheme.colorScheme.primary
-    val colorAccent    = MaterialTheme.colorScheme.secondary
-    val colorBubbleBg  = MaterialTheme.colorScheme.surfaceVariant
+fun BotFab(
+    onClick: () -> Unit,
+    hazeState: HazeState
+) {
+    val colorPrimary    = MaterialTheme.colorScheme.primary
+    val colorAccent     = MaterialTheme.colorScheme.secondary
+    val colorBubbleBg   = MaterialTheme.colorScheme.surfaceVariant
     val colorBubbleText = MaterialTheme.colorScheme.onSurfaceVariant
-    val colorOnPrimary = MaterialTheme.colorScheme.onPrimary
+    val colorOnPrimary  = MaterialTheme.colorScheme.onPrimary
+    val surfaceColor    = MaterialTheme.colorScheme.surface
 
     var initialExpanded by remember { mutableStateOf(true) }
     var bubbleVisible   by remember { mutableStateOf(false) }
@@ -76,31 +86,50 @@ fun BotFab(onClick: () -> Unit) {
             exit  = slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) +
                     fadeOut(tween(300))
         ) {
-            ChatBubble(text = stringResource(id = BOT_MESSAGES[messageIndex]), colorBubbleBg, colorBubbleText, colorPrimary, colorAccent)
+            ChatBubble(
+                text = stringResource(id = BOT_MESSAGES[messageIndex]),
+                colorBubbleBg = colorBubbleBg,
+                colorBubbleText = colorBubbleText,
+                colorPrimary = colorPrimary,
+                colorAccent = colorAccent,
+                hazeState = hazeState,
+                surfaceColor = surfaceColor
+            )
         }
 
         // ── FAB ───────────────────────────────────────────────────────────
         AnimatedContent(
             targetState = initialExpanded,
-            transitionSpec = {
-                fadeIn(tween(400)) togetherWith fadeOut(tween(300))
-            },
+            transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(300)) },
             label = "BotFabTransition"
         ) { isExpanded ->
             if (isExpanded) {
                 Box(
                     modifier = Modifier
                         .shadow(8.dp, RoundedCornerShape(32.dp))
+                        .clip(RoundedCornerShape(32.dp))
+                        .hazeEffect(
+                            state = hazeState,
+                            style = HazeStyle(
+                                backgroundColor = surfaceColor,
+                                tint = HazeTint(surfaceColor.copy(alpha = 0.35f)),
+                                blurRadius = 16.dp
+                            )
+                        )
                         .background(
-                            Brush.horizontalGradient(listOf(colorPrimary, colorAccent)),
-                            RoundedCornerShape(32.dp)
+                            Brush.horizontalGradient(
+                                listOf(
+                                    colorPrimary.copy(alpha = 0.75f),
+                                    colorAccent.copy(alpha = 0.75f)
+                                )
+                            )
                         )
                         .widthIn(max = 260.dp)
                 ) {
                     ExtendedFloatingActionButton(
                         onClick = onClick,
                         modifier = Modifier.widthIn(max = 260.dp),
-                        containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                        containerColor = Color.Transparent,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
                         icon = {
                             Animation(
@@ -124,16 +153,29 @@ fun BotFab(onClick: () -> Unit) {
                     modifier = Modifier
                         .size(62.dp)
                         .shadow(10.dp, CircleShape)
+                        .clip(CircleShape)
+                        .hazeEffect(
+                            state = hazeState,
+                            style = HazeStyle(
+                                backgroundColor = surfaceColor,
+                                tint = HazeTint(surfaceColor.copy(alpha = 0.35f)),
+                                blurRadius = 16.dp
+                            )
+                        )
                         .background(
-                            Brush.linearGradient(listOf(colorPrimary, colorAccent)),
-                            CircleShape
+                            Brush.linearGradient(
+                                listOf(
+                                    colorPrimary.copy(alpha = 0.50f),
+                                    colorAccent.copy(alpha = 0.50f)
+                                )
+                            )
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     FloatingActionButton(
                         onClick = onClick,
                         shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                        containerColor = Color.Transparent,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
                         modifier = Modifier.size(62.dp)
                     ) {
@@ -151,22 +193,42 @@ fun BotFab(onClick: () -> Unit) {
 @Composable
 private fun ChatBubble(
     text: String,
-    colorBubbleBg: androidx.compose.ui.graphics.Color,
-    colorBubbleText: androidx.compose.ui.graphics.Color,
-    colorPrimary: androidx.compose.ui.graphics.Color,
-    colorAccent: androidx.compose.ui.graphics.Color
+    colorBubbleBg: Color,
+    colorBubbleText: Color,
+    colorPrimary: Color,
+    colorAccent: Color,
+    hazeState: HazeState,
+    surfaceColor: Color
 ) {
+    val bubbleShape = RoundedCornerShape(
+        topStart = 18.dp,
+        topEnd = 18.dp,
+        bottomStart = 18.dp,
+        bottomEnd = 5.dp
+    )
+
     Box {
-        Surface(
-            shape = RoundedCornerShape(
-                topStart = 18.dp,
-                topEnd = 18.dp,
-                bottomStart = 18.dp,
-                bottomEnd = 5.dp
-            ),
-            shadowElevation = 8.dp,
-            color = colorBubbleBg,
-            modifier = Modifier.widthIn(max = 210.dp)
+        Box(
+            modifier = Modifier
+                .widthIn(max = 210.dp)
+                .shadow(8.dp, bubbleShape)
+                .clip(bubbleShape)
+                .hazeEffect(
+                    state = hazeState,
+                    style = HazeStyle(
+                        backgroundColor = surfaceColor,
+                        tint = HazeTint(colorBubbleBg.copy(alpha = 0.45f)),
+                        blurRadius = 16.dp
+                    )
+                )
+                .background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.0f to Color.White.copy(alpha = 0.08f),
+                            0.6f to Color.Transparent
+                        )
+                    )
+                )
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
@@ -202,13 +264,14 @@ private fun ChatBubble(
             }
         }
 
+        // ── Petite queue de bulle ─────────────────────────────────────────
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .offset(x = 6.dp, y = 4.dp)
                 .size(width = 10.dp, height = 8.dp)
                 .background(
-                    colorBubbleBg,
+                    colorBubbleBg.copy(alpha = 0.45f),
                     RoundedCornerShape(bottomEnd = 4.dp)
                 )
         )

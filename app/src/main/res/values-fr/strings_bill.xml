@@ -99,4 +99,29 @@
     <string name="label_total_due">Montant total dû</string>
     <string name="label_status_generated">● GÉNÉRÉE</string>
 
+    <string name="peak">Crête</string>
+    <string name="duration">Durée</string>
+
+    <string name="unit_kwh">kWh</string>
+    <string name="unit_kw">kW</string>
+    <string name="unit_hour">h</string>
+
+    <!-- PDF Footer -->
+    <string name="pdf_footer_confidential">Généré par SYME · Document confidentiel · Ne pas diffuser</string>
+
+    <!-- Traceability -->
+    <string name="label_trace_created_at">Généré le</string>
+    <string name="label_trace_updated_at">Mis à jour le</string>
+    <string name="label_trace_version">Version</string>
+    <string name="label_trace_active">● Actif</string>
+    <string name="label_trace_inactive">● Inactif</string>
+    <string name="label_trace_created_by">Créé par</string>
+    <string name="label_trace_updated_by">Modifié par</string>
+
+    <!-- PDF generation date -->
+    <string name="label_pdf_generated_at">PDF généré le %1$s</string>
+
+    <string name="label_period">Période de facturation</string>
+    <string name="label_due_date">Échéance</string>
+
 </resources>

@@ -1,4 +1,4 @@
-package com.syme.ui.screen.bill
+package com.syme.ui.component.dialog
 
 import android.util.Patterns
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,10 +24,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.Color
 import com.syme.R
 import com.syme.domain.mapper.toTariffConfig
 import com.syme.domain.model.Bill
 import com.syme.ui.component.field.EmailField
+import com.syme.ui.theme.Accent200
+import com.syme.ui.theme.Accent400
+import com.syme.ui.theme.SemanticError500
+import com.syme.ui.theme.SemanticSuccess500
 import kotlin.math.roundToInt
 
 @Composable
@@ -40,7 +45,8 @@ fun BillExportDialog(
     var email by remember { mutableStateOf("") }
     var emailTouched by remember { mutableStateOf(false) }
     val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    val emailError = if (emailTouched && !isEmailValid) stringResource(R.string.error_invalid_email) else ""
+    val emailError =
+        if (emailTouched && !isEmailValid) stringResource(R.string.error_invalid_email) else ""
 
     val traceSteps = bill.metadata?.trace ?: emptyList()
     val tariff = (bill.metadata?.tariffSnapshot as? Map<String, Any>)?.toTariffConfig()
@@ -49,25 +55,20 @@ fun BillExportDialog(
     val duration = bill.hours.roundToInt()
     val total = bill.amountToPay.roundToInt()
 
-    // Color palette matching the PDF
-    val colorPrimary = Color(0xFF1A237E)
-    val colorAccent = Color(0xFF3949AB)
-    val colorLightBg = Color(0xFFF5F7FF)
-    val colorRowAlt = Color(0xFFECEFFE)
-    val colorTextGray = Color(0xFF5C6BC0)
+    val colorScheme = MaterialTheme.colorScheme
 
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(20.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = colorScheme.surface,
         confirmButton = {
             Button(
                 onClick = { onExportClick(email) },
                 enabled = isEmailValid,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colorPrimary,
-                    disabledContainerColor = colorPrimary.copy(alpha = 0.35f)
+                    containerColor = colorScheme.primary,
+                    disabledContainerColor = colorScheme.primary.copy(alpha = 0.35f)
                 ),
                 modifier = Modifier.height(44.dp)
             ) {
@@ -93,25 +94,27 @@ fun BillExportDialog(
                     .heightIn(max = 560.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // ── HEADER CARD ───────────────────────────────────────────
+
+                // HEADER
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(
                             Brush.horizontalGradient(
-                                listOf(colorPrimary, colorAccent)
+                                listOf(colorScheme.primary, colorScheme.secondary)
                             )
                         )
                         .padding(vertical = 20.dp, horizontal = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.15f)),
+                                .background(colorScheme.onPrimary.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Image(
@@ -120,22 +123,26 @@ fun BillExportDialog(
                                 modifier = Modifier.size(48.dp)
                             )
                         }
+
                         Spacer(Modifier.height(10.dp))
+
                         Text(
                             text = stringResource(R.string.bill_details),
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color.White
+                            color = colorScheme.onPrimary
                         )
+
                         Spacer(Modifier.height(4.dp))
+
                         Surface(
                             shape = RoundedCornerShape(20.dp),
-                            color = Color.White.copy(alpha = 0.18f)
+                            color = colorScheme.onPrimary.copy(alpha = 0.18f)
                         ) {
                             Text(
                                 text = "#${bill.billId}",
                                 fontSize = 11.sp,
-                                color = Color.White.copy(alpha = 0.9f),
+                                color = colorScheme.onPrimary.copy(alpha = 0.9f),
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
                             )
                         }
@@ -144,117 +151,143 @@ fun BillExportDialog(
 
                 Spacer(Modifier.height(16.dp))
 
-                // ── IDENTIFICATION BLOCK ──────────────────────────────────
-                BillSectionTitle(stringResource(R.string.bill_identification), colorPrimary)
+                BillSectionTitle(stringResource(R.string.bill_identification))
+
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    color = colorLightBg
+                    color = colorScheme.surfaceVariant
                 ) {
-                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        IdRow(label = stringResource(R.string.label_bill_id),         value = bill.billId,          colorAccent)
-                        IdRow(label = stringResource(R.string.label_installation_id), value = bill.installationId,  colorAccent)
-                        IdRow(label = stringResource(R.string.label_owner_id),        value = bill.ownerId,         colorAccent)
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IdRow(stringResource(R.string.label_bill_id), bill.billId)
+                        IdRow(stringResource(R.string.label_installation_id), bill.installationId)
+                        IdRow(stringResource(R.string.label_owner_id), bill.ownerId)
                     }
                 }
 
                 Spacer(Modifier.height(16.dp))
 
-                // ── CONSUMPTION CHIPS ─────────────────────────────────────
-                BillSectionTitle(stringResource(R.string.bill_consumption), colorPrimary)
+                BillSectionTitle(stringResource(R.string.bill_consumption))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // 1. Énergie (Bleu Brand)
                     ConsumptionChip(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Bolt,
-                        label = "Energy",
-                        value = "$energy kWh",
-                        accentColor = Color(0xFF1565C0),
-                        bgColor = Color(0xFFE3F2FD)
+                        label = stringResource(R.string.energy),
+                        value = "$energy ${stringResource(R.string.unit_kwh)}",
+                        containerColor = colorScheme.primaryContainer,
+                        contentColor = colorScheme.onPrimaryContainer
                     )
+
+                    // 2. Crête (Orange/Warning)
                     ConsumptionChip(
                         modifier = Modifier.weight(1f),
                         icon = Icons.AutoMirrored.Filled.TrendingUp,
-                        label = "Peak",
-                        value = "$peak kW",
-                        accentColor = Color(0xFF6A1B9A),
-                        bgColor = Color(0xFFF3E5F5)
+                        label = stringResource(R.string.peak),
+                        value = "$peak ${stringResource(R.string.unit_kw)}",
+                        containerColor = colorScheme.tertiaryContainer,
+                        contentColor = colorScheme.onTertiaryContainer
                     )
+
+                    // 3. Durée (Teal Accent)
                     ConsumptionChip(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Timer,
-                        label = "Duration",
-                        value = "$duration h",
-                        accentColor = Color(0xFF00695C),
-                        bgColor = Color(0xFFE0F2F1)
+                        label = stringResource(R.string.duration),
+                        value = "$duration ${stringResource(R.string.unit_hour)}",
+                        containerColor = colorScheme.secondaryContainer,
+                        contentColor = colorScheme.onSecondaryContainer
                     )
                 }
 
                 Spacer(Modifier.height(16.dp))
 
-                // ── TARIFF SECTION ────────────────────────────────────────
                 if (tariff != null) {
-                    BillSectionTitle(stringResource(R.string.bill_tariff_section), colorPrimary)
+                    BillSectionTitle(stringResource(R.string.bill_tariff_section))
+
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        color = colorLightBg
+                        color = colorScheme.surfaceVariant
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            TariffRow(stringResource(R.string.label_price_per_kwh),   "${tariff.pricePerKwh.roundToInt()} ${bill.currency}/kWh", false, colorRowAlt)
-                            TariffRow(stringResource(R.string.label_penalty_per_kwh), "${tariff.penaltyPricePerKwh.roundToInt()} ${bill.currency}/kWh", true, colorRowAlt)
-                            TariffRow(stringResource(R.string.label_vat_rate),        "${(tariff.vatRate * 100).roundToInt()}%", false, colorRowAlt)
-                            TariffRow(stringResource(R.string.label_other_taxes),     "${(tariff.otherTaxesRate * 100).roundToInt()}%", true, colorRowAlt)
-                            TariffRow(stringResource(R.string.label_bonus_rate),      "−${(tariff.bonusRate * 100).roundToInt()}%", false, colorRowAlt)
-                            TariffRow(stringResource(R.string.label_social_discount), "−${(tariff.socialDiscountRate * 100).roundToInt()}%", true, colorRowAlt)
-                            TariffRow(stringResource(R.string.label_network_factor),  "× ${tariff.networkBalancingFactor}", false, colorRowAlt)
+                            TariffRow(stringResource(R.string.label_price_per_kwh),
+                                "${tariff.pricePerKwh.roundToInt()} ${bill.currency}/${stringResource(R.string.unit_kwh)}")
+
+                            TariffRow(stringResource(R.string.label_penalty_per_kwh),
+                                "${tariff.penaltyPricePerKwh.roundToInt()} ${bill.currency}/${stringResource(R.string.unit_kwh)}")
+
+                            TariffRow(stringResource(R.string.label_vat_rate),
+                                "${(tariff.vatRate * 100).roundToInt()}%")
+
+                            TariffRow(stringResource(R.string.label_other_taxes),
+                                "${(tariff.otherTaxesRate * 100).roundToInt()}%")
+
+                            TariffRow(stringResource(R.string.label_bonus_rate),
+                                "−${(tariff.bonusRate * 100).roundToInt()}%")
+
+                            TariffRow(stringResource(R.string.label_social_discount),
+                                "−${(tariff.socialDiscountRate * 100).roundToInt()}%")
+
+                            TariffRow(stringResource(R.string.label_network_factor),
+                                "× ${tariff.networkBalancingFactor}")
                         }
                     }
+
                     Spacer(Modifier.height(16.dp))
                 }
 
-                // ── TRACE SECTION ─────────────────────────────────────────
-                BillSectionTitle(stringResource(R.string.bill_calculation_trace), colorPrimary)
-                if (traceSteps.isEmpty()) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = colorLightBg
-                    ) {
+                BillSectionTitle(stringResource(R.string.bill_calculation_trace))
+
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = colorScheme.surfaceVariant
+                ) {
+                    if (traceSteps.isEmpty()) {
                         Text(
                             text = stringResource(R.string.bill_no_trace_available),
-                            color = colorTextGray,
+                            color = colorScheme.onSurfaceVariant,
                             fontSize = 13.sp,
                             modifier = Modifier.padding(12.dp)
                         )
-                    }
-                } else {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = colorLightBg
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    } else {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             traceSteps.forEachIndexed { index, step ->
                                 Row(verticalAlignment = Alignment.Top) {
+
                                     Box(
                                         modifier = Modifier
                                             .size(20.dp)
                                             .clip(CircleShape)
-                                            .background(colorAccent),
+                                            .background(colorScheme.secondary),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
                                             text = "${index + 1}",
-                                            color = Color.White,
+                                            color = colorScheme.onSecondary,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
+
                                     Spacer(Modifier.width(8.dp))
-                                    Text(text = step, fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
+
+                                    Text(
+                                        text = step,
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.padding(top = 2.dp)
+                                    )
                                 }
                             }
                         }
@@ -263,14 +296,16 @@ fun BillExportDialog(
 
                 Spacer(Modifier.height(16.dp))
 
-                // ── TOTAL BLOCK ───────────────────────────────────────────
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Brush.horizontalGradient(listOf(colorPrimary, colorAccent)))
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    contentAlignment = Alignment.CenterStart
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(colorScheme.primary, colorScheme.secondary)
+                            )
+                        )
+                        .padding(horizontal = 20.dp, vertical = 14.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -280,23 +315,24 @@ fun BillExportDialog(
                         Column {
                             Text(
                                 text = stringResource(R.string.label_total_due).uppercase(),
-                                color = Color.White.copy(alpha = 0.7f),
+                                color = colorScheme.onPrimary.copy(alpha = 0.7f),
                                 fontSize = 10.sp,
-                                fontWeight = FontWeight.Medium,
-                                letterSpacing = 1.sp
+                                fontWeight = FontWeight.Medium
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
                                 text = "$total ${bill.currency}",
-                                color = Color.White,
+                                color = colorScheme.onPrimary,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.ExtraBold
                             )
                         }
+
                         Icon(
                             Icons.Default.Payments,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.4f),
+                            // Utiliser l'accent pour faire briller l'icône de paiement
+                            tint = if (isSystemInDarkTheme()) Accent400 else Accent200,
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -304,45 +340,46 @@ fun BillExportDialog(
 
                 Spacer(Modifier.height(20.dp))
 
-                // ── EMAIL EXPORT ──────────────────────────────────────────
-                HorizontalDivider(color = Color(0xFFC5CAE9))
+                HorizontalDivider(color = colorScheme.outlineVariant)
+
                 Spacer(Modifier.height(14.dp))
+
                 Text(
                     text = stringResource(R.string.bill_export_indication),
                     fontSize = 13.sp,
-                    color = colorTextGray,
+                    color = colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
+
                 Spacer(Modifier.height(10.dp))
+
                 EmailField(
                     value = email,
                     onValueChange = { email = it; emailTouched = true },
                     label = stringResource(R.string.enter_email),
                     error = emailError
                 )
+
                 Spacer(Modifier.height(4.dp))
             }
         }
     )
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// SUB COMPONENTS
 
 @Composable
-private fun IdRow(label: String, value: String, accentColor: Color) {
+private fun IdRow(label: String, value: String) {
+    val colorScheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, fontSize = 11.sp, color = accentColor, fontWeight = FontWeight.Medium)
-        Text(
-            text = value,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        // Neutral 600 pour le label (discret)
+        Text(label, fontSize = 11.sp, color = colorScheme.onSurfaceVariant)
+        // Darker text pour la valeur
+        Text(value, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = colorScheme.onSurface)
     }
 }
 
@@ -352,84 +389,65 @@ private fun ConsumptionChip(
     icon: ImageVector,
     label: String,
     value: String,
-    accentColor: Color,
-    bgColor: Color
+    containerColor: Color,
+    contentColor: Color
 ) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        color = bgColor
+        color = containerColor
     ) {
         Column(
             modifier = Modifier.padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(icon, contentDescription = null, tint = accentColor, modifier = Modifier.size(20.dp))
-            Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = accentColor)
-            Text(text = label, fontSize = 10.sp, color = accentColor.copy(alpha = 0.7f))
+            Icon(icon, null, tint = contentColor, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = value,
+                fontWeight = FontWeight.Bold,
+                color = contentColor,
+                fontSize = 14.sp
+            )
+            Text(
+                text = label,
+                fontSize = 10.sp,
+                color = contentColor.copy(alpha = 0.8f)
+            )
         }
     }
 }
 
 @Composable
-private fun TariffRow(label: String, value: String, alt: Boolean, altColor: Color) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(if (alt) Modifier.background(altColor, RoundedCornerShape(6.dp)) else Modifier)
-            .padding(horizontal = 8.dp, vertical = 6.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = label, fontSize = 12.sp, color = Color(0xFF5C6BC0))
-            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1A1A2E))
-        }
+private fun TariffRow(label: String, value: String, isDiscount: Boolean = false, isTax: Boolean = false) {
+    val colorScheme = MaterialTheme.colorScheme
+    val valueColor = when {
+        isDiscount -> SemanticSuccess500 // Vert pour les bonus/remises
+        isTax -> SemanticError500      // Rouge pour les taxes/pénalités
+        else -> colorScheme.onSurface
     }
-}
 
-@Composable
-fun BillSectionTitle(text: String, color: Color = Color(0xFF1A237E)) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Text(label, fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
+        Text(value, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = valueColor)
+    }
+}
+@Composable
+fun BillSectionTitle(text: String) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
                 .width(4.dp)
                 .height(18.dp)
                 .clip(RoundedCornerShape(2.dp))
-                .background(color)
+                .background(colorScheme.primary)
         )
         Spacer(Modifier.width(8.dp))
-        Text(
-            text = text,
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            color = color
-        )
-    }
-}
-
-@Composable
-fun BillInfoRow(icon: ImageVector, text: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color(0xFF3949AB),
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(text = text, fontSize = 15.sp)
+        Text(text, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.primary)
     }
 }

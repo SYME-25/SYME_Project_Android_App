@@ -22,14 +22,15 @@ import com.syme.ui.theme.SYMETheme
 @Composable
 fun ResetPasswordStep2Screen(
     navController: NavController,
-    onResetComplete: () -> Unit = {}
+    onResetComplete: () -> Unit = {},
+    contentPadding: PaddingValues
 ) {
     val submitText      = stringResource(R.string.password_new_submit)
     val backToLoginText = stringResource(R.string.password_new_back_to_login)
     val newLabelText    = stringResource(R.string.password_new_label)
     val subtitleText    = stringResource(R.string.password_reset_check_email)
 
-    AuthBackground {
+    AuthBackground (contentPadding = contentPadding) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -74,13 +75,5 @@ fun ResetPasswordStep2Screen(
         }
 
         GlobalMessageSnapshot()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ResetPasswordStep2ScreenPreview() {
-    SYMETheme {
-        ResetPasswordStep2Screen(navController = NavController(LocalContext.current))
     }
 }

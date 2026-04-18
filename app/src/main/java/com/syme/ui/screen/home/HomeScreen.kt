@@ -46,6 +46,8 @@ import com.syme.domain.state.UiState
 import com.syme.ui.component.animation.banner.Banner
 import com.syme.ui.component.card.InstallationRow
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.component.dialog.InstallationDeleteDialog
+import com.syme.ui.component.dialog.InstallationEditDialog
 import com.syme.ui.component.filter.FilterSection
 import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
@@ -64,6 +66,9 @@ fun HomeScreen(
     val currentUser = LocalCurrentUserSession.current
     var selectedType by remember { mutableStateOf<InstallationType?>(null) }
     val state by installationViewModel.state.collectAsState()
+
+    var installationToEdit   by remember { mutableStateOf<Installation?>(null) }
+    var installationToDelete by remember { mutableStateOf<Installation?>(null) }
 
     LaunchedEffect(currentUser?.userId) {
         val userId = currentUser?.userId
@@ -193,7 +198,9 @@ fun HomeScreen(
 
                     UserInstallationsList(
                         items = filtered,
-                        onClick = onNavigateToUserInstallationDetail
+                        onClick = onNavigateToUserInstallationDetail,
+                        onEdit = { installationToEdit   = it },
+                        onDelete = { installationToDelete = it }
                     )
                 }
 
@@ -216,6 +223,30 @@ fun HomeScreen(
                     .height(contentPadding.calculateBottomPadding() + 32.dp)
             )
         }
+    }
+
+    installationToEdit?.let { installation ->
+        InstallationEditDialog(
+            installation = installation,
+            onDismiss    = { installationToEdit = null },
+            onConfirm    = { updated ->
+                val userId = currentUser?.userId ?: return@InstallationEditDialog
+                installationViewModel.update(userId, updated)
+                installationToEdit = null
+            }
+        )
+    }
+
+    installationToDelete?.let { installation ->
+        InstallationDeleteDialog(
+            installation = installation,
+            onDismiss    = { installationToDelete = null },
+            onConfirm    = {
+                val userId = currentUser?.userId ?: return@InstallationDeleteDialog
+                installationViewModel.delete(userId, installation)
+                installationToDelete = null
+            }
+        )
     }
 }
 

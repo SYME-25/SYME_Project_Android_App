@@ -38,7 +38,8 @@ import com.syme.utils.TimeUtils
 fun RegisterScreen(
     viewModel: RegisterViewModel,
     navController: NavController,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    contentPadding: PaddingValues
 ) {
     val context = LocalContext.current
 
@@ -114,7 +115,7 @@ fun RegisterScreen(
     val confirmPasswordErrorMsg     = stringResource(R.string.register_confirm_password_error)
     val acceptPolicyErrorMsg        = stringResource(R.string.register_accept_policy_error)
 
-    AuthBackground {
+    AuthBackground( contentPadding = contentPadding) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,

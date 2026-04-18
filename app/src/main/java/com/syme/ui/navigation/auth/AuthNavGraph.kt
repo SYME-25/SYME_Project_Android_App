@@ -25,7 +25,8 @@ fun NavGraphBuilder.authNavGraph(
         LoginScreen(
             viewModel = loginViewModel,
             onNavigateToRegister = { navController.navigate(AuthRoute.Register.route) },
-            onNavigateToResetPassword = { navController.navigate(AuthRoute.ResetPasswordStep1.route) }
+            onNavigateToResetPassword = { navController.navigate(AuthRoute.ResetPasswordStep1.route) },
+            contentPadding = contentPadding
         )
     }
 
@@ -33,7 +34,8 @@ fun NavGraphBuilder.authNavGraph(
         RegisterScreen(
             viewModel = registerViewModel,
             navController = navController,
-            onNavigateBack = { navController.popBackStack() }
+            onNavigateBack = { navController.popBackStack() },
+            contentPadding = contentPadding
         )
     }
 
@@ -41,14 +43,16 @@ fun NavGraphBuilder.authNavGraph(
         ResetPasswordStep1Screen(
             navController = navController,
             onBackToLogin = { navController.popBackStack() },
-            viewModel = resetPasswordViewModel
+            viewModel = resetPasswordViewModel,
+            contentPadding = contentPadding
         )
     }
 
     composable(AuthRoute.ResetPasswordStep2.route) {
         ResetPasswordStep2Screen(
             navController = navController,
-            onResetComplete = { navController.popBackStack(AuthRoute.Login.route, false) }
+            onResetComplete = { navController.popBackStack(AuthRoute.Login.route, false) },
+            contentPadding = contentPadding
         )
     }
 

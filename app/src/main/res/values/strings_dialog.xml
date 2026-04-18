@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_edit">Edit</string>
+
+    <string name="error_field_required">This field is required</string>
+    <string name="error_positive_number">Must be a positive number</string>
+    <string name="error_positive_integer">Must be a positive integer</string>
+    <string name="error_between_0_and_1">Must be between 0 and 1</string>
+    <string name="error_between_0_and_24">Must be between 0 and 24</string>
+
+    <string name="dialog_edit_appliance_title">Edit appliance</string>
+    <string name="dialog_delete_appliance_title">Delete appliance</string>
+    <string name="dialog_delete_appliance_message">Are you sure you want to delete \"%1$s\"? This action cannot be undone.</string>
+
+    <string name="label_appliance_id">Identifier (read-only)</string>
+    <string name="label_is_smart">Smart appliance</string>
+    <string name="label_is_smart_subtitle">Compatible with automations</string>
+    <string name="label_power_watt">Nominal power</string>
+    <string name="label_power_factor">Power factor</string>
+    <string name="label_usage_hours">Daily usage</string>
+
+    <string name="dialog_edit_circuit_title">Edit circuit</string>
+    <string name="dialog_delete_circuit_title">Delete circuit</string>
+    <string name="dialog_delete_circuit_message">Are you sure you want to delete the circuit \"%1$s\"? This action cannot be undone.</string>
+
+    <string name="label_circuit_id">Identifier (read-only)</string>
+    <string name="label_circuit_name">Circuit name</string>
+    <string name="label_meter">Associated meter</string>
+    <string name="label_select_meter">Select a meter</string>
+    <string name="label_relay_channel">Relay channel</string>
+    <string name="label_priority">Load shedding priority</string>
+    <string name="label_is_protected">Protected circuit</string>
+    <string name="label_is_protected_subtitle">Will not be shed in case of overload</string>
+
+    <string name="dialog_edit_installation_title">Edit installation</string>
+    <string name="dialog_delete_installation_title">Delete installation</string>
+    <string name="dialog_delete_installation_message">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="dialog_delete_installation_warning">⚠️ All associated data (appliances, meters, circuits) will be permanently lost.</string>
+
+    <string name="label_name">Name</string>
+    <string name="label_address">Address</string>
+    <string name="label_location">GPS Coordinates</string>
+    <string name="label_latitude">Latitude</string>
+    <string name="label_longitude">Longitude</string>
+    <string name="label_power_subscribed">Subscribed power</string>
+    <string name="label_energy_wh">Daily energy</string>
+    <string name="label_has_solar_panels">Solar panels</string>
+    <string name="label_has_solar_panels_subtitle">Local energy production</string>
+    <string name="label_solar_power_kw">Installed peak power</string>
+</resources>

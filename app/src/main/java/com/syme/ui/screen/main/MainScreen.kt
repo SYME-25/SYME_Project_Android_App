@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -24,12 +23,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.syme.domain.state.MainNavigationState
 import com.syme.ui.navigation.main.MainRoute
 import com.syme.ui.screen.bot.components.BotTopBar
-import com.syme.ui.screen.home.BotFab
+import com.syme.ui.screen.home.components.BotFab
 import com.syme.ui.screen.home.components.HomeBottomBar
 import com.syme.ui.screen.home.HomeHeader
 import com.syme.ui.snapshot.GlobalMessageSnapshot
 import com.syme.ui.viewmodel.BotViewModel
 import com.syme.ui.viewmodel.NotificationsViewModel
+import dev.chrisbanes.haze.hazeSource
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -109,7 +109,7 @@ fun MainScreen(
             )
 
             // ── CONTENU (NavHost) ──────────────────────────────────
-            Box(modifier = Modifier.fillMaxSize().haze(hazeState)) {
+            Box(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {
                 content(contentPadding)
             }
 
@@ -152,14 +152,14 @@ fun MainScreen(
                                 if (route == baseRoute) {
                                     // ✅ On est déjà sur ce tab (ou on y revient depuis son overlay)
                                     // → on dépile juste l'overlay si besoin, sans navigate()
-                                    if (currentRoute in overlayRoutes) {
+                                    while (currentRoute in overlayRoutes) {
                                         navController.popBackStack()
                                     }
                                     // Si déjà sur le bon tab sans overlay → rien à faire
                                 } else {
                                     // ✅ Changement de tab réel
                                     // → on dépile l'overlay d'abord si nécessaire
-                                    if (currentRoute in overlayRoutes) {
+                                    while (currentRoute in overlayRoutes) {
                                         navController.popBackStack()
                                     }
                                     navController.navigate(route) {
@@ -194,9 +194,10 @@ fun MainScreen(
                         ),
                     contentAlignment = Alignment.BottomEnd
                 ) {
-                    BotFab {
-                        navController.navigate(MainRoute.BotScreen.route)
-                    }
+                    BotFab (
+                        onClick = { navController.navigate(MainRoute.BotScreen.route) },
+                        hazeState = hazeState
+                    )
                 }
             }
 

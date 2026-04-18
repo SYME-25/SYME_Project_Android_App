@@ -18,7 +18,9 @@ import com.syme.ui.component.text.SectionLabel
 @Composable
 fun UserInstallationsList(
     items: List<Installation>,
-    onClick: (Installation) -> Unit
+    onClick: (Installation) -> Unit,
+    onEdit: ((Installation) -> Unit)? = null,
+    onDelete: ((Installation) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -40,7 +42,9 @@ fun UserInstallationsList(
         } else {
             InstallationRow(
                 items = items,
-                onClick = onClick
+                onClick = onClick,
+                onEdit = onEdit,
+                onDelete = onDelete
             )
         }
     }
