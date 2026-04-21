@@ -58,6 +58,7 @@
     <string name="home_appliance_filter_skyscraper">Gratte-ciel</string>
 
     <string name="home_appliance_filter_other">Autre</string>
+    <string name="home_add_appliance_title">Ajouter un appareil</string>
 
     <string name="home_appliance_desc_refrigerator">Maintient les aliments et les boissons au frais pour préserver leur fraîcheur.</string>
     <string name="home_appliance_desc_freezer">Conserve les aliments à des températures très basses pour une conservation à long terme.</string>

@@ -169,7 +169,7 @@ fun ConsumptionCard(
                                 labelOnDemand = stringResource(R.string.consumption_type_on_demand),
                                 labelSubscription = stringResource(R.string.consumption_type_subscription)
                             )
-                            EntityBadge(text = dynamicState.name, color = stateColor)
+                            EntityBadge(text = dynamicState.name, color = stateColor, modifier = Modifier.fillMaxWidth())
                         }
                     }
 

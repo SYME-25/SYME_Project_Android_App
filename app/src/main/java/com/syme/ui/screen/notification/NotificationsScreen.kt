@@ -32,7 +32,8 @@ import com.syme.ui.component.text.Title
 @Composable
 fun NotificationsScreen(
     viewModel: NotificationsViewModel,
-    contentPadding : PaddingValues
+    contentPadding : PaddingValues,
+    onBackClick: (() -> Unit)? = null
 ) {
     val context     = LocalContext.current
     val currentUser = LocalCurrentUserSession.current
@@ -77,7 +78,8 @@ fun NotificationsScreen(
 
         NotificationsHeader(
             unreadCount = unreadCount,
-            onMarkAllRead = { viewModel.markAllAsRead(userId) }
+            onMarkAllRead = { viewModel.markAllAsRead(userId) },
+            onBackClick = onBackClick
         )
 
         FilterSection(
@@ -146,7 +148,8 @@ fun NotificationsScreen(
 @Composable
 private fun NotificationsHeader(
     unreadCount: Int,
-    onMarkAllRead: () -> Unit
+    onMarkAllRead: () -> Unit,
+    onBackClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -158,7 +161,8 @@ private fun NotificationsHeader(
         Title(
             title = stringResource(R.string.notifications_title),
             padding = 0,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onBackClick = onBackClick
         )
         if (unreadCount > 0) {
             IconButton(onClick = onMarkAllRead) {

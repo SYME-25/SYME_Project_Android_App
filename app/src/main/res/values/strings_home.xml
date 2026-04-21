@@ -127,7 +127,9 @@
     <string name="home_greeting_subtitle_afternoon">Monitor your current consumption</string>
     <string name="home_greeting_subtitle_evening">Review today’s consumption</string>
 
-    <string name="installation_detail">Installation details</string>
+    <string name="installation_detail">Installation</string>
+
+    <string name="home_add_installation_title">Add an installation</string>
 
     <!-- Installation Overview Card -->
     <string name="installation_card_power_subscribed">Subscribed power</string>

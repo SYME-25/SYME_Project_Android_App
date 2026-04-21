@@ -26,7 +26,7 @@ import com.syme.ui.viewmodel.BotViewModel
 @Composable
 fun BotScreen(
     viewModel: BotViewModel,
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
 ) {
     val uiState        by viewModel.uiState.collectAsState()
     val messages       = uiState.messages
@@ -72,12 +72,17 @@ fun BotScreen(
         if (messages.isEmpty()) {
             // WelcomeScreen reçoit toute la taille disponible MOINS l'espace
             // réservé en bas pour la barre de saisie, via un padding bottom.
-            WelcomeScreen(
-                modifier  = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 100.dp), // ← évite que le contenu passe sous le ChatInputBar
-                onSuggest = { viewModel.sendMessage(it) }
-            )
+            Box(
+                modifier        = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                WelcomeScreen(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 100.dp), // ← évite que le contenu passe sous le ChatInputBar
+                    onSuggest = { viewModel.sendMessage(it) }
+                )
+            }
         } else {
             LazyColumn(
                 state   = listState,
@@ -96,7 +101,7 @@ fun BotScreen(
                     Spacer(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(contentPadding.calculateBottomPadding() + 32.dp)
+                            .height(contentPadding.calculateBottomPadding() + 112.dp)
                     )
                 }
             }
@@ -104,7 +109,11 @@ fun BotScreen(
 
         // ── INPUT BAR FIXE EN BAS ─────────────────────────────────────────────
         Box(
-            modifier        = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                ),
             contentAlignment = Alignment.BottomCenter
         ) {
             ChatInputBar(

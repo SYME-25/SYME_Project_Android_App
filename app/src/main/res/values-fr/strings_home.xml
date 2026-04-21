@@ -118,7 +118,8 @@
     <string name="home_greeting_subtitle_afternoon">Surveillez votre consommation actuelle</string>
     <string name="home_greeting_subtitle_evening">Consultez la consommation d\'aujourd\'hui</string>
 
-    <string name="installation_detail">Détails de l\'installation</string>
+    <string name="installation_detail">Installation</string>
+    <string name="home_add_installation_title">Ajouter une installation</string>
 
     <string name="installation_card_power_subscribed">Puissance souscrite</string>
     <string name="installation_card_power_value">%.1f kVA</string>

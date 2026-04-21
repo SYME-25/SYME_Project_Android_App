@@ -253,22 +253,20 @@ object BillPdfGenerator {
         context: Context, cv: Canvas, p: Paint, bill: Bill, startY: Float
     ): Float {
         val h = 46f
-
-        // Fond blanc pur pour contraster avec l'ivoire du corps
         p.color = C_WHITE
         cv.drawRect(0f, startY, PAGE_W, startY + h, p)
-
-        // Filet cuivre en bas du bandeau
         p.color       = C_COPPER
         p.strokeWidth = 0.8f
         cv.drawLine(0f, startY + h, PAGE_W, startY + h, p)
-
-        // Bande latérale cuivre (continuité avec header)
         p.color = C_COPPER
         cv.drawRect(0f, startY, STRIPE_W, startY + h, p)
 
         val dateStart = TimeUtils.formatDate(bill.periodStart, "dd MMM yyyy")
         val dateEnd   = TimeUtils.formatDate(bill.periodEnd,   "dd MMM yyyy")
+
+        // ── Calcul du nombre d'heures totales de la période ──────────────────
+        val periodMillis       = bill.periodEnd - bill.periodStart
+        val periodTotalHours   = (periodMillis / (1000f * 3600f)).roundToInt()
 
         // Label gauche
         val lx = MARGIN_L
@@ -280,10 +278,7 @@ object BillPdfGenerator {
             lx, startY + 16f, p
         )
 
-        // Période : "01 juin 2024  →  30 juin 2024"  (ou periodLabel si dispo)
-        val periodText = if (bill.periodLabel.isNotBlank()) {
-            bill.periodLabel
-        } else {
+        val periodText = bill.periodLabel.ifBlank {
             "$dateStart  →  $dateEnd"
         }
         p.color    = C_CHARCOAL
@@ -291,30 +286,39 @@ object BillPdfGenerator {
         p.textSize = 13f
         cv.drawText(periodText, lx, startY + 34f, p)
 
-        // Dates individuelles en petit (start / end) si periodLabel utilisé
+        // ── Nombre d'heures de la période juste après le texte de période ────
+        val periodTextWidth = p.measureText(periodText)
+        val hoursTag        = "  •  $periodTotalHours h"   // ex : "  •  720 h"
+        p.color    = C_COPPER
+        p.typeface = Typeface.create("serif", Typeface.NORMAL)
+        p.textSize = 10f
+        cv.drawText(hoursTag, lx + periodTextWidth, startY + 34f, p)
+
         if (bill.periodLabel.isNotBlank()) {
             p.color    = C_TEXT_MUTED
             p.typeface = Typeface.DEFAULT
             p.textSize = 8f
-            cv.drawText("$dateStart  —  $dateEnd", lx + p.measureText(periodText) + 12f, startY + 34f, p)
+            // On décale après le tag d'heures
+            val tagWidth = p.measureText(hoursTag)
+            cv.drawText(
+                "$dateStart  —  $dateEnd",
+                lx + periodTextWidth + tagWidth + 12f,
+                startY + 34f, p
+            )
         }
 
-        // Échéance (dueDate) à droite si non nulle
         if (bill.dueDate > 0L) {
             val dueLabel = context.getString(R.string.label_due_date)
             val dueValue = TimeUtils.formatDate(bill.dueDate, "dd MMM yyyy")
-
             p.color     = C_TEXT_MUTED
             p.typeface  = Typeface.DEFAULT
             p.textSize  = 7.5f
             p.textAlign = Paint.Align.RIGHT
             cv.drawText(dueLabel.uppercase(), PAGE_W - MARGIN_R, startY + 16f, p)
-
             p.color    = C_COPPER
             p.typeface = Typeface.create("serif", Typeface.BOLD)
             p.textSize = 12f
             cv.drawText(dueValue, PAGE_W - MARGIN_R, startY + 34f, p)
-
             p.textAlign = Paint.Align.LEFT
         }
 

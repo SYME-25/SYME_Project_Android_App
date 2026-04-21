@@ -1,16 +1,11 @@
 package com.syme.ui.screen.main
 
 import android.os.Build
-import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.*
 import dev.chrisbanes.haze.HazeState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.syme.domain.state.MainNavigationState
 import com.syme.ui.navigation.main.MainRoute
 import com.syme.ui.screen.bot.components.BotTopBar
 import com.syme.ui.screen.home.components.BotFab
@@ -41,6 +35,7 @@ fun MainScreen(
 ) {
     val unreadCount by notificationsViewModel.unreadCount
         .collectAsStateWithLifecycle()
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -49,10 +44,24 @@ fun MainScreen(
         MainRoute.ProfileScreen.route,
         MainRoute.BotScreen.route,
     )
+
     val routesWithoutFab = setOf(
-        MainRoute.BotScreen.route
+        MainRoute.BotScreen.route,
+        MainRoute.NotificationScreen.route,
+        MainRoute.ProfileScreen.route,
+        MainRoute.InstallationDetailScreen.route,
+        MainRoute.UserInstallationDetailScreen.route,
+        MainRoute.ApplianceDetailScreen.route
     )
-    val routesWithoutBottomBar = emptySet<String>()
+
+    val routesWithoutBottomBar = setOf(
+        MainRoute.NotificationScreen.route,
+        MainRoute.ProfileScreen.route,
+        MainRoute.BotScreen.route,
+        MainRoute.InstallationDetailScreen.route,
+        MainRoute.UserInstallationDetailScreen.route,
+        MainRoute.ApplianceDetailScreen.route
+    )
 
     var bottomBarHeightPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
@@ -60,45 +69,41 @@ fun MainScreen(
 
     val hazeState = remember { HazeState() }
 
-    val navigationState = remember { MainNavigationState() }
-
-    BackHandler {
-        val handled = navigationState.handleBack(currentRoute, navController)
-
-        if (!handled) {
-            navController.popBackStack()
-        }
-    }
-
     Scaffold(
         containerColor = Color.Transparent,
         contentWindowInsets = WindowInsets(0),
+
         topBar = {
-            if (currentRoute !in routesWithoutTopBar) {
-                HomeHeader(
-                    onNotificationsClick = {
-                        navController.navigate(MainRoute.NotificationScreen.route)
-                    },
-                    onProfileClick = {
-                        navController.navigate(MainRoute.ProfileScreen.route)
-                    },
-                    unreadCount = unreadCount
-                )
-            }
-            if (currentRoute == MainRoute.BotScreen.route) {
-                BotTopBar(
-                    onOpenHistory = { botViewModel.onToggleDrawer() },
-                    onNewConversation = { botViewModel.newConversation() }
-                )
+            when (currentRoute) {
+                MainRoute.BotScreen.route -> {
+                    BotTopBar(
+                        onOpenHistory = { botViewModel.onToggleDrawer() },
+                        onNewConversation = { botViewModel.newConversation() },
+                    )
+                }
+                !in routesWithoutTopBar -> {
+                    HomeHeader(
+                        onNotificationsClick = {
+                            navController.navigateOverlay(MainRoute.NotificationScreen.route)
+                        },
+                        onProfileClick = {
+                            navController.navigateOverlay(MainRoute.ProfileScreen.route)
+                        },
+                        unreadCount = unreadCount
+                    )
+                }
             }
         },
+
         bottomBar = {}
     ) { innerPadding ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+
             val bottomBarHeightDp = with(density) { bottomBarHeightPx.toDp() }
 
             val contentPadding = PaddingValues(
@@ -108,12 +113,16 @@ fun MainScreen(
                     0.dp
             )
 
-            // ── CONTENU (NavHost) ──────────────────────────────────
-            Box(modifier = Modifier.fillMaxSize().hazeSource(hazeState)) {
+            // ── CONTENU ─────────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .hazeSource(hazeState)
+            ) {
                 content(contentPadding)
             }
 
-            // ── BOTTOM BAR overlay ────────────────────────────────
+            // ── BOTTOM BAR ─────────────────────────
             if (currentRoute !in routesWithoutBottomBar) {
                 Box(
                     modifier = Modifier
@@ -128,12 +137,14 @@ fun MainScreen(
                         },
                         currentRoute = currentRoute,
                         onNavigate = { route ->
+
                             val tabRoutes = setOf(
                                 MainRoute.HomeScreen.route,
                                 MainRoute.ConsumptionScreen.route,
                                 MainRoute.BillScreen.route,
                                 MainRoute.SettingsScreen.route
                             )
+
                             val overlayRoutes = setOf(
                                 MainRoute.BotScreen.route,
                                 MainRoute.NotificationScreen.route,
@@ -141,7 +152,7 @@ fun MainScreen(
                             )
 
                             if (route in tabRoutes) {
-                                // Résoudre le "tab de base" réel sous l'overlay éventuel
+
                                 val baseRoute = if (currentRoute in overlayRoutes) {
                                     navController.previousBackStackEntry?.destination?.route
                                         ?: MainRoute.HomeScreen.route
@@ -149,69 +160,73 @@ fun MainScreen(
                                     currentRoute ?: MainRoute.HomeScreen.route
                                 }
 
-                                if (route == baseRoute) {
-                                    // ✅ On est déjà sur ce tab (ou on y revient depuis son overlay)
-                                    // → on dépile juste l'overlay si besoin, sans navigate()
-                                    while (currentRoute in overlayRoutes) {
+                                if (route != baseRoute) {
+
+                                    // Nettoyer overlay éventuel
+                                    while (navController.currentBackStackEntry?.destination?.route in overlayRoutes) {
                                         navController.popBackStack()
                                     }
-                                    // Si déjà sur le bon tab sans overlay → rien à faire
-                                } else {
-                                    // ✅ Changement de tab réel
-                                    // → on dépile l'overlay d'abord si nécessaire
-                                    while (currentRoute in overlayRoutes) {
-                                        navController.popBackStack()
-                                    }
+
                                     navController.navigate(route) {
                                         popUpTo(MainRoute.HomeScreen.route) {
                                             saveState = true
-                                            inclusive = false
                                         }
                                         launchSingleTop = true
                                         restoreState = true
                                     }
+                                } else {
+                                    // Juste fermer overlay si présent
+                                    while (navController.currentBackStackEntry?.destination?.route in overlayRoutes) {
+                                        navController.popBackStack()
+                                    }
                                 }
+
                             } else {
-                                // Navigation vers un overlay
-                                navController.navigate(route) {
-                                    launchSingleTop = true
-                                }
+                                navController.navigateOverlay(route)
                             }
                         }
                     )
                 }
             }
 
-            // ── FAB ───────────────────────────────────────────────
+            // ── FAB ────────────────────────────────
             if (currentRoute !in routesWithoutFab) {
-                val bottomBarHeightDp = with(density) { bottomBarHeightPx.toDp() }
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(
-                            bottom = navBarHeight + bottomBarHeightDp + 12.dp, // ✅ dynamique
+                            bottom = navBarHeight + with(density) { bottomBarHeightPx.toDp() } + 12.dp,
                             end = 16.dp
                         ),
                     contentAlignment = Alignment.BottomEnd
                 ) {
-                    BotFab (
-                        onClick = { navController.navigate(MainRoute.BotScreen.route) },
+                    BotFab(
+                        onClick = { navController.navigateOverlay(MainRoute.BotScreen.route) },
                         hazeState = hazeState
                     )
                 }
             }
 
-            // ── SNAPSHOT ──────────────────────────────────────────
+            // ── SNAPSHOT ───────────────────────────
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 GlobalMessageSnapshot(
+                    hazeState = hazeState,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 80.dp) // ✅ au-dessus de la BottomBar
+                        .padding(horizontal = 16.dp, vertical = 80.dp)
                         .widthIn(max = 620.dp)
                 )
             }
         }
+    }
+}
+
+// ── NAVIGATION OVERLAY CLEAN ─────────────────────
+fun NavHostController.navigateOverlay(route: String) {
+    navigate(route) {
+        popUpTo(route) { inclusive = true }
+        launchSingleTop = true
     }
 }

@@ -60,6 +60,8 @@
 
     <string name="home_appliance_filter_other">Other</string>
 
+    <string name="home_add_appliance_title">Add an appliance</string>
+
 
     <!-- ==== FILTERS / APPLIANCE DESCRIPTIONS ==== -->
     <string name="home_appliance_desc_refrigerator">Keeps food and beverages cold to preserve freshness.</string>

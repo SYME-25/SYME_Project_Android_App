@@ -1,5 +1,6 @@
 package com.syme.ui.screen.bill
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -102,8 +103,15 @@ fun BillScreen(
         }
     }
 
-    val currentBill = bills.firstOrNull()
-    val historyBills = if (bills.size > 1) bills.drop(1) else emptyList()
+    val now = System.currentTimeMillis()
+
+    val sortedBills = bills.sortedByDescending { it.periodEnd }
+
+    val currentBill = sortedBills.firstOrNull { it.periodEnd >= now }
+        ?: sortedBills.firstOrNull() // fallback : la plus récente si toutes sont passées
+
+    val historyBills = sortedBills
+        .filter { it.billId != currentBill?.billId && it.periodEnd < now }
 
     val billExportMsg = stringResource(R.string.bill_export)
     val billExportSuccessMsg = stringResource(R.string.bill_export_success)

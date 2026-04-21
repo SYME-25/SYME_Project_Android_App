@@ -82,20 +82,23 @@ fun NavGraphBuilder.mainNavGraph(
     composable (MainRoute.ProfileScreen.route) {
         ProfileScreen(
             userViewModel = userViewModel,
-            contentPadding = contentPadding)
+            contentPadding = contentPadding,
+            onBackClick = { navController.popBackStack() }
+            )
     }
 
     composable(MainRoute.NotificationScreen.route) {
         NotificationsScreen(
             viewModel = notificationsViewModel,
-            contentPadding = contentPadding
+            contentPadding = contentPadding,
+            onBackClick = { navController.popBackStack() }
         )
     }
 
     composable (MainRoute.BotScreen.route) {
         BotScreen(
             viewModel = botViewModel,
-            contentPadding = contentPadding
+            contentPadding = contentPadding,
             )
     }
 
@@ -141,7 +144,8 @@ fun NavGraphBuilder.mainNavGraph(
                 onApplianceClick = { appliance ->
                     navController.navigateToApplianceDetail(appliance, installationId)
                 },
-                contentPadding = contentPadding
+                contentPadding = contentPadding,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

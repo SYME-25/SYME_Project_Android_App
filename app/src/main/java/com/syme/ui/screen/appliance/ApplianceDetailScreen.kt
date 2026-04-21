@@ -3,8 +3,10 @@ package com.syme.ui.screen.appliance
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +16,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.syme.domain.mapper.imageResId
 import com.syme.ui.component.animation.ItemDetailHeader
@@ -21,6 +24,7 @@ import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.viewmodel.ApplianceViewModel
 import com.syme.utils.applianceCatalog
 import com.syme.ui.viewmodel.CircuitViewModel
+import com.syme.R
 
 @Composable
 fun ApplianceDetailScreen(
@@ -55,6 +59,7 @@ fun ApplianceDetailScreen(
 
             ItemDetailHeader(
                 id = appliance.type.imageResId,
+                label = stringResource(R.string.home_add_appliance_title),
                 onBack = onBack
             )
 
@@ -75,5 +80,11 @@ fun ApplianceDetailScreen(
                 )
             }
         }
+
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(contentPadding.calculateBottomPadding() + 52.dp)
+        )
     }
 }

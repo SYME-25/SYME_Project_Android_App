@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -88,7 +89,8 @@ import com.syme.utils.TimeUtils.formatDateTime
 @Composable
 fun ProfileScreen(
     userViewModel: UserViewModel,
-    contentPadding : PaddingValues
+    contentPadding : PaddingValues,
+    onBackClick: (() -> Unit)? = null
     ) {
     val currentUser = LocalCurrentUserSession.current
     val context     = LocalContext.current
@@ -150,7 +152,8 @@ fun ProfileScreen(
                         )
                     }
                 },
-                contentPadding = contentPadding
+                contentPadding = contentPadding,
+                onBackClick = onBackClick
             )
         }
         else -> {}
@@ -164,7 +167,8 @@ private fun ProfileContent(
     user: User,
     onUpdatePersonal: (String, String, Long?, String) -> Unit,
     onUpdateContact: (String, String) -> Unit,
-    contentPadding : PaddingValues
+    contentPadding : PaddingValues,
+    onBackClick: (() -> Unit)? = null
 ) {
     var showPersonalDialog by remember { mutableStateOf(false) }
     var showContactDialog  by remember { mutableStateOf(false) }
@@ -172,11 +176,17 @@ private fun ProfileContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .padding(contentPadding)
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(bottom = 32.dp)
     ) {
-        item { Title(stringResource(R.string.profile_label)) }
+        item { Title(
+            title = stringResource(R.string.profile_label),
+            modifier = Modifier.statusBarsPadding(),
+            onBackClick = onBackClick
+            )
+        }
 
         item { ProfileAvatar(user) }
 

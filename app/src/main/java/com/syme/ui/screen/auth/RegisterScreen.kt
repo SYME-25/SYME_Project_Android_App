@@ -117,7 +117,9 @@ fun RegisterScreen(
 
     AuthBackground( contentPadding = contentPadding) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(bottom = 44.dp)
         ) {

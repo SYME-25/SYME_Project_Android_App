@@ -14,13 +14,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import com.syme.R
+import dev.chrisbanes.haze.HazeState
 
 /**
  * Composable unique pour afficher tous les messages globaux.
  * Affiché en bas de l’écran (style Snackbar / Facebook).
  */
 @Composable
-fun GlobalMessageSnapshot(modifier: Modifier = Modifier) {
+fun GlobalMessageSnapshot(
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null          // ← optionnel, garde la compat auth
+) {
     val context = LocalContext.current
     val messageState by globalMessageManager.message
 
@@ -29,41 +33,34 @@ fun GlobalMessageSnapshot(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.BottomCenter
     ) {
         messageState?.let { message ->
-
             val (iconTint, containerColor) = if (message.isSystemMessage) {
                 val noInternetText = context.getString(R.string.system_no_internet)
-                if (message.text.contains(noInternetText, ignoreCase = true)) {
+                if (message.text.contains(noInternetText, ignoreCase = true))
                     MaterialTheme.colorScheme.error to MessageColors.surfaceColor()
-                } else {
+                else
                     MessageColors.SuccessGreen to MessageColors.surfaceColor()
-                }
             } else {
                 if (message.isError) MessageColors.errorIcon() to MessageColors.surfaceColor()
                 else MessageColors.SuccessGreen to MessageColors.surfaceColor()
             }
 
             MessageSnapshotCard(
-                visible = true,
-                message = message.text,
-                icon = message.icon,
-                iconTint = iconTint,
+                visible      = true,
+                message      = message.text,
+                icon         = message.icon,
+                iconTint     = iconTint,
                 containerColor = containerColor,
-                modifier = Modifier
-                    .padding(
-                        bottom = 80.dp,      // ⬆️ on le remonte
-                        start = 16.dp,       // ⬅️ marge gauche
-                        end = 16.dp          // ➡️ marge droite
-                    )
+                hazeState    = hazeState,             // ← transmis
+                modifier     = Modifier
+                    .padding(bottom = 80.dp, start = 16.dp, end = 16.dp)
             )
 
             LaunchedEffect(message) {
-                val connectionRestoredText =
-                    context.getString(R.string.system_connection_restored)
+                val connectionRestoredText = context.getString(R.string.system_connection_restored)
                 if (!message.isSystemMessage || message.text.contains(connectionRestoredText)) {
                     delay(2500)
-                    if (globalMessageManager.message.value == message) {
+                    if (globalMessageManager.message.value == message)
                         globalMessageManager.clearMessage()
-                    }
                 }
             }
         }

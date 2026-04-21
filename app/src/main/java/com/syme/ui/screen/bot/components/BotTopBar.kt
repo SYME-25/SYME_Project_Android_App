@@ -21,11 +21,15 @@ import com.syme.ui.component.text.Title
 @Composable
 fun BotTopBar(
     onOpenHistory: () -> Unit,
-    onNewConversation: () -> Unit
+    onNewConversation: () -> Unit,
+    onBackClick: (() -> Unit)? = null
 ) {
     TopAppBar(
         title = {
-            Title(stringResource(R.string.bot_title))
+            Title(
+                title = stringResource(R.string.bot_title),
+                onBackClick = onBackClick
+                )
         },
         navigationIcon = {
             IconButton(onClick = onOpenHistory) {

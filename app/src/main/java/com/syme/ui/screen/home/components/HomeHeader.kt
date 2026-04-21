@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,13 +54,25 @@ fun HomeHeader(
     ) {
         // ── Left: brand + greeting ────────────────────────────────────────
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.app_name),
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = colorPrimary,
-                letterSpacing = 1.5.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.mipmap.ic_launcher), // 👈 ton icône
+                    contentDescription = "App icon",
+                    tint = Color.Unspecified, // ⚠️ important pour garder les vraies couleurs
+                    modifier = Modifier.size(28.dp)
+                )
+
+                Text(
+                    text = stringResource(R.string.app_name),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = colorPrimary,
+                    letterSpacing = 1.5.sp
+                )
+            }
         }
 
         // ── Right: notification + avatar ──────────────────────────────────

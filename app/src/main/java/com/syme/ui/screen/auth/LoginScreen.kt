@@ -3,6 +3,7 @@ package com.syme.ui.screen.auth
 import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +32,7 @@ import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.actionbutton.LoginLinksRow
 import com.syme.ui.component.field.EmailField
 import com.syme.ui.component.field.PasswordField
+import com.syme.ui.component.text.Title
 import com.syme.ui.snapshot.GlobalMessageSnapshot
 
 @Composable
@@ -94,18 +96,10 @@ fun LoginScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ── Animation ──────────────────────────────────────────
-            Banner(
-                id = R.raw.login_animation,
-            )
 
-            // ── Titre ──────────────────────────────────────────────
-            Text(
-                text = loginLabelText,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 4.dp)
+            AuthHeader(
+                animationRes = R.raw.login_animation,
+                title = loginLabelText
             )
 
             // ── Carte champs ───────────────────────────────────────
@@ -120,6 +114,7 @@ fun LoginScreen(
                     .padding(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+
                 EmailField(
                     value = email,
                     onValueChange = { email = it },

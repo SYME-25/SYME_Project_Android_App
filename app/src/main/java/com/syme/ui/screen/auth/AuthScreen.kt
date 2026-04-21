@@ -3,45 +3,47 @@ package com.syme.ui.screen.auth
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.syme.ui.component.animation.banner.Banner
+import com.syme.ui.component.text.Title
 
 @Composable
 fun AuthScreen(
     content: @Composable (PaddingValues) -> Unit
 ) {
-    Scaffold(
-        contentWindowInsets = WindowInsets.systemBars // 🔥 important
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            content(innerPadding)
-        }
-    }
+    // Pas de Scaffold, pas de TopAppBar — on gère nous-mêmes les insets
+    content(WindowInsets.systemBars.asPaddingValues())
 }
 
-// Fond dégradé commun à tous les screens auth
 @Composable
-fun AuthBackground(contentPadding: PaddingValues, content: @Composable BoxScope.() -> Unit) {
+fun AuthBackground(
+    contentPadding: PaddingValues,
+    content: @Composable BoxScope.() -> Unit
+) {
     val bgTop    = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)
+        .compositeOver(MaterialTheme.colorScheme.background)
     val bgBottom = MaterialTheme.colorScheme.background
+
     Box(
         modifier = Modifier
-            .padding(contentPadding)
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(bgTop, bgBottom, bgBottom))),
+            // Le dégradé couvre TOUTE la hauteur écran, status bar incluse
+            .background(Brush.verticalGradient(listOf(bgTop, bgBottom, bgBottom)))
+            // Puis on applique le padding des barres système pour le contenu
+            .padding(contentPadding),
         content = content
     )
 }
@@ -51,16 +53,19 @@ fun AuthBackground(contentPadding: PaddingValues, content: @Composable BoxScope.
 fun AuthHeader(
     animationRes: Int,
     title: String,
-    subtitle: String? = null
+    subtitle: String? = null,
+    onBackClick: (() -> Unit)? = null
 ) {
-    Banner(id = animationRes,)
-    Text(
-        text = title,
-        fontSize = 26.sp,
-        fontWeight = FontWeight.ExtraBold,
+
+    Banner(id = animationRes)
+
+    Title(
+        title = title,
         color = MaterialTheme.colorScheme.onBackground,
-        modifier = Modifier.padding(top = 4.dp, bottom = if (subtitle != null) 2.dp else 20.dp)
+        centered = true,
+        onBackClick = onBackClick
     )
+
     if (subtitle != null) {
         Text(
             text = subtitle,

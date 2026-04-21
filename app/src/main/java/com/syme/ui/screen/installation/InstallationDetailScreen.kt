@@ -7,13 +7,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.syme.R
 import com.syme.domain.mapper.imageResId
 import com.syme.ui.component.animation.ItemDetailHeader
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.screen.installation.components.InstallationForm
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.utils.installationCatalog
+import kotlin.plus
 
 @Composable
 fun InstallationDetailScreen(
@@ -39,6 +42,7 @@ fun InstallationDetailScreen(
         Box(modifier = Modifier.fillMaxWidth()) {
             ItemDetailHeader(
                 id = installation.type.imageResId,
+                label = stringResource(R.string.home_add_installation_title),
                 onBack = onBack
             )
             // Sheet content overlapping the header image
@@ -58,5 +62,11 @@ fun InstallationDetailScreen(
                 )
             }
         }
+
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(contentPadding.calculateBottomPadding() + 52.dp)
+        )
     }
 }

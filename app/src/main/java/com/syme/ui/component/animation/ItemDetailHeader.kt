@@ -24,11 +24,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.syme.R
+import com.syme.ui.component.text.Title
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemDetailHeader(
     id: Int,
+    label: String? = null,
     onBack: () -> Unit
 ){
     Box(
@@ -38,24 +40,10 @@ fun ItemDetailHeader(
         .background(color = MaterialTheme.colorScheme.background)
         .statusBarsPadding()
     ) {
-        Box(
-            modifier = Modifier
-                .padding(start = 16.dp, top = 8.dp)
-                .size(40.dp) // taille du cercle
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
-        ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier.align(Alignment.Center)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+        Title(
+            title = label ?: "",
+            onBackClick = onBack
+        )
 
         AsyncImage(
             model = id,

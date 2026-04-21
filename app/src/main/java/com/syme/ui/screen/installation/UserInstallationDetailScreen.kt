@@ -98,7 +98,8 @@ fun UserInstallationDetailScreen(
     meterViewModel: MeterViewModel,
     circuitViewModel: CircuitViewModel,
     onApplianceClick: (Appliance) -> Unit = {},
-    contentPadding : PaddingValues
+    contentPadding : PaddingValues,
+    onBackClick: (() -> Unit)? = null
 ) {
     val currentUser = LocalCurrentUserSession.current
     val context = LocalContext.current
@@ -167,7 +168,8 @@ fun UserInstallationDetailScreen(
 
         item { Title(
             title = stringResource(R.string.installation_detail),
-            padding = 16
+            padding = 16,
+            onBackClick = onBackClick
         ) }
 
         item { Spacer(Modifier.height(12.dp)) }
@@ -333,7 +335,7 @@ fun UserInstallationDetailScreen(
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(contentPadding.calculateBottomPadding() + 32.dp)
+                    .height(contentPadding.calculateBottomPadding() + 100.dp)
             )
         }
 
