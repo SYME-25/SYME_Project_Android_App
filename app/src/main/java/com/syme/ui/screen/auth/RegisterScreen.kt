@@ -21,6 +21,7 @@ import com.syme.domain.model.RegisterEvent
 import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.actionbutton.AppCheckbox
 import com.syme.ui.component.actionbutton.AppTextButton
+import com.syme.ui.component.dialog.LoadingDialog
 import com.syme.ui.component.field.DateField
 import com.syme.ui.component.field.DropdownField
 import com.syme.ui.component.field.EmailField
@@ -67,6 +68,8 @@ fun RegisterScreen(
     var confirmPasswordError    by remember { mutableStateOf("") }
     var acceptPolicy            by remember { mutableStateOf(false) }
     var acceptPolicyError       by remember { mutableStateOf("") }
+
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(viewModel) {
         viewModel.registerEvent.collectLatest { event ->
@@ -255,6 +258,7 @@ fun RegisterScreen(
             }
         }
 
-        GlobalMessageSnapshot()
+        LoadingDialog(visible = isLoading)
+        GlobalMessageSnapshot(paddingValues = contentPadding)
     }
 }

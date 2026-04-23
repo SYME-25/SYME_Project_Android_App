@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.syme.domain.model.enumeration.Mode
 import com.syme.ui.navigation.extensions.navigateToApplianceDetail
 import com.syme.ui.navigation.extensions.navigateToInstallationDetail
 import com.syme.ui.navigation.extensions.navigateToUserInstallationDetail
@@ -66,11 +67,11 @@ fun NavGraphBuilder.mainNavGraph(
         )
     }
 
-    composable (MainRoute.HomeScreen.route) {
+    composable(MainRoute.HomeScreen.route) {
         HomeScreen(
             installationViewModel = installationViewModel,
-            onNavigateToInstallationDetail = { installation ->
-                navController.navigateToInstallationDetail(installation)
+            onNavigateToInstallationDetail = { installation, mode ->
+                navController.navigateToInstallationDetail(installation, mode)
             },
             onNavigateToUserInstallationDetail = { installation ->
                 navController.navigateToUserInstallationDetail(installation)
@@ -111,15 +112,15 @@ fun NavGraphBuilder.mainNavGraph(
     }
 
     composable(MainRoute.InstallationDetailScreen.route) { backStackEntry ->
-
-        val installationId =
-            backStackEntry.arguments?.getString("installationId")
+        val installationId = backStackEntry.arguments?.getString("installationId")
+        val mode = backStackEntry.arguments?.getString("mode") ?: Mode.CREATE.name
 
         if (installationId == null) {
             navController.popBackStack()
         } else {
             InstallationDetailScreen(
                 installationId = installationId,
+                mode = mode,                  // ← transmettre
                 installationViewModel = installationViewModel,
                 onBack = { navController.popBackStack() },
                 contentPadding = contentPadding

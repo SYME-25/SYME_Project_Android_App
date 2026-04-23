@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
@@ -190,7 +191,7 @@ fun ChatInputBar(
                             modifier = Modifier.size(48.dp),
                             enabled  = !isLoading
                         ) {
-                            Icon(Icons.Default.Send, contentDescription = stringResource(R.string.cd_send))
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.cd_send))
                         }
                     }
                 }

@@ -216,7 +216,8 @@ fun MainScreen(
                     hazeState = hazeState,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 80.dp)
-                        .widthIn(max = 620.dp)
+                        .widthIn(max = 620.dp),
+                    paddingValues = contentPadding
                 )
             }
         }

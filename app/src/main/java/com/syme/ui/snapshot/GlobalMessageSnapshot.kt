@@ -1,6 +1,7 @@
 package com.syme.ui.snapshot
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +24,8 @@ import dev.chrisbanes.haze.HazeState
 @Composable
 fun GlobalMessageSnapshot(
     modifier: Modifier = Modifier,
-    hazeState: HazeState? = null          // ← optionnel, garde la compat auth
+    hazeState: HazeState? = null,          // ← optionnel, garde la compat auth
+    paddingValues: PaddingValues
 ) {
     val context = LocalContext.current
     val messageState by globalMessageManager.message
@@ -50,9 +52,12 @@ fun GlobalMessageSnapshot(
                 icon         = message.icon,
                 iconTint     = iconTint,
                 containerColor = containerColor,
-                hazeState    = hazeState,             // ← transmis
+                hazeState    = hazeState,
                 modifier     = Modifier
-                    .padding(bottom = 80.dp, start = 16.dp, end = 16.dp)
+                    .padding(
+                        bottom = paddingValues.calculateBottomPadding() + 32.dp,
+                        start = 16.dp,
+                        end = 16.dp)
             )
 
             LaunchedEffect(message) {
@@ -83,6 +88,6 @@ fun PreviewGlobalMessageSnapshot() {
     }
 
     MaterialTheme {
-        GlobalMessageSnapshot()
+        GlobalMessageSnapshot(paddingValues = PaddingValues())
     }
 }

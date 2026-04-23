@@ -24,6 +24,9 @@ class InstallationViewModel @Inject constructor(
     private val _state = MutableStateFlow<UiState<List<Installation>>>(UiState.Idle)
     val state: StateFlow<UiState<List<Installation>>> = _state
 
+    private val _saveState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    val saveState: StateFlow<UiState<Unit>> = _saveState
+
     private val _selected = MutableStateFlow<Installation?>(null)
     val selected: StateFlow<Installation?> = _selected
 
@@ -68,21 +71,30 @@ class InstallationViewModel @Inject constructor(
     }
 
     fun insert(ownerId: String, installation: Installation) = viewModelScope.launch {
+        _saveState.value = UiState.Loading          // ← loading
         try {
             repository.insert(ownerId, installation)
+            _saveState.value = UiState.Success(Unit) // ← succès
         } catch (e: Exception) {
             Log.e("InstallationViewModel", "Erreur insert", e)
-            _state.value = UiState.Error(e.message ?: "Insert failed")
+            _saveState.value = UiState.Error(e.message ?: "Insert failed")
         }
     }
 
     fun update(ownerId: String, installation: Installation) = viewModelScope.launch {
+        _saveState.value = UiState.Loading
         try {
             repository.update(ownerId, installation)
+            _saveState.value = UiState.Success(Unit)
         } catch (e: Exception) {
             Log.e("InstallationViewModel", "Erreur update", e)
-            _state.value = UiState.Error(e.message ?: "Update failed")
+            _saveState.value = UiState.Error(e.message ?: "Update failed")
         }
+    }
+
+    // ← NOUVEAU : reset après consommation de l'état
+    fun resetSaveState() {
+        _saveState.value = UiState.Idle
     }
 
     fun delete(ownerId: String, installation: Installation) = viewModelScope.launch {

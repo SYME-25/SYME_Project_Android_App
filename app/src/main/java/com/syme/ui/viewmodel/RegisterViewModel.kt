@@ -12,7 +12,10 @@ import com.syme.utils.buildTraceability
 import com.syme.utils.generateId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,6 +23,9 @@ import javax.inject.Inject
 class RegisterViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _registerEvent = MutableSharedFlow<RegisterEvent>()
     val registerEvent: SharedFlow<RegisterEvent> = _registerEvent
@@ -35,6 +41,8 @@ class RegisterViewModel @Inject constructor(
         password: String
     ) {
         viewModelScope.launch {
+            _isLoading.value = true
+
             try {
                 val userId = generateId()
 
@@ -84,6 +92,8 @@ class RegisterViewModel @Inject constructor(
                         e.message ?: "Unknown error"
                     )
                 )
+            } finally {
+                _isLoading.value = false
             }
         }
     }

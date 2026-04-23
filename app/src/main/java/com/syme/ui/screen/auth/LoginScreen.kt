@@ -2,11 +2,14 @@ package com.syme.ui.screen.auth
 
 import android.util.Patterns
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,8 +20,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.syme.domain.model.LoginEvent
 import com.syme.ui.component.animation.banner.Banner
@@ -28,16 +35,23 @@ import com.syme.ui.snapshot.globalMessageManager
 import com.syme.ui.viewmodel.LoginViewModel
 import kotlinx.coroutines.flow.collectLatest
 import com.syme.R
+import com.syme.domain.mapper.labelRes
+import com.syme.domain.model.enumeration.AppLanguage
+import com.syme.domain.state.UiState
 import com.syme.ui.component.actionbutton.AppButton
+import com.syme.ui.component.actionbutton.AppIconButton
 import com.syme.ui.component.actionbutton.LoginLinksRow
+import com.syme.ui.component.dialog.LoadingDialog
 import com.syme.ui.component.field.EmailField
 import com.syme.ui.component.field.PasswordField
 import com.syme.ui.component.text.Title
 import com.syme.ui.snapshot.GlobalMessageSnapshot
+import com.syme.ui.viewmodel.SettingsViewModel
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
+    settingsViewModel: SettingsViewModel,
     onNavigateToRegister: () -> Unit = {},
     onNavigateToResetPassword: () -> Unit = {},
     contentPadding: PaddingValues
@@ -49,6 +63,8 @@ fun LoginScreen(
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
+    val isLoading = viewModel.uiState.collectAsState().value is UiState.Loading
+
     val emailErrorText       = stringResource(R.string.login_email_error)
     val passwordErrorText    = stringResource(R.string.login_password_error)
     val loginLabelText       = stringResource(R.string.login_label)
@@ -58,6 +74,9 @@ fun LoginScreen(
     val loginNotMemberText   = stringResource(R.string.login_not_member)
     val loginSignInText      = stringResource(R.string.login_sign_in)
     val emailFormatInvalid   = stringResource(R.string.register_email_invalid_format)
+
+    val language by settingsViewModel.language.collectAsStateWithLifecycle()
+    var showLanguagePopup by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.loginEvent.collectLatest { event ->
@@ -168,6 +187,67 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        GlobalMessageSnapshot()
+        // ── Bouton langue ── coin bas-droit ────────────────────────
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 20.dp)
+        ) {
+            AppIconButton(
+                icon               = Icons.Rounded.Language,
+                contentDescription = "Langue",
+                onClick            = { showLanguagePopup = !showLanguagePopup }
+            )
+
+            // ── Popup ancrée au bouton ─────────────────────────────
+            if (showLanguagePopup) {
+                Popup(
+                    alignment  = Alignment.BottomEnd,
+                    offset     = IntOffset(x = 0, y = -48),   // juste au-dessus du bouton
+                    properties = PopupProperties(focusable = true),
+                    onDismissRequest = { showLanguagePopup = false }
+                ) {
+                    Surface(
+                        shape       = RoundedCornerShape(14.dp),
+                        tonalElevation = 4.dp,
+                        shadowElevation = 4.dp,
+                        color       = MaterialTheme.colorScheme.surface,
+                        modifier    = Modifier.width(180.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                            AppLanguage.entries.forEach { option ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            settingsViewModel.setLanguage(option)
+                                            showLanguagePopup = false
+                                        }
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment   = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    RadioButton(
+                                        selected = language == option,
+                                        onClick  = {
+                                            settingsViewModel.setLanguage(option)
+                                            showLanguagePopup = false
+                                        }
+                                    )
+                                    Text(
+                                        text  = stringResource(option.labelRes),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        LoadingDialog(visible = isLoading)
+        GlobalMessageSnapshot(paddingValues = contentPadding)
     }
 }

@@ -74,6 +74,6 @@ fun ResetPasswordStep2Screen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        GlobalMessageSnapshot()
+        GlobalMessageSnapshot(paddingValues = contentPadding)
     }
 }

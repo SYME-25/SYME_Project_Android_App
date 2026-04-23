@@ -8,12 +8,14 @@ import com.syme.ui.screen.auth.AuthScreen
 import com.syme.ui.viewmodel.LoginViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
 import com.syme.ui.viewmodel.ResetPasswordViewModel
+import com.syme.ui.viewmodel.SettingsViewModel
 
 @Composable
 fun AuthNavHost(navController: NavHostController) {
     val registerViewModel: RegisterViewModel      = hiltViewModel()
     val loginViewModel: LoginViewModel            = hiltViewModel()
     val resetPasswordViewModel: ResetPasswordViewModel = hiltViewModel()
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
 
     AuthScreen { contentPadding ->
         NavHost(
@@ -25,6 +27,7 @@ fun AuthNavHost(navController: NavHostController) {
                 registerViewModel      = registerViewModel,
                 resetPasswordViewModel = resetPasswordViewModel,
                 loginViewModel         = loginViewModel,
+                settingsViewModel      = settingsViewModel,
                 contentPadding         = contentPadding
             )
         }

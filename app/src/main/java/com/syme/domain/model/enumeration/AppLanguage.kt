@@ -8,6 +8,7 @@ package com.syme.domain.model.enumeration
 enum class AppLanguage(val tag: String) {
     ENGLISH("en"),
     FRENCH("fr"),
-    // SPANISH("es"),   // Uncomment to add Spanish
-    // ARABIC("ar"),    // Uncomment to add Arabic
+    LINGALA("ln-rCG"),
+    // SPANISH("es"),
+    // ARABIC("ar"),
 }

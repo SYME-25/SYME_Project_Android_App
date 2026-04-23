@@ -44,4 +44,21 @@
     <string name="consumption_injection">Injection</string>
 
     <string name="consumption_power_requested">%1$d %2$s requested</string>
+
+    <string name="consumption_detail_energy_section">Energy</string>
+    <string name="consumption_detail_period_section">Period</string>
+    <string name="consumption_detail_power_section">Power</string>
+    <string name="consumption_detail_ids_section">Identifiers</string>
+    <string name="consumption_detail_consumed">Consumed: %1$.1f %2$s</string>
+    <string name="consumption_detail_total">Total: %1$d %2$s</string>
+    <string name="consumption_detail_remaining">Remaining</string>
+    <string name="consumption_detail_realtime">Real-time</string>
+    <string name="consumption_detail_start">Start</string>
+    <string name="consumption_detail_end">End</string>
+    <string name="consumption_detail_duration">Duration</string>
+    <string name="consumption_detail_requested_power">Requested power</string>
+    <string name="consumption_detail_type">Type</string>
+    <string name="consumption_detail_consumption_id">Consumption ID</string>
+    <string name="consumption_detail_installation_id">Installation</string>
+    <string name="consumption_detail_meter_id">Meter</string>
 </resources>

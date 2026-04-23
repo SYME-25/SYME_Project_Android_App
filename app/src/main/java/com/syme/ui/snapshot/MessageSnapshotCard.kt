@@ -82,7 +82,11 @@ fun MessageSnapshotCard(
                     Icon(imageVector = icon, contentDescription = null, tint = iconTint)
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text(text = message, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                    )
             }
         }
     }

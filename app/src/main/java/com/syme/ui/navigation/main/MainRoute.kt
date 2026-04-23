@@ -16,9 +16,11 @@ sealed class MainRoute(val route: String, val title: Int, val icon: Int) {
 
     object BotScreen : MainRoute("bot", 0, 0)
 
-    object InstallationDetailScreen : MainRoute("installationDetail/{installationId}", 0, 0) {
-        fun createRoute(installationId: String) =
-            "installationDetail/$installationId"
+    object InstallationDetailScreen :
+        MainRoute("installationDetail/{installationId}/{mode}", 0, 0) {
+
+        fun createRoute(installationId: String, mode: String) =
+            "installationDetail/$installationId/$mode"
     }
 
     object UserInstallationDetailScreen : MainRoute("userInstallationDetail/{installationId}", 0, 0) {
@@ -28,7 +30,7 @@ sealed class MainRoute(val route: String, val title: Int, val icon: Int) {
     }
 
     object ApplianceDetailScreen : MainRoute("applianceDetail/{installationId}/{applianceId}", 0, 0) {
-        fun createRoute(applianceId: String, installationId: String) =
+        fun createRoute(installationId: String, applianceId: String) =
             "applianceDetail/$installationId/$applianceId"
     }
 

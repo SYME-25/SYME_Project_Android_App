@@ -94,7 +94,19 @@ fun ConsumptionCard(
         dateFormat.format(Date(consumption.periodEnd))
     }
 
+    var showDetail by remember { mutableStateOf(false) }
+    if (showDetail) {
+        ConsumptionDetailDialog(
+            consumption = consumption,
+            energyUnit = energyUnit,
+            powerUnit = powerUnit,
+            realtimeMeasurements = realtimeMeasurements,
+            onDismiss = { showDetail = false }
+        )
+    }
+
     Card(
+        onClick = { showDetail = true },
         modifier = modifier
             .padding(horizontal = 6.dp, vertical = 5.dp)
             .width(cardWidth),
@@ -151,25 +163,35 @@ fun ConsumptionCard(
                     // ID + chips
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // ← weight(1f) : l'ID prend le reste après les chips
                         Text(
                             text = consumption.consumptionId,
                             style = MaterialTheme.typography.labelSmall,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                             maxLines = 1,
-                            letterSpacing = 0.3.sp
+                            overflow = TextOverflow.Ellipsis,   // ellipsis sur l'ID dans la card
+                            letterSpacing = 0.3.sp,
+                            modifier = Modifier.weight(1f)      // ← cède l'espace aux chips
                         )
-                        Spacer(Modifier.width(4.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // chips à droite, taille intrinsèque (pas de fillMaxWidth)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             ConsumptionTypeChip(
                                 isOnDemand = consumption.onDemand,
                                 labelOnDemand = stringResource(R.string.consumption_type_on_demand),
                                 labelSubscription = stringResource(R.string.consumption_type_subscription)
                             )
-                            EntityBadge(text = dynamicState.name, color = stateColor, modifier = Modifier.fillMaxWidth())
+                            EntityBadge(
+                                text = dynamicState.name,
+                                color = stateColor
+                                // ← supprimer Modifier.fillMaxWidth() qui forçait le badge à déborder
+                            )
                         }
                     }
 

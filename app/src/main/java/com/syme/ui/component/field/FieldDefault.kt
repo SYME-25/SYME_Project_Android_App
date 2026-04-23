@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import com.syme.domain.model.FieldColors
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -30,18 +31,6 @@ fun Color.isLight(): Boolean {
     val b = blue * 0.114f
     return (r + g + b) > 0.5f
 }
-
-// ─── Data class ───────────────────────────────────────────────────────────────
-
-data class FieldColors(
-    val container: Color,
-    val border: Color,
-    val icon: Color,
-    val label: Color,
-    val text: Color,
-    val cursor: Color,
-    val isDark: Boolean
-)
 
 // ─── Factory — 100% MaterialTheme, aucune couleur codée en dur ────────────────
 

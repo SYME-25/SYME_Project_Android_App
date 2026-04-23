@@ -12,18 +12,21 @@ import com.syme.ui.screen.auth.ResetPasswordStep2Screen
 import com.syme.ui.viewmodel.LoginViewModel
 import com.syme.ui.viewmodel.RegisterViewModel
 import com.syme.ui.viewmodel.ResetPasswordViewModel
+import com.syme.ui.viewmodel.SettingsViewModel
 
 fun NavGraphBuilder.authNavGraph(
     navController: NavHostController,
     registerViewModel: RegisterViewModel,
     resetPasswordViewModel: ResetPasswordViewModel,
     loginViewModel: LoginViewModel,
+    settingsViewModel: SettingsViewModel,
     contentPadding: PaddingValues
 ) {
 
     composable(AuthRoute.Login.route) {
         LoginScreen(
             viewModel = loginViewModel,
+            settingsViewModel = settingsViewModel,
             onNavigateToRegister = { navController.navigate(AuthRoute.Register.route) },
             onNavigateToResetPassword = { navController.navigate(AuthRoute.ResetPasswordStep1.route) },
             contentPadding = contentPadding

@@ -49,4 +49,6 @@
     <string name="label_has_solar_panels">Solar panels</string>
     <string name="label_has_solar_panels_subtitle">Local energy production</string>
     <string name="label_solar_power_kw">Installed peak power</string>
+
+    <string name="loading_please_wait">Please wait…</string>
 </resources>

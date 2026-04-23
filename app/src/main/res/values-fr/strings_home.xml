@@ -14,7 +14,7 @@
     <string name="home_installation_electrical">installation électrique</string>
     <string name="home_installation_energy">Énergie : %s kWh/J</string>
     <string name="home_your_installations">Vos installations</string>
-    <string name="home_installation_power_subscribed_label">Puissance souscrite</string>
+    <string name="home_installation_power_subscribed_label">Puissance souscrite (kW)</string>
     <string name="home_installation_power_subscribed">Puissance souscrite : %s kW</string>
     <string name="home_no_installations_found">Aucune installation trouvée</string>
     <string name="installation_use_my_location">Utiliser ma position actuelle</string>
@@ -129,5 +129,13 @@
     <string name="installation_card_solar_value">%.1f kW</string>
     <string name="installation_card_meters">Compteurs</string>
     <string name="installation_card_circuits">Circuits</string>
+
+    <string name="dialog_confirm_create_message">Voulez-vous créer cette installation ?</string>
+    <string name="dialog_confirm_edit_message">Voulez-vous modifier cette installation ?</string>
+    <string name="dialog_confirm">Confirmer</string>
+    <string name="dialog_cancel">Annuler</string>
+    <string name="installation_created_success">Installation créée avec succès</string>
+    <string name="installation_updated_success">Installation modifiée avec succès</string>
+    <string name="installation_save_error">Erreur lors de la sauvegarde</string>
 
 </resources>

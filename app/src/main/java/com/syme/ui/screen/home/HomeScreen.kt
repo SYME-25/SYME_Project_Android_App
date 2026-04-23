@@ -42,6 +42,7 @@ import com.syme.R
 import com.syme.domain.mapper.labelResId
 import com.syme.domain.model.Installation
 import com.syme.domain.model.enumeration.InstallationType
+import com.syme.domain.model.enumeration.Mode
 import com.syme.domain.state.UiState
 import com.syme.ui.component.animation.banner.Banner
 import com.syme.ui.component.card.InstallationRow
@@ -59,7 +60,7 @@ import com.syme.utils.installationCatalog
 @Composable
 fun HomeScreen(
     installationViewModel: InstallationViewModel,
-    onNavigateToInstallationDetail: (Installation) -> Unit,
+    onNavigateToInstallationDetail: (Installation, Mode) -> Unit,
     onNavigateToUserInstallationDetail: (Installation) -> Unit = {},
     contentPadding : PaddingValues
 ) {
@@ -67,7 +68,6 @@ fun HomeScreen(
     var selectedType by remember { mutableStateOf<InstallationType?>(null) }
     val state by installationViewModel.state.collectAsState()
 
-    var installationToEdit   by remember { mutableStateOf<Installation?>(null) }
     var installationToDelete by remember { mutableStateOf<Installation?>(null) }
 
     LaunchedEffect(currentUser?.userId) {
@@ -151,7 +151,7 @@ fun HomeScreen(
 
             InstallationRow(
                 items = filteredCatalog,
-                onClick = onNavigateToInstallationDetail
+                onClick = { installation -> onNavigateToInstallationDetail(installation, Mode.CREATE) }
             )
         }
 
@@ -199,7 +199,9 @@ fun HomeScreen(
                     UserInstallationsList(
                         items = filtered,
                         onClick = onNavigateToUserInstallationDetail,
-                        onEdit = { installationToEdit   = it },
+                        onEdit = { installation ->
+                            onNavigateToInstallationDetail(installation, Mode.EDIT)
+                        },
                         onDelete = { installationToDelete = it }
                     )
                 }
@@ -223,18 +225,6 @@ fun HomeScreen(
                     .height(contentPadding.calculateBottomPadding() + 32.dp)
             )
         }
-    }
-
-    installationToEdit?.let { installation ->
-        InstallationEditDialog(
-            installation = installation,
-            onDismiss    = { installationToEdit = null },
-            onConfirm    = { updated ->
-                val userId = currentUser?.userId ?: return@InstallationEditDialog
-                installationViewModel.update(userId, updated)
-                installationToEdit = null
-            }
-        )
     }
 
     installationToDelete?.let { installation ->

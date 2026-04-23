@@ -20,6 +20,7 @@
     <string name="settings_language_title">Langue</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_french">Français</string>
+    <string name="settings_language_lingala">Lingala</string>
 
     <!-- Notifications -->
     <string name="settings_notifications_push">Notifications push</string>

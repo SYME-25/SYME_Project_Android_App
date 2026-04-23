@@ -20,6 +20,7 @@ import com.syme.domain.model.ResetPasswordEvent
 import com.syme.domain.state.UiState
 import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.actionbutton.AppTextButton
+import com.syme.ui.component.dialog.LoadingDialog
 import com.syme.ui.component.field.EmailField
 import com.syme.ui.navigation.auth.AuthRoute
 import com.syme.ui.snapshot.GlobalMessageSnapshot
@@ -99,7 +100,6 @@ fun ResetPasswordStep1Screen(
 
             AppButton(
                 text      = resetPasswordLabelText,
-                isLoading = uiState is UiState.Loading,
                 onClick   = {
                     emailError = when {
                         email.isBlank() -> emailErrorText
@@ -125,6 +125,7 @@ fun ResetPasswordStep1Screen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        GlobalMessageSnapshot()
+        LoadingDialog(visible = uiState is UiState.Loading)
+        GlobalMessageSnapshot(paddingValues = contentPadding)
     }
 }

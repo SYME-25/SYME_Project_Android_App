@@ -30,17 +30,29 @@ import com.syme.utils.generateId
 @Composable
 fun InstallationForm(
     item: Installation,
+    isEditMode: Boolean,
     onSaveInstallation: (Installation) -> Unit
 ) {
     val owner = LocalCurrentUserSession.current
-    var name by remember { mutableStateOf("") }
-    var nameError by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var powerSubscribed by remember { mutableStateOf("10") }
+    var name            by remember { mutableStateOf("") }
+    var nameError       by remember { mutableStateOf("") }
+    var address         by remember { mutableStateOf("") }
+    var powerSubscribed by remember { mutableStateOf(item.powerSubscribed.toString()) }
     var currentInstallation by remember { mutableStateOf(item) }
 
+    // ── NOUVEAU : état du dialog de confirmation ─────────────────────────
+    var showConfirmDialog    by remember { mutableStateOf(false) }
+    var pendingInstallation  by remember { mutableStateOf<Installation?>(null) }
+
     val nameErrorMsg = stringResource(R.string.installation_name_error)
-    val codeEntity = stringResource(item.type.labelResId).take(1)
+    val codeEntity   = stringResource(item.type.labelResId).take(1)
+    val buttonText   = if (isEditMode)
+        stringResource(R.string.dialog_edit_installation_title)
+    else
+        stringResource(R.string.installation_create_button)
+
+    name = if (isEditMode) item.name else ""
+    address = if (isEditMode) item.address else ""
 
     LaunchedEffect(owner?.userId) {
         val ownerId = owner?.userId
@@ -49,6 +61,47 @@ fun InstallationForm(
                 trace = buildTraceability(null, ownerId)
             )
         }
+    }
+
+    // ── Dialog de confirmation ───────────────────────────────────────────
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = {
+                Text(
+                    text = if (isEditMode)
+                        stringResource(R.string.dialog_edit_installation_title)
+                    else
+                        stringResource(R.string.installation_create_button),
+                    style      = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = if (isEditMode)
+                        stringResource(R.string.dialog_confirm_edit_message)   // "Voulez-vous modifier cette installation ?"
+                    else
+                        stringResource(R.string.dialog_confirm_create_message), // "Voulez-vous créer cette installation ?"
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmDialog = false
+                        pendingInstallation?.let { onSaveInstallation(it) }
+                    }
+                ) {
+                    Text(stringResource(R.string.dialog_confirm)) // "Confirmer"
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text(stringResource(R.string.dialog_cancel)) // "Annuler"
+                }
+            }
+        )
     }
 
     Column(
@@ -156,7 +209,7 @@ fun InstallationForm(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     NameField(
-                        value = currentInstallation.location?.latitude?.toString() ?: "",
+                        value = currentInstallation.location.latitude.toString(),
                         onValueChange = {},
                         label = stringResource(R.string.installation_latitude),
                         icon = { Icon(Icons.Outlined.LocationOn, null) },
@@ -164,7 +217,7 @@ fun InstallationForm(
                         modifier = Modifier.weight(1f)
                     )
                     NameField(
-                        value = currentInstallation.location?.longitude?.toString() ?: "",
+                        value = currentInstallation.location.longitude.toString(),
                         onValueChange = {},
                         label = stringResource(R.string.installation_longitude),
                         icon = { Icon(Icons.Outlined.LocationOn, null) },
@@ -175,24 +228,24 @@ fun InstallationForm(
             }
         }
 
-        // ── CTA ───────────────────────────────────────────────────────────────
+        // ── CTA ───────────────────────────────────────────────────────────
         AppButton(
-            text = stringResource(R.string.installation_create_button),
-            onClick = {
+            text     = buttonText,
+            onClick  = {
                 if (name.isBlank()) {
                     nameError = nameErrorMsg
                 } else {
-                    onSaveInstallation(
-                        currentInstallation.copy(
-                            ownerId = owner?.userId ?: "",
-                            installationId = generateId("I", codeEntity),
-                            name = name,
-                            powerSubscribed = powerSubscribed.toDoubleOrNull() ?: 10.0,
-                            energyWh = 0.0,
-                            address = address,
-                            trace = currentInstallation.trace.copy(active = false)
-                        )
+                    // Prépare l'objet et ouvre le dialog — NE sauvegarde PAS encore
+                    pendingInstallation = currentInstallation.copy(
+                        ownerId         = owner?.userId ?: "",
+                        installationId  = if (isEditMode) item.installationId
+                        else generateId("I", codeEntity),
+                        name            = name,
+                        powerSubscribed = powerSubscribed.toDoubleOrNull() ?: 10.0,
+                        address         = address,
+                        trace           = currentInstallation.trace.copy(active = isEditMode)
                     )
+                    showConfirmDialog = true  // ← ouvre le dialog
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -209,6 +262,7 @@ fun InstallationFormPreview() {
                 type = InstallationType.RESIDENTIAL,
                 metadata = mapOf("description" to R.string.installation_not_ready_message)
             ),
+            isEditMode = false,
             onSaveInstallation = {}
         )
     }

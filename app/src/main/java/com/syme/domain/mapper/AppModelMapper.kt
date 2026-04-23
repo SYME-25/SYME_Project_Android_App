@@ -22,4 +22,5 @@ val AppLanguage.labelRes: Int
     @StringRes get() = when (this) {
         AppLanguage.ENGLISH -> R.string.settings_language_english
         AppLanguage.FRENCH  -> R.string.settings_language_french
+        AppLanguage.LINGALA -> R.string.settings_language_lingala
     }

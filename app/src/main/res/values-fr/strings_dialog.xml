@@ -58,4 +58,6 @@
     <string name="label_has_solar_panels">Panneaux solaires</string>
     <string name="label_has_solar_panels_subtitle">Production locale d\'énergie</string>
     <string name="label_solar_power_kw">Puissance crête installée</string>
+
+    <string name="loading_please_wait">Veuillez patienter…</string>
 </resources>
