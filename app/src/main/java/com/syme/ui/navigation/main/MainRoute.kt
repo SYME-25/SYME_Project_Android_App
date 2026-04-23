@@ -29,9 +29,9 @@ sealed class MainRoute(val route: String, val title: Int, val icon: Int) {
             "userInstallationDetail/$installationId"
     }
 
-    object ApplianceDetailScreen : MainRoute("applianceDetail/{installationId}/{applianceId}", 0, 0) {
-        fun createRoute(installationId: String, applianceId: String) =
-            "applianceDetail/$installationId/$applianceId"
+    object ApplianceDetailScreen : MainRoute("applianceDetail/{installationId}/{applianceId}/{mode}", 0, 0) {
+        fun createRoute(installationId: String, applianceId: String, mode: String) =
+            "applianceDetail/$installationId/$applianceId/$mode"
     }
 
 }

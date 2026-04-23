@@ -174,4 +174,8 @@
     <string name="appliance_standard">Standard</string>
     <string name="appliance_usage_hours">%1$.1f h/day</string>
 
+    <string name="appliance_created_success">Appliance created successfully</string>
+    <string name="appliance_updated_success">Appliance updated successfully</string>
+    <string name="appliance_save_error">Error while saving</string>
+
 </resources>

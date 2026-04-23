@@ -1,6 +1,7 @@
 package com.syme.ui.navigation.extensions
 
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.syme.domain.model.Appliance
 import com.syme.domain.model.Installation
 import com.syme.domain.model.enumeration.Mode
@@ -26,8 +27,15 @@ fun NavController.navigateToUserInstallationDetail(installation: Installation) {
     )
 }
 
-fun NavController.navigateToApplianceDetail(appliance: Appliance, installationId: String) {
+fun NavHostController.navigateToApplianceDetail(
+    appliance: Appliance,
+    installationId: String,
+    mode: Mode
+) {
     navigate(
-        MainRoute.ApplianceDetailScreen.createRoute(installationId, appliance.applianceId)
+        MainRoute.ApplianceDetailScreen.createRoute(
+            installationId,appliance.applianceId,
+            mode.name
+            )
     )
 }

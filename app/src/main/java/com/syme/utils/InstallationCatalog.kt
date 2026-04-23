@@ -23,7 +23,7 @@ val installationCatalog = listOf(
         energyWh = 0.0,
         metadata = mapOf(
             "description" to R.string.installation_commercial_desc
-        )
+        ),
     ),
 
     Installation(

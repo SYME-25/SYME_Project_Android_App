@@ -142,8 +142,8 @@ fun NavGraphBuilder.mainNavGraph(
                 applianceViewModel = applianceViewModel,
                 meterViewModel = meterViewModel,
                 circuitViewModel = circuitViewModel,
-                onApplianceClick = { appliance ->
-                    navController.navigateToApplianceDetail(appliance, installationId)
+                onNavigateToApplianceDetail = { appliance, mode ->
+                    navController.navigateToApplianceDetail(appliance, installationId, mode)
                 },
                 contentPadding = contentPadding,
                 onBackClick = { navController.popBackStack() }
@@ -159,12 +159,15 @@ fun NavGraphBuilder.mainNavGraph(
         val installationId =
             backStackEntry.arguments?.getString("installationId")
 
+        val mode = backStackEntry.arguments?.getString("mode") ?: Mode.CREATE.name
+
         if (applianceId == null) {
             navController.popBackStack()
         } else {
             ApplianceDetailScreen(
                 applianceId = applianceId,
                 installationId = installationId,
+                mode = mode,
                 circuitViewModel = circuitViewModel,
                 applianceViewModel = applianceViewModel,
                 onBack = { navController.popBackStack() },

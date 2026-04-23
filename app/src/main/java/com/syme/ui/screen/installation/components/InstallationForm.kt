@@ -58,7 +58,10 @@ fun InstallationForm(
         val ownerId = owner?.userId
         if (!ownerId.isNullOrBlank()) {
             currentInstallation = currentInstallation.copy(
-                trace = buildTraceability(null, ownerId)
+                trace = buildTraceability(
+                    existing = if (isEditMode) currentInstallation.trace else null,
+                    currentUserId = ownerId
+                )
             )
         }
     }
@@ -243,7 +246,10 @@ fun InstallationForm(
                         name            = name,
                         powerSubscribed = powerSubscribed.toDoubleOrNull() ?: 10.0,
                         address         = address,
-                        trace           = currentInstallation.trace.copy(active = isEditMode)
+                        trace           = buildTraceability(
+                            existing = if (isEditMode) currentInstallation.trace else null,
+                            currentUserId = owner?.userId ?: ""
+                        )
                     )
                     showConfirmDialog = true  // ← ouvre le dialog
                 }

@@ -23,6 +23,10 @@ class ApplianceViewModel @Inject constructor(
     private val _selected = MutableStateFlow<Appliance?>(null)
     val selected: StateFlow<Appliance?> = _selected
 
+    // ── NOUVEAU : état de sauvegarde (insert / update) ───────────────────────
+    private val _saveState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    val saveState: StateFlow<UiState<Unit>> = _saveState
+
     private var observeJob: Job? = null
 
     fun observe(ownerId: String, installationId: String) {
@@ -36,30 +40,34 @@ class ApplianceViewModel @Inject constructor(
     }
 
     fun getById(ownerId: String, installationId: String, id: String) = viewModelScope.launch {
-        _state.value = UiState.Loading
+        _selected.value = null
         try {
             val item = repository.getById(ownerId, installationId, id)
             _selected.value = item
         } catch (e: Exception) {
-            _state.value = UiState.Error(e.message ?: "Load failed")
+            _saveState.value = UiState.Error(e.message ?: "Load failed")
         }
     }
 
     fun insert(ownerId: String, installationId: String, appliance: Appliance) =
         viewModelScope.launch {
+            _saveState.value = UiState.Loading
             try {
                 repository.insert(ownerId, installationId, appliance)
+                _saveState.value = UiState.Success(Unit)
             } catch (e: Exception) {
-                _state.value = UiState.Error(e.message ?: "Insert failed")
+                _saveState.value = UiState.Error(e.message ?: "Insert failed")
             }
         }
 
     fun update(ownerId: String, installationId: String, appliance: Appliance) =
         viewModelScope.launch {
+            _saveState.value = UiState.Loading
             try {
                 repository.update(ownerId, installationId, appliance)
+                _saveState.value = UiState.Success(Unit)
             } catch (e: Exception) {
-                _state.value = UiState.Error(e.message ?: "Update failed")
+                _saveState.value = UiState.Error(e.message ?: "Update failed")
             }
         }
 
@@ -78,5 +86,10 @@ class ApplianceViewModel @Inject constructor(
 
     fun clearSelected() {
         _selected.value = null
+    }
+
+    // ── NOUVEAU ──────────────────────────────────────────────────────────────
+    fun resetSaveState() {
+        _saveState.value = UiState.Idle
     }
 }

@@ -62,6 +62,7 @@ import com.syme.domain.model.Meter
 import com.syme.domain.model.MeterEvent
 import com.syme.domain.model.enumeration.ApplianceHeatType
 import com.syme.domain.model.enumeration.InstallationType
+import com.syme.domain.model.enumeration.Mode
 import com.syme.domain.state.UiState
 import com.syme.ui.component.animation.banner.BannerImage
 import com.syme.ui.component.card.ApplianceRow
@@ -97,7 +98,7 @@ fun UserInstallationDetailScreen(
     applianceViewModel: ApplianceViewModel,
     meterViewModel: MeterViewModel,
     circuitViewModel: CircuitViewModel,
-    onApplianceClick: (Appliance) -> Unit = {},
+    onNavigateToApplianceDetail: (Appliance, Mode) -> Unit,
     contentPadding : PaddingValues,
     onBackClick: (() -> Unit)? = null
 ) {
@@ -123,7 +124,6 @@ fun UserInstallationDetailScreen(
     // Pour le CRUD
     var circuitToEdit   by remember { mutableStateOf<Circuit?>(null) }
     var circuitToDelete by remember { mutableStateOf<Circuit?>(null) }
-    var applianceToEdit   by remember { mutableStateOf<Appliance?>(null) }
     var applianceToDelete by remember { mutableStateOf<Appliance?>(null) }
 
     val latestMeasurement = measurements.lastOrNull() ?: Measurement(meterId = selectedMeter?.meterId ?: "", installationId = installationId)
@@ -244,7 +244,12 @@ fun UserInstallationDetailScreen(
                     } ?: list
                 }
 
-            ApplianceRow(filteredCatalog, onApplianceClick)
+            ApplianceRow(
+                items = filteredCatalog,
+                onClick = { appliance ->
+                    onNavigateToApplianceDetail(appliance, Mode.CREATE)
+                }
+            )
         }
 
         item { HorizontalDivider(Modifier.fillMaxWidth().padding(vertical = 16.dp)) }
@@ -265,8 +270,9 @@ fun UserInstallationDetailScreen(
                         (applianceState as UiState.Success<List<Appliance>>).data
                     UserAppliancesList(
                         items = userAppliances,
-                        onClick = onApplianceClick,
-                        onEdit = { applianceToEdit   = it },
+                        onEdit = { appliance ->
+                            onNavigateToApplianceDetail(appliance, Mode.EDIT)
+                        },
                         onDelete = { applianceToDelete = it }
                     )
                 }
@@ -487,19 +493,6 @@ fun UserInstallationDetailScreen(
                 val userId = currentUser?.userId ?: return@CircuitDeleteDialog
                 circuitViewModel.deleteCircuit(userId, installationId, circuit.circuitId.toString())
                 circuitToDelete = null
-            }
-        )
-    }
-
-    // ── Appliance edit ──
-    applianceToEdit?.let { appliance ->
-        ApplianceEditDialog(
-            appliance = appliance,
-            onDismiss = { applianceToEdit = null },
-            onConfirm = { updated ->
-                val userId = currentUser?.userId ?: return@ApplianceEditDialog
-                applianceViewModel.update(userId, installationId, updated)
-                applianceToEdit = null
             }
         )
     }

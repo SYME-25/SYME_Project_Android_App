@@ -21,7 +21,7 @@ import com.syme.ui.screen.bill.SectionLabel
 @Composable
 fun UserAppliancesList(
     items: List<Appliance>,
-    onClick: (Appliance) -> Unit,
+    onClick: ((Appliance) -> Unit)? = null,
     onEdit: ((Appliance) -> Unit)? = null,
     onDelete: ((Appliance) -> Unit)? = null
 ) {

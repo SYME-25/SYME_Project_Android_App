@@ -168,4 +168,8 @@
     <string name="appliance_standard">Standard</string>
     <string name="appliance_usage_hours">%1$.1f h/jour</string>
 
+    <string name="appliance_created_success">Appareil créé avec succès</string>
+    <string name="appliance_updated_success">Appareil modifié avec succès</string>
+    <string name="appliance_save_error">Erreur lors de la sauvegarde</string>
+
 </resources>

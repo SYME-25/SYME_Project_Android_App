@@ -35,7 +35,7 @@ import com.syme.ui.component.text.EntityBadge
 @Composable
 fun ApplianceCard(
     item: Appliance,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     onEdit: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
     contentAction: (@Composable () -> Unit)? = null
@@ -52,7 +52,10 @@ fun ApplianceCard(
                 // Replace Card's built-in onClick with combinedClickable so we
                 // can intercept long-press without losing ripple feedback.
                 .combinedClickable(
-                    onClick = onClick,
+                    enabled = onClick != null || onEdit != null || onDelete != null,
+                    onClick = {
+                        onClick?.invoke()
+                    },
                     onLongClick = {
                         if (onEdit != null || onDelete != null) menuExpanded = true
                     }
@@ -231,7 +234,7 @@ fun ApplianceCard(
 @Composable
 fun ApplianceRow(
     items: List<Appliance>,
-    onClick: (Appliance) -> Unit,
+    onClick: ((Appliance) -> Unit)? = null,
     onEdit: ((Appliance) -> Unit)? = null,
     onDelete: ((Appliance) -> Unit)? = null,
     contentAction: (@Composable () -> Unit)? = null
@@ -253,7 +256,7 @@ fun ApplianceRow(
                     val description = descRes?.let { stringResource(id = it) }
                     ApplianceCard(
                         item = item,
-                        onClick = { onClick(item) },
+                        onClick = onClick?.let { { it(item) } },
                         onEdit = onEdit?.let { { it(item) } },
                         onDelete = onDelete?.let { { it(item) } },
                         contentAction = if (contentAction != null || description != null) {
