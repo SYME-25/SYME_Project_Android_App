@@ -51,8 +51,12 @@ fun InstallationForm(
     else
         stringResource(R.string.installation_create_button)
 
-    name = if (isEditMode) item.name else ""
-    address = if (isEditMode) item.address else ""
+    LaunchedEffect(item.installationId) {
+        if (isEditMode) {
+            name = item.name
+            address = item.address
+        }
+    }
 
     LaunchedEffect(owner?.userId) {
         val ownerId = owner?.userId

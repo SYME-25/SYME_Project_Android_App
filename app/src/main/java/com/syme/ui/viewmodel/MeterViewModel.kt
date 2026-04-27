@@ -81,6 +81,33 @@ class MeterViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Lecture one-shot des mesures agrégées Firestore pour une installation donnée,
+     * utilisée exclusivement par le graphique comparatif multi-installations.
+     * Le résultat est renvoyé via le callback [onResult] pour être stocké
+     * dans le cache local (measurementsByInstallation) du ConsumptionScreen.
+     *
+     * On utilise un simple .first() plutôt qu'un collect continu afin
+     * de ne pas multiplier les listeners Firestore actifs.
+     */
+    fun observeAggregatedMeasurementsForComparison(
+        userId: String,
+        installationId: String,
+        onResult: (List<com.syme.domain.model.Measurement>) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                meterRepository
+                    .observeAggregatedMeasurementsFromFirestore(userId, installationId)
+                    .first()                 // un seul emit suffit pour alimenter le cache
+                    .let(onResult)
+            } catch (_: Exception) {
+                // Installation sans mesures → on ne l'inclut pas dans le comparatif
+            }
+        }
+    }
+
+
     // -------------------------
     // START REALTIME + AGGREGATION
     // -------------------------

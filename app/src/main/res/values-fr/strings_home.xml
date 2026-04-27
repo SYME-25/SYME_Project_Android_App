@@ -138,4 +138,12 @@
     <string name="installation_updated_success">Installation modifiée avec succès</string>
     <string name="installation_save_error">Erreur lors de la sauvegarde</string>
 
+    <string name="no_meter_title">Aucun compteur</string>
+    <string name="no_meter_description">Vous n\'avez pas encore configuré de compteur pour cette installation.</string>
+
+    <string name="no_circuit_title">Aucun circuit</string>
+    <string name="no_circuit_description">Ajoutez des circuits pour mieux gérer la distribution de votre énergie.</string>
+
+    <string name="no_appliance_title">Aucun appareil</string>
+    <string name="no_appliance_description">Votre liste d\'appareils est vide. Commencez par en ajouter un !</string>
 </resources>

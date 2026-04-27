@@ -20,6 +20,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -63,6 +67,7 @@ import com.syme.ui.component.dialog.ApplianceDeleteDialog
 import com.syme.ui.component.dialog.CircuitDeleteDialog
 import com.syme.ui.component.dialog.CircuitEditDialog
 import com.syme.ui.component.filter.FilterSection
+import com.syme.ui.component.state.EmptyStatePlaceholder
 import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
 import com.syme.ui.screen.appliance.components.UserAppliancesList
@@ -250,20 +255,37 @@ fun UserInstallationDetailScreen(
 
         item {
             when (applianceState) {
-                is UiState.Loading -> CircularProgressIndicator()
+                is UiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
                 is UiState.Success -> {
-                    val userAppliances =
-                        (applianceState as UiState.Success<List<Appliance>>).data
-                    UserAppliancesList(
-                        items = userAppliances,
-                        onEdit = { appliance ->
-                            onNavigateToApplianceDetail(appliance, Mode.EDIT)
-                        },
-                        onDelete = { applianceToDelete = it }
+                    val userAppliances = (applianceState as UiState.Success<List<Appliance>>).data
+
+                    if (userAppliances.isEmpty()) {
+                        EmptyStatePlaceholder(
+                            icon = Icons.Default.Devices,
+                            title = stringResource(R.string.no_appliance_title),
+                            description = stringResource(R.string.no_appliance_description)
+                        )
+                    } else {
+                        UserAppliancesList(
+                            items = userAppliances,
+                            onEdit = { appliance ->
+                                onNavigateToApplianceDetail(appliance, Mode.EDIT)
+                            },
+                            onDelete = { applianceToDelete = it }
+                        )
+                    }
+                }
+                is UiState.Error -> {
+                    Text(
+                        text = stringResource(R.string.installation_error_loading_installations),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
                     )
                 }
-                is UiState.Error ->
-                    Text(stringResource(R.string.installation_error_loading_installations))
                 else -> {}
             }
         }
@@ -297,7 +319,11 @@ fun UserInstallationDetailScreen(
                     }
                 )
             } else {
-                Text(stringResource(R.string.no_meter_found))
+                EmptyStatePlaceholder(
+                    icon = Icons.Default.Speed,
+                    title = stringResource(R.string.no_meter_title),
+                    description = stringResource(R.string.no_meter_description)
+                )
             }
         }
 
@@ -314,12 +340,16 @@ fun UserInstallationDetailScreen(
             if (circuits.isNotEmpty()) {
                 CircuitRow(
                     items = circuits,
-                    onClick = { /* futur détail */ },
+                    onClick = {},
                     onEdit = { circuitToEdit   = it },
                     onDelete = { circuitToDelete = it }
                 )
             } else {
-                Text(stringResource(R.string.no_circuit_found))
+                EmptyStatePlaceholder(
+                    icon = Icons.Default.ElectricBolt,
+                    title = stringResource(R.string.no_circuit_title),
+                    description = stringResource(R.string.no_circuit_description)
+                )
             }
         }
 

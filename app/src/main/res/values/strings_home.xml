@@ -149,4 +149,12 @@
     <string name="installation_updated_success">Installation updated successfully</string>
     <string name="installation_save_error">Error while saving</string>
 
+    <string name="no_meter_title">No meter</string>
+    <string name="no_meter_description">You haven’t set up a meter for this installation yet.</string>
+
+    <string name="no_circuit_title">No circuit</string>
+    <string name="no_circuit_description">Add circuits to better manage your energy distribution.</string>
+
+    <string name="no_appliance_title">No appliance</string>
+    <string name="no_appliance_description">Your appliance list is empty. Start by adding one!</string>
 </resources>

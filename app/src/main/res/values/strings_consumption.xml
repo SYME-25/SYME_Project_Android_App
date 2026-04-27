@@ -61,4 +61,14 @@
     <string name="consumption_detail_consumption_id">Consumption ID</string>
     <string name="consumption_detail_installation_id">Installation</string>
     <string name="consumption_detail_meter_id">Meter</string>
+
+    <string name="tab_analysis">Analysis</string>
+    <string name="tab_planning">Planning</string>
+
+    <string name="section_consumption_planning">Consumption planning</string>
+
+    <string name="consumption_by_installation">Consumption by installation</string>
+
+    <string name="no_planning_title">No planning</string>
+    <string name="no_planning_description">You haven’t planned any consumption for this installation yet. Tap the + button to get started.</string>
 </resources>

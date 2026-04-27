@@ -61,4 +61,17 @@
     <string name="consumption_detail_consumption_id">ID Consommation</string>
     <string name="consumption_detail_installation_id">Installation</string>
     <string name="consumption_detail_meter_id">Compteur</string>
+
+    <!-- Tabs -->
+    <string name="tab_analysis">Analyse</string>
+    <string name="tab_planning">Planification</string>
+
+    <!-- Section -->
+    <string name="section_consumption_planning">Planification de consommation</string>
+
+
+    <string name="consumption_by_installation">Consommation par installation</string>
+
+    <string name="no_planning_title">Aucune planification</string>
+    <string name="no_planning_description">Vous n\'avez pas encore planifié de consommation pour cette installation. Cliquez sur le bouton + pour commencer.</string>
 </resources>
