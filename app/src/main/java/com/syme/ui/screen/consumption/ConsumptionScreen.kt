@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -19,30 +18,30 @@ import androidx.compose.ui.window.DialogProperties
 import com.syme.R
 import com.syme.domain.mapper.ConsumptionBarFactory
 import com.syme.domain.model.Consumption
-import com.syme.utils.MeasurementUtil
 import com.syme.domain.model.Installation
 import com.syme.domain.model.InstallationConsumptionEntry
 import com.syme.domain.model.enumeration.ConsumptionFormType
 import com.syme.domain.model.enumeration.ConsumptionStateType
 import com.syme.domain.model.enumeration.PeriodFilter
+import com.syme.domain.state.UiState
+import com.syme.ui.component.animation.banner.BannerConsumption
 import com.syme.ui.component.card.ConsumptionRow
 import com.syme.ui.component.chart.ConsumptionInjectionBarChart
 import com.syme.ui.component.chart.InstallationComparisonChart
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
+import com.syme.ui.component.filter.FilterSection
+import com.syme.ui.component.state.EmptyStatePlaceholder
 import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
+import com.syme.ui.screen.consumption.components.PeriodFilterSegmented
+import com.syme.ui.screen.consumption.components.PeriodSwitcher
 import com.syme.ui.snapshot.MessageAction
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
-import com.syme.domain.state.UiState
-import com.syme.ui.component.animation.banner.BannerConsumption
-import com.syme.ui.component.filter.FilterSection
-import com.syme.ui.component.state.EmptyStatePlaceholder
-import com.syme.ui.screen.consumption.components.PeriodFilterSegmented
-import com.syme.ui.screen.consumption.components.PeriodSwitcher
 import com.syme.ui.viewmodel.ConsumptionViewModel
 import com.syme.ui.viewmodel.InstallationViewModel
 import com.syme.ui.viewmodel.MeterViewModel
+import com.syme.utils.MeasurementUtil
 import com.syme.utils.generateId
 import java.time.LocalDate
 import kotlin.math.round
@@ -163,13 +162,14 @@ fun ConsumptionScreen(
     val consumptionUnit = stringResource(R.string.consumption_label_Wh)
 
     // ─── Données Planification (filtrées par selectedPlanningInstallationId) ───
-    // État complètement séparé de l'Analyse — aucune dépendance croisée.
-    val planningConsumptions = remember(consumptions, selectedPlanningInstallationId) {
-        consumptions
-            .filter { it.installationId == selectedPlanningInstallationId }
-            .sortedByDescending { it.periodStart }
-            .take(50)
-            .toMutableStateList()
+    // FIX 2 : derivedStateOf au lieu de toMutableStateList() — réactif aux changements de consumptions
+    val planningConsumptions by remember(consumptions, selectedPlanningInstallationId) {
+        derivedStateOf {
+            consumptions
+                .filter { it.installationId == selectedPlanningInstallationId }
+                .sortedByDescending { it.periodStart }
+                .take(50)
+        }
     }
 
     val hasSubscriptionByInstallation = remember(planningConsumptions) {
@@ -189,8 +189,9 @@ fun ConsumptionScreen(
         if (userId.isNotBlank()) installationViewModel.observe(userId)
     }
 
-    // Observer les consommations pour l'installation sélectionnée dans Analyse
-    LaunchedEffect(userId, selectedAnalysisInstallationId) {
+    // FIX 1 : ajout de installationsMap comme clé pour garantir le déclenchement
+    // après l'initialisation de selectedAnalysisInstallationId
+    LaunchedEffect(userId, selectedAnalysisInstallationId, installationsMap) {
         if (userId.isNotBlank() && !selectedAnalysisInstallationId.isNullOrBlank()) {
             consumptionViewModel.observeAll(userId, selectedAnalysisInstallationId!!)
             meterViewModel.observeMeters(userId, selectedAnalysisInstallationId!!)
@@ -219,7 +220,8 @@ fun ConsumptionScreen(
             }
     }
 
-    // Initialise les deux filtres sur la première installation disponible
+    // FIX 1 (suite) : initialise les deux filtres dès que la map est disponible,
+    // ce qui déclenche ensuite le LaunchedEffect d'observation ci-dessus
     LaunchedEffect(installationsMap) {
         if (installationsMap.isNotEmpty()) {
             val firstId = installationsMap.values.first()
@@ -287,13 +289,9 @@ fun ConsumptionScreen(
             .fillMaxSize()
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-
         Title(stringResource(R.string.consumption_label), padding = 0)
-
         Spacer(modifier = Modifier.height(12.dp))
-
         BannerConsumption()
-
         Spacer(modifier = Modifier.height(20.dp))
 
         TabRow(selectedTabIndex = selectedTabIndex) {
@@ -338,14 +336,12 @@ fun ConsumptionScreen(
                             )
                         }
                     }
-
                     item {
                         PeriodFilterSegmented(
                             selected = selectedPeriod,
                             onSelectedChange = { selectedPeriod = it }
                         )
                     }
-
                     item {
                         PeriodSwitcher(
                             selectedPeriod = selectedPeriod,
@@ -353,7 +349,6 @@ fun ConsumptionScreen(
                             onDateChange = { currentDate = it }
                         )
                     }
-
                     item {
                         ConsumptionInjectionBarChart(
                             data = consumptionBars,
@@ -364,7 +359,6 @@ fun ConsumptionScreen(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
-
                     item {
                         if (installationConsumptionEntries.size >= 2) {
                             InstallationComparisonChart(
@@ -373,7 +367,6 @@ fun ConsumptionScreen(
                             )
                         }
                     }
-
                     item {
                         Spacer(
                             modifier = Modifier.height(
@@ -388,7 +381,6 @@ fun ConsumptionScreen(
             // Filtre propre : selectedPlanningInstallationId
             // Données propres : planningConsumptions
             // Aucune dépendance à selectedAnalysisInstallationId.
-            // ── Tab 1 : Planification ─────────────────────────────────────────
             1 -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -412,16 +404,13 @@ fun ConsumptionScreen(
                             )
                         }
                     }
-
                     item {
                         SectionHeader(
                             title = stringResource(R.string.your_consumption_planning),
                             onAddClick = { showFormDialog = true }
                         )
                     }
-
                     item {
-                        // AJOUT DU PLACEHOLDER ICI
                         if (planningConsumptions.isEmpty()) {
                             EmptyStatePlaceholder(
                                 icon = Icons.Default.DateRange,
@@ -445,7 +434,6 @@ fun ConsumptionScreen(
                             )
                         }
                     }
-
                     item {
                         Spacer(
                             modifier = Modifier.height(
@@ -582,7 +570,8 @@ fun ConsumptionScreen(
                             ) {
                                 val installationName = installationsMap.entries
                                     .firstOrNull { it.value == selectedPlanningInstallationId }?.key
-                                val subscribedPower = powerSubscribedByInstallation[installationName] ?: 0.0
+                                val subscribedPower =
+                                    powerSubscribedByInstallation[installationName] ?: 0.0
                                 if (subscribedPower == 0.0) emptyList()
                                 else listOf(
                                     round(subscribedPower * 0.75),

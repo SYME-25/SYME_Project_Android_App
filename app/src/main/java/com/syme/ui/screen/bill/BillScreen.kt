@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,6 +43,7 @@ import com.syme.ui.component.card.BillCardAdaptive
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.component.dialog.BillExportDialog
 import com.syme.ui.component.filter.FilterSection
+import com.syme.ui.component.state.EmptyStatePlaceholder
 import com.syme.ui.component.text.Title
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
@@ -212,7 +214,13 @@ fun BillScreen(
             }
 
         } else {
-            item { NoBillsPlaceholder() }
+            item {
+                EmptyStatePlaceholder(
+                    icon = Icons.AutoMirrored.Filled.ReceiptLong,
+                    title = stringResource(R.string.no_bills),
+                    description = stringResource(R.string.no_bills_description),
+                )
+            }
         }
 
         item {
@@ -253,49 +261,6 @@ fun BillScreen(
                 }
             )
         }
-    }
-}
-
-@Composable
-fun NoBillsPlaceholder(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        // Icon
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-            modifier = Modifier
-                .size(80.dp)
-                .padding(bottom = 16.dp)
-        )
-
-        // Title
-        Text(
-            text = stringResource(R.string.no_bills),
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Subtitle / description
-        Text(
-            text = stringResource(R.string.no_bills_description),
-            fontSize = 14.sp,
-            maxLines = 2,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center
-        )
     }
 }
 
