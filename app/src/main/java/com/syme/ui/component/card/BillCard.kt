@@ -229,9 +229,10 @@ fun BillCard(
 @Composable
 fun BillCardAdaptive(
     bill: Bill,
-    onBillClick: (Bill) -> Unit
+    onBillClick: (Bill) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    SubcomposeLayout { constraints ->
+    SubcomposeLayout(modifier = modifier) { constraints ->
         val widthDp = constraints.maxWidth / density
         val compact = widthDp < 360f
         val large = widthDp > 600f

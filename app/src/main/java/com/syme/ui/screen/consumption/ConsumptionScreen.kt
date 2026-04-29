@@ -62,7 +62,6 @@ fun ConsumptionScreen(
 
     val installationState by installationViewModel.state.collectAsState()
 
-    // ─── Installations ────────────────────────────────────────────────────────
     val installationsMap = remember(installationState) {
         when (installationState) {
             is UiState.Success ->
@@ -73,15 +72,7 @@ fun ConsumptionScreen(
     }
     val installationNames = installationsMap.keys.toList()
 
-    // 🔵 Filtre exclusif à l'onglet Analyse
-    var selectedAnalysisInstallationId by remember {
-        mutableStateOf(installationsMap.values.firstOrNull())
-    }
-
-    // 🟢 Filtre exclusif à l'onglet Planification — totalement indépendant
-    var selectedPlanningInstallationId by remember {
-        mutableStateOf(installationsMap.values.firstOrNull())
-    }
+    var selectedInstallationId by remember { mutableStateOf(installationsMap.values.firstOrNull()) }
 
     val meters by meterViewModel.meters.collectAsState()
     var selectedPeriod by remember { mutableStateOf(PeriodFilter.DAY) }
@@ -89,34 +80,29 @@ fun ConsumptionScreen(
     var showFormDialog by remember { mutableStateOf(false) }
     var selectedTabIndex by remember { mutableStateOf(0) }
 
-    // ─── Observed states ──────────────────────────────────────────────────────
     val consumptions by consumptionViewModel.consumptions.collectAsState()
     val measurements by meterViewModel.aggregatedMeasurements.collectAsState()
 
     val measurementsByInstallation = remember { mutableStateMapOf<String, List<com.syme.domain.model.Measurement>>() }
 
-    LaunchedEffect(measurements, selectedAnalysisInstallationId) {
-        val id = selectedAnalysisInstallationId ?: return@LaunchedEffect
+    LaunchedEffect(measurements, selectedInstallationId) {
+        val id = selectedInstallationId ?: return@LaunchedEffect
         if (measurements.isNotEmpty()) {
             measurementsByInstallation[id] = measurements
         }
     }
 
-    // ─── Données Analyse (filtrées par selectedAnalysisInstallationId) ─────────
-    val filteredMeasurements by remember(
-        measurements, selectedAnalysisInstallationId, selectedPeriod, currentDate
-    ) {
+    val filteredMeasurements by remember(measurements, selectedInstallationId, selectedPeriod, currentDate) {
         derivedStateOf {
-            val byInstallation = if (selectedAnalysisInstallationId != null) {
-                measurements.filter { it.installationId == selectedAnalysisInstallationId }
+            val byInstallation = if (selectedInstallationId != null) {
+                measurements.filter { it.installationId == selectedInstallationId }
             } else measurements
             MeasurementUtil.filterMeasurementsByPeriod(byInstallation, selectedPeriod, currentDate)
         }
     }
 
-    val consumptionBars by remember(
-        filteredMeasurements, selectedPeriod, currentDate, consumptions
-    ) {
+    // ✅ FIX : utilisé directement sans cache lastValid* qui bloquait les mises à jour
+    val consumptionBars by remember(filteredMeasurements, selectedPeriod, currentDate, consumptions) {
         derivedStateOf {
             ConsumptionBarFactory.build(
                 measurements = filteredMeasurements,
@@ -128,10 +114,7 @@ fun ConsumptionScreen(
     }
 
     val installationConsumptionEntries by remember(
-        measurementsByInstallation.toMap(),
-        consumptions,
-        installationsMap,
-        selectedAnalysisInstallationId
+        measurementsByInstallation.toMap(), consumptions, installationsMap, selectedInstallationId
     ) {
         derivedStateOf {
             installationsMap.entries.mapNotNull { (name, id) ->
@@ -148,7 +131,7 @@ fun ConsumptionScreen(
                     InstallationConsumptionEntry(
                         installationName = name,
                         totalEnergyWh = it,
-                        isSelected = id == selectedAnalysisInstallationId
+                        isSelected = id == selectedInstallationId
                     )
                 }
             }
@@ -161,12 +144,10 @@ fun ConsumptionScreen(
 
     val consumptionUnit = stringResource(R.string.consumption_label_Wh)
 
-    // ─── Données Planification (filtrées par selectedPlanningInstallationId) ───
-    // FIX 2 : derivedStateOf au lieu de toMutableStateList() — réactif aux changements de consumptions
-    val planningConsumptions by remember(consumptions, selectedPlanningInstallationId) {
+    val planningConsumptions by remember(consumptions, selectedInstallationId) {
         derivedStateOf {
             consumptions
-                .filter { it.installationId == selectedPlanningInstallationId }
+                .filter { it.installationId == selectedInstallationId }
                 .sortedByDescending { it.periodStart }
                 .take(50)
         }
@@ -176,8 +157,7 @@ fun ConsumptionScreen(
         planningConsumptions
             .filter { !it.onDemand && it.installationId != null }
             .groupBy { cons ->
-                installationsMap.entries
-                    .firstOrNull { it.value == cons.installationId }?.key
+                installationsMap.entries.firstOrNull { it.value == cons.installationId }?.key
             }
             .filterKeys { it != null }
             .mapKeys { it.key!! }
@@ -185,53 +165,40 @@ fun ConsumptionScreen(
     }
 
     // ─── LaunchedEffects ──────────────────────────────────────────────────────
+
     LaunchedEffect(userId) {
         if (userId.isNotBlank()) installationViewModel.observe(userId)
     }
 
-    // FIX 1 : ajout de installationsMap comme clé pour garantir le déclenchement
-    // après l'initialisation de selectedAnalysisInstallationId
-    LaunchedEffect(userId, selectedAnalysisInstallationId, installationsMap) {
-        if (userId.isNotBlank() && !selectedAnalysisInstallationId.isNullOrBlank()) {
-            consumptionViewModel.observeAll(userId, selectedAnalysisInstallationId!!)
-            meterViewModel.observeMeters(userId, selectedAnalysisInstallationId!!)
-            meterViewModel.observeAggregatedMeasurements(userId, selectedAnalysisInstallationId!!)
+    // ✅ FIX : installationsMap retiré de la clé — il est recréé à chaque recomposition
+    // ce qui annulait/relançait observeAggregatedMeasurements en boucle, coupant le flux Firestore
+    LaunchedEffect(userId, selectedInstallationId) {
+        if (userId.isNotBlank() && !selectedInstallationId.isNullOrBlank()) {
+            consumptionViewModel.observeAll(userId, selectedInstallationId!!)
+            meterViewModel.observeMeters(userId, selectedInstallationId!!)
+            meterViewModel.observeAggregatedMeasurements(userId, selectedInstallationId!!)
         }
     }
 
-    // Observer les consommations pour l'installation sélectionnée dans Planification
-    LaunchedEffect(userId, selectedPlanningInstallationId) {
-        if (userId.isNotBlank() && !selectedPlanningInstallationId.isNullOrBlank()) {
-            consumptionViewModel.observeAll(userId, selectedPlanningInstallationId!!)
-        }
-    }
-
-    // Pré-charge les mesures des autres installations pour le graphique comparatif
     LaunchedEffect(userId, installationsMap) {
         if (userId.isBlank()) return@LaunchedEffect
         installationsMap.values
-            .filter { it != selectedAnalysisInstallationId }
+            .filter { it != selectedInstallationId }
             .forEach { installationId ->
                 meterViewModel.observeAggregatedMeasurementsForComparison(userId, installationId) { list ->
-                    if (list.isNotEmpty()) {
-                        measurementsByInstallation[installationId] = list
-                    }
+                    if (list.isNotEmpty()) measurementsByInstallation[installationId] = list
                 }
             }
     }
 
-    // FIX 1 (suite) : initialise les deux filtres dès que la map est disponible,
-    // ce qui déclenche ensuite le LaunchedEffect d'observation ci-dessus
     LaunchedEffect(installationsMap) {
-        if (installationsMap.isNotEmpty()) {
-            val firstId = installationsMap.values.first()
-            if (selectedAnalysisInstallationId == null) selectedAnalysisInstallationId = firstId
-            if (selectedPlanningInstallationId == null) selectedPlanningInstallationId = firstId
+        if (installationsMap.isNotEmpty() && selectedInstallationId == null) {
+            selectedInstallationId = installationsMap.values.first()
         }
     }
 
-    LaunchedEffect(meters, selectedAnalysisInstallationId) {
-        val installationId = selectedAnalysisInstallationId ?: return@LaunchedEffect
+    LaunchedEffect(meters, selectedInstallationId) {
+        val installationId = selectedInstallationId ?: return@LaunchedEffect
         if (userId.isBlank()) return@LaunchedEffect
         val activeMeter = meters.firstOrNull { it.status.name == "ACTIVE" } ?: meters.firstOrNull()
         if (activeMeter != null) {
@@ -239,7 +206,6 @@ fun ConsumptionScreen(
         }
     }
 
-    // Recalcul de la puissance effective à chaque changement de consumptions
     LaunchedEffect(consumptions, installationState) {
         val now = System.currentTimeMillis()
         val installations = (installationState as? UiState.Success<List<Installation>>)?.data
@@ -247,14 +213,12 @@ fun ConsumptionScreen(
         installations.forEach { installation ->
             val instId = installation.installationId
             val currentDemand = consumptions.firstOrNull { c ->
-                c.installationId == instId &&
-                        c.onDemand &&
+                c.installationId == instId && c.onDemand &&
                         c.periodStart <= now && now <= c.periodEnd &&
                         c.consumptionState != ConsumptionStateType.PAUSED
             }
             val currentSubscription = consumptions.firstOrNull { c ->
-                c.installationId == instId &&
-                        !c.onDemand &&
+                c.installationId == instId && !c.onDemand &&
                         c.periodStart <= now && now <= c.periodEnd &&
                         c.consumptionState != ConsumptionStateType.PAUSED
             }
@@ -262,12 +226,9 @@ fun ConsumptionScreen(
                 .filter { c -> c.installationId == instId && !c.onDemand }
                 .maxByOrNull { it.periodEnd }
             val resolvedPower = when {
-                currentDemand != null && currentDemand.requestedPowerKw > 0 ->
-                    currentDemand.requestedPowerKw
-                currentSubscription != null && currentSubscription.requestedPowerKw > 0 ->
-                    currentSubscription.requestedPowerKw
-                lastSubscription != null && lastSubscription.requestedPowerKw > 0 ->
-                    lastSubscription.requestedPowerKw
+                currentDemand != null && currentDemand.requestedPowerKw > 0 -> currentDemand.requestedPowerKw
+                currentSubscription != null && currentSubscription.requestedPowerKw > 0 -> currentSubscription.requestedPowerKw
+                lastSubscription != null && lastSubscription.requestedPowerKw > 0 -> lastSubscription.requestedPowerKw
                 else -> null
             }
             if (resolvedPower != null && resolvedPower != installation.powerSubscribed) {
@@ -283,6 +244,7 @@ fun ConsumptionScreen(
     // ─────────────────────────────────────────────────────────────────────────
     // UI
     // ─────────────────────────────────────────────────────────────────────────
+
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -310,8 +272,6 @@ fun ConsumptionScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         when (selectedTabIndex) {
-
-            // ── Tab 0 : Analyse ───────────────────────────────────────────────
             0 -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -323,25 +283,24 @@ fun ConsumptionScreen(
                             FilterSection(
                                 title = stringResource(R.string.consumption_filter_by_installation),
                                 items = installationNames,
-                                selectedItem = installationsMap.entries
-                                    .firstOrNull { it.value == selectedAnalysisInstallationId }?.key,
+                                selectedItem = installationsMap.entries.firstOrNull { it.value == selectedInstallationId }?.key,
                                 onItemSelected = { selectedName ->
-                                    selectedAnalysisInstallationId = installationsMap[selectedName]
-                                    onFilterSelected(selectedAnalysisInstallationId)
+                                    selectedInstallationId = installationsMap[selectedName]
+                                    onFilterSelected(selectedInstallationId)
                                 },
-                                itemLabel = { name ->
-                                    if (name.length > 12) name.take(12) + "…" else name
-                                },
+                                itemLabel = { name -> if (name.length > 12) name.take(12) + "…" else name },
                                 showAll = false
                             )
                         }
                     }
+
                     item {
                         PeriodFilterSegmented(
                             selected = selectedPeriod,
                             onSelectedChange = { selectedPeriod = it }
                         )
                     }
+
                     item {
                         PeriodSwitcher(
                             selectedPeriod = selectedPeriod,
@@ -349,6 +308,9 @@ fun ConsumptionScreen(
                             onDateChange = { currentDate = it }
                         )
                     }
+
+                    // ✅ FIX : consumptionBars utilisé directement — le cache lastValid* empêchait
+                    // les mises à jour quand consumptionBars devenait temporairement vide
                     item {
                         ConsumptionInjectionBarChart(
                             data = consumptionBars,
@@ -359,6 +321,7 @@ fun ConsumptionScreen(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
+
                     item {
                         if (installationConsumptionEntries.size >= 2) {
                             InstallationComparisonChart(
@@ -367,20 +330,11 @@ fun ConsumptionScreen(
                             )
                         }
                     }
-                    item {
-                        Spacer(
-                            modifier = Modifier.height(
-                                contentPadding.calculateBottomPadding() + 32.dp
-                            )
-                        )
-                    }
+
+                    item { Spacer(modifier = Modifier.height(contentPadding.calculateBottomPadding() + 32.dp)) }
                 }
             }
 
-            // ── Tab 1 : Planification ─────────────────────────────────────────
-            // Filtre propre : selectedPlanningInstallationId
-            // Données propres : planningConsumptions
-            // Aucune dépendance à selectedAnalysisInstallationId.
             1 -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -392,24 +346,23 @@ fun ConsumptionScreen(
                             FilterSection(
                                 title = stringResource(R.string.consumption_filter_by_installation),
                                 items = installationNames,
-                                selectedItem = installationsMap.entries
-                                    .firstOrNull { it.value == selectedPlanningInstallationId }?.key,
+                                selectedItem = installationsMap.entries.firstOrNull { it.value == selectedInstallationId }?.key,
                                 onItemSelected = { selectedName ->
-                                    selectedPlanningInstallationId = installationsMap[selectedName]
+                                    selectedInstallationId = installationsMap[selectedName]
                                 },
-                                itemLabel = { name ->
-                                    if (name.length > 12) name.take(12) + "…" else name
-                                },
+                                itemLabel = { name -> if (name.length > 12) name.take(12) + "…" else name },
                                 showAll = false
                             )
                         }
                     }
+
                     item {
                         SectionHeader(
                             title = stringResource(R.string.your_consumption_planning),
                             onAddClick = { showFormDialog = true }
                         )
                     }
+
                     item {
                         if (planningConsumptions.isEmpty()) {
                             EmptyStatePlaceholder(
@@ -424,31 +377,20 @@ fun ConsumptionScreen(
                                 onPauseToggle = { cons, paused ->
                                     val instId = cons.installationId ?: return@ConsumptionRow
                                     val updated = cons.copy(
-                                        consumptionState = if (paused)
-                                            ConsumptionStateType.PAUSED
-                                        else
-                                            ConsumptionStateType.RUNNING
+                                        consumptionState = if (paused) ConsumptionStateType.PAUSED else ConsumptionStateType.RUNNING
                                     )
                                     consumptionViewModel.updateConsumption(userId, instId, updated)
                                 }
                             )
                         }
                     }
-                    item {
-                        Spacer(
-                            modifier = Modifier.height(
-                                contentPadding.calculateBottomPadding() + 32.dp
-                            )
-                        )
-                    }
+
+                    item { Spacer(modifier = Modifier.height(contentPadding.calculateBottomPadding() + 32.dp)) }
                 }
             }
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Dialog ajout consommation
-    // ─────────────────────────────────────────────────────────────────────────
     if (showFormDialog) {
         var selectedForm by remember { mutableStateOf(ConsumptionFormType.SUBSCRIPTION) }
 
@@ -477,14 +419,11 @@ fun ConsumptionScreen(
                         )
                     }
 
-                    // lastSubscriptions / lastDemands calculés sur planningConsumptions
-                    // (déjà filtrés par selectedPlanningInstallationId)
                     val lastSubscriptions = remember(planningConsumptions) {
                         planningConsumptions
                             .filter { !it.onDemand && it.installationId != null }
                             .groupBy { cons ->
-                                installationsMap.entries
-                                    .firstOrNull { it.value == cons.installationId }?.key
+                                installationsMap.entries.firstOrNull { it.value == cons.installationId }?.key
                             }
                             .filterKeys { it != null }
                             .mapKeys { it.key!! }
@@ -495,8 +434,7 @@ fun ConsumptionScreen(
                         planningConsumptions
                             .filter { it.onDemand && it.installationId != null }
                             .groupBy { cons ->
-                                installationsMap.entries
-                                    .firstOrNull { it.value == cons.installationId }?.key
+                                installationsMap.entries.firstOrNull { it.value == cons.installationId }?.key
                             }
                             .filterKeys { it != null }
                             .mapKeys { it.key!! }
@@ -518,60 +456,45 @@ fun ConsumptionScreen(
                                 installationsId = installationNames,
                                 lastSubscriptions = lastSubscriptions,
                                 onSubmit = { installationName, start, end, energyWh, powerKw ->
-                                    val installationId = installationsMap[installationName]
-                                        ?: return@SubscriptionForm
+                                    val installationId = installationsMap[installationName] ?: return@SubscriptionForm
                                     val now = System.currentTimeMillis()
-                                    val newConsumption = Consumption(
-                                        consumptionId = generateId("C"),
-                                        installationId = installationId,
-                                        meterId = null,
-                                        periodStart = start,
-                                        periodEnd = end,
-                                        totalEnergy_kWh = energyWh.roundToInt(),
-                                        totalEnergy_kWhConsummed = 0.0,
-                                        onDemand = false,
-                                        requestedPowerKw = powerKw
+                                    consumptionViewModel.addConsumption(
+                                        userId, installationId,
+                                        Consumption(
+                                            consumptionId = generateId("C"),
+                                            installationId = installationId,
+                                            meterId = null,
+                                            periodStart = start, periodEnd = end,
+                                            totalEnergy_kWh = energyWh.roundToInt(),
+                                            totalEnergy_kWhConsummed = 0.0,
+                                            onDemand = false, requestedPowerKw = powerKw
+                                        )
                                     )
-                                    consumptionViewModel.addConsumption(userId, installationId, newConsumption)
-                                    val isCurrent = now in start..end
-                                    if (isCurrent) {
+                                    if (now in start..end) {
                                         val hasActiveDemand = consumptions.any { c ->
-                                            c.installationId == installationId &&
-                                                    c.onDemand &&
+                                            c.installationId == installationId && c.onDemand &&
                                                     c.periodStart <= now && now <= c.periodEnd &&
                                                     c.consumptionState != ConsumptionStateType.PAUSED
                                         }
                                         if (!hasActiveDemand) {
-                                            val installation =
-                                                (installationState as? UiState.Success<List<Installation>>)
-                                                    ?.data?.find { it.installationId == installationId }
+                                            val installation = (installationState as? UiState.Success<List<Installation>>)
+                                                ?.data?.find { it.installationId == installationId }
                                             if (installation != null && powerKw > 0.0) {
-                                                installationViewModel.update(
-                                                    userId,
-                                                    installation.copy(powerSubscribed = powerKw)
-                                                )
+                                                installationViewModel.update(userId, installation.copy(powerSubscribed = powerKw))
                                             }
                                         }
                                     }
-                                    globalMessageManager.showMessage(
-                                        item = "Subscription",
-                                        type = MessageType.SUCCESS,
-                                        action = MessageAction.CREATE
-                                    )
+                                    globalMessageManager.showMessage(item = "Subscription", type = MessageType.SUCCESS, action = MessageAction.CREATE)
                                     showFormDialog = false
                                 }
                             )
                         }
 
                         ConsumptionFormType.DEMAND -> {
-                            val suggestedPowersKw = remember(
-                                selectedPlanningInstallationId,
-                                powerSubscribedByInstallation
-                            ) {
+                            val suggestedPowersKw = remember(selectedInstallationId, powerSubscribedByInstallation) {
                                 val installationName = installationsMap.entries
-                                    .firstOrNull { it.value == selectedPlanningInstallationId }?.key
-                                val subscribedPower =
-                                    powerSubscribedByInstallation[installationName] ?: 0.0
+                                    .firstOrNull { it.value == selectedInstallationId }?.key
+                                val subscribedPower = powerSubscribedByInstallation[installationName] ?: 0.0
                                 if (subscribedPower == 0.0) emptyList()
                                 else listOf(
                                     round(subscribedPower * 0.75),
@@ -579,7 +502,6 @@ fun ConsumptionScreen(
                                     round(subscribedPower * 0.25)
                                 )
                             }
-
                             DemandForm(
                                 installationsId = installationNames,
                                 lastDemandEnds = lastDemands,
@@ -587,38 +509,27 @@ fun ConsumptionScreen(
                                 hasSubscriptionByInstallation = hasSubscriptionByInstallation,
                                 suggestedPowersKw = suggestedPowersKw,
                                 onSubmit = { installationName, start, end, requestedPowerKw ->
-                                    val installationId =
-                                        installationsMap[installationName] ?: return@DemandForm
+                                    val installationId = installationsMap[installationName] ?: return@DemandForm
                                     val now = System.currentTimeMillis()
-                                    val newConsumption = Consumption(
-                                        consumptionId = generateId("D"),
-                                        installationId = installationId,
-                                        meterId = null,
-                                        periodStart = start,
-                                        periodEnd = end,
-                                        totalEnergy_kWh = 0,
-                                        totalEnergy_kWhConsummed = 0.0,
-                                        onDemand = true,
-                                        requestedPowerKw = requestedPowerKw
+                                    consumptionViewModel.addConsumption(
+                                        userId, installationId,
+                                        Consumption(
+                                            consumptionId = generateId("D"),
+                                            installationId = installationId,
+                                            meterId = null,
+                                            periodStart = start, periodEnd = end,
+                                            totalEnergy_kWh = 0, totalEnergy_kWhConsummed = 0.0,
+                                            onDemand = true, requestedPowerKw = requestedPowerKw
+                                        )
                                     )
-                                    consumptionViewModel.addConsumption(userId, installationId, newConsumption)
-                                    val isCurrent = now in start..end
-                                    if (isCurrent) {
-                                        val installation =
-                                            (installationState as? UiState.Success<List<Installation>>)
-                                                ?.data?.find { it.installationId == installationId }
+                                    if (now in start..end) {
+                                        val installation = (installationState as? UiState.Success<List<Installation>>)
+                                            ?.data?.find { it.installationId == installationId }
                                         if (installation != null && requestedPowerKw > 0.0) {
-                                            installationViewModel.update(
-                                                userId,
-                                                installation.copy(powerSubscribed = requestedPowerKw)
-                                            )
+                                            installationViewModel.update(userId, installation.copy(powerSubscribed = requestedPowerKw))
                                         }
                                     }
-                                    globalMessageManager.showMessage(
-                                        item = "Demand",
-                                        type = MessageType.SUCCESS,
-                                        action = MessageAction.CREATE
-                                    )
+                                    globalMessageManager.showMessage(item = "Demand", type = MessageType.SUCCESS, action = MessageAction.CREATE)
                                     showFormDialog = false
                                 }
                             )

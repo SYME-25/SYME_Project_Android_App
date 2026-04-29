@@ -167,8 +167,7 @@ fun BillScreen(
                 item {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 6.dp),
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
                         BillCardAdaptive(
@@ -190,11 +189,13 @@ fun BillScreen(
 
                 items(historyBills.chunked(2)) { rowBills ->
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         rowBills.forEach { bill ->
                             BillCardAdaptive(
+                                modifier = Modifier.weight(1f),  // ← important pour que les 2 cartes se partagent la largeur
                                 bill = bill,
                                 onBillClick = {
                                     selectedBill = bill

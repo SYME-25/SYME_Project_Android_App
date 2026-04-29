@@ -25,9 +25,6 @@ class MeterViewModel @Inject constructor(
     private val meterRepository: MeterRepository,
 ) : ViewModel() {
 
-    // -------------------------
-    // STATES
-    // -------------------------
     private val _meters = MutableStateFlow<List<Meter>>(emptyList())
     val meters: StateFlow<List<Meter>> = _meters.asStateFlow()
 
@@ -46,18 +43,13 @@ class MeterViewModel @Inject constructor(
     private val _meterEvent = MutableSharedFlow<MeterEvent>()
     val meterEvent: SharedFlow<MeterEvent> = _meterEvent.asSharedFlow()
 
-    // -------------------------
-    // INTERNAL JOBS
-    // -------------------------
     private var realtimeJob: Job? = null
     private var aggregationJob: Job? = null
+    // ✅ Supprimé : aggregatedMeasurementsJob — on ne cancel plus le listener Firestore
     private val relayJobs = mutableMapOf<String, Job>()
     private val buffer = mutableListOf<Measurement>()
     private var lastTimestampSeen: Long = 0
 
-    // -------------------------
-    // OBSERVE METERS
-    // -------------------------
     fun observeMeters(userId: String, installationId: String) {
         viewModelScope.launch {
             meterRepository.observeMeters(userId, installationId)
@@ -65,9 +57,8 @@ class MeterViewModel @Inject constructor(
         }
     }
 
-    // ----------------------------------------
-    // OBSERVE MEASUREMENTS AGGREGATED
-    // ----------------------------------------
+    // ✅ FIX : pas de cancel du job précédent — on lance simplement un nouveau collecteur.
+    // Annuler le job coupait le flux Firestore avant qu'il émette les mises à jour en temps réel.
     fun observeAggregatedMeasurements(
         userId: String,
         installationId: String
@@ -81,36 +72,21 @@ class MeterViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Lecture one-shot des mesures agrégées Firestore pour une installation donnée,
-     * utilisée exclusivement par le graphique comparatif multi-installations.
-     * Le résultat est renvoyé via le callback [onResult] pour être stocké
-     * dans le cache local (measurementsByInstallation) du ConsumptionScreen.
-     *
-     * On utilise un simple .first() plutôt qu'un collect continu afin
-     * de ne pas multiplier les listeners Firestore actifs.
-     */
     fun observeAggregatedMeasurementsForComparison(
         userId: String,
         installationId: String,
-        onResult: (List<com.syme.domain.model.Measurement>) -> Unit
+        onResult: (List<Measurement>) -> Unit
     ) {
         viewModelScope.launch {
             try {
                 meterRepository
                     .observeAggregatedMeasurementsFromFirestore(userId, installationId)
-                    .first()                 // un seul emit suffit pour alimenter le cache
+                    .first()
                     .let(onResult)
-            } catch (_: Exception) {
-                // Installation sans mesures → on ne l'inclut pas dans le comparatif
-            }
+            } catch (_: Exception) {}
         }
     }
 
-
-    // -------------------------
-    // START REALTIME + AGGREGATION
-    // -------------------------
     @RequiresApi(Build.VERSION_CODES.O)
     fun startRealtimeAggregation(
         userId: String,
@@ -121,7 +97,6 @@ class MeterViewModel @Inject constructor(
         buffer.clear()
         lastTimestampSeen = System.currentTimeMillis()
 
-        // 🔁 REALTIME DATABASE LISTENER
         realtimeJob = viewModelScope.launch {
             meterRepository
                 .observeRealtimeFromRealtimeDb(userId, installationId, meterId)
@@ -138,22 +113,15 @@ class MeterViewModel @Inject constructor(
                 }
         }
 
-        // ⏱️ AGGREGATION LOOP
         aggregationJob = viewModelScope.launch {
             while (true) {
                 delay(60_000)
-                val measurementToSave =
-                    if (buffer.isNotEmpty()) {
-                        aggregate(buffer, meterId, installationId)
-                    } else {
-                        defaultMeasurement(meterId, installationId)
-                    }
-                meterRepository.saveToFirestore(
-                    userId,
-                    installationId,
-                    meterId,
-                    measurementToSave
-                )
+                val measurementToSave = if (buffer.isNotEmpty()) {
+                    aggregate(buffer, meterId, installationId)
+                } else {
+                    defaultMeasurement(meterId, installationId)
+                }
+                meterRepository.saveToFirestore(userId, installationId, meterId, measurementToSave)
                 buffer.clear()
                 lastTimestampSeen = System.currentTimeMillis()
             }
@@ -165,16 +133,10 @@ class MeterViewModel @Inject constructor(
         aggregationJob?.cancel()
         buffer.clear()
         _measurements.value = emptyList()
+        // ✅ _aggregatedMeasurements non remis à vide — les barres restent affichées
     }
 
-    // -------------------------
-    // AGGREGATION
-    // -------------------------
-    private fun aggregate(
-        list: List<Measurement>,
-        meterId: String,
-        installationId: String
-    ): Measurement {
+    private fun aggregate(list: List<Measurement>, meterId: String, installationId: String): Measurement {
         fun avg(values: List<Double?>): Double? {
             val valid = values.filterNotNull()
             return if (valid.isNotEmpty()) valid.average() else null
@@ -195,53 +157,27 @@ class MeterViewModel @Inject constructor(
         )
     }
 
-    private fun defaultMeasurement(
-        meterId: String,
-        installationId: String
-    ): Measurement =
+    private fun defaultMeasurement(meterId: String, installationId: String): Measurement =
         Measurement(
             timestamp = System.currentTimeMillis(),
             meterId = meterId,
             installationId = installationId,
-            voltage = 0.0,
-            current = 0.0,
-            activePowerW = 0.0,
-            reactivePowerVar = 0.0,
-            apparentPowerVA = 0.0,
-            energyActiveWh = 0.0,
-            energyReactiveVarh = 0.0,
-            energyApparentVAh = 0.0,
+            voltage = 0.0, current = 0.0, activePowerW = 0.0,
+            reactivePowerVar = 0.0, apparentPowerVA = 0.0,
+            energyActiveWh = 0.0, energyReactiveVarh = 0.0, energyApparentVAh = 0.0,
             aiAnalysisStatus = "missing"
         )
 
-    // -------------------------
-    // LOAD METER
-    // -------------------------
-    fun loadMeter(
-        userId: String,
-        installationId: String,
-        meterId: String,
-        securityCode: String
-    ) {
+    fun loadMeter(userId: String, installationId: String, meterId: String, securityCode: String) {
         viewModelScope.launch {
             _loading.value = true
             try {
                 val hashedCode = hashSecurityCode(securityCode)
-                val meter = meterRepository.loadMeterToInstallation(
-                    userId,
-                    installationId,
-                    meterId,
-                    hashedCode
-                )
+                val meter = meterRepository.loadMeterToInstallation(userId, installationId, meterId, hashedCode)
                 if (meter != null) {
                     _meterEvent.emit(MeterEvent.Success(R.string.meter_add_success))
                 } else {
-                    _meterEvent.emit(
-                        MeterEvent.Error(
-                            R.string.meter_error_loading_meters,
-                            "Invalid code or already used"
-                        )
-                    )
+                    _meterEvent.emit(MeterEvent.Error(R.string.meter_error_loading_meters, "Invalid code or already used"))
                 }
             } catch (e: Exception) {
                 _error.value = e.message
@@ -257,36 +193,18 @@ class MeterViewModel @Inject constructor(
         return hashBytes.joinToString("") { "%02x".format(it) }
     }
 
-    // -------------------------
-    // RELAYS
-    // -------------------------
-    fun toggleRelay(
-        userId: String,
-        installationId: String,
-        relay: Relay
-    ) {
+    fun toggleRelay(userId: String, installationId: String, relay: Relay) {
         viewModelScope.launch {
             try {
                 val newState = if (relay.currentState == "ON") "OFF" else "ON"
-                meterRepository.updateRelayState(
-                    userId,
-                    installationId,
-                    relay.meterId,
-                    relay.relayId,
-                    newState
-                )
-                // L'UI se met à jour via observeRelaysForMeter()
+                meterRepository.updateRelayState(userId, installationId, relay.meterId, relay.relayId, newState)
             } catch (e: Exception) {
                 _error.value = "Failed to update relay: ${e.message}"
             }
         }
     }
 
-    fun observeRelaysForMeter(
-        userId: String,
-        installationId: String,
-        meterId: String
-    ) {
+    fun observeRelaysForMeter(userId: String, installationId: String, meterId: String) {
         relayJobs[meterId]?.cancel()
         relayJobs[meterId] = viewModelScope.launch {
             meterRepository.observeRelaysFromRealtimeDb(userId, installationId, meterId)
@@ -296,11 +214,8 @@ class MeterViewModel @Inject constructor(
                             if (meter.meterId != meterId) return@map meter
                             meter.copy(
                                 relays = meter.relays.map { relay ->
-                                    val rtState = realtimeRelays
-                                        .find { it.relayId == relay.relayId }
-                                        ?.currentState
-                                    if (rtState != null) relay.copy(currentState = rtState)
-                                    else relay
+                                    val rtState = realtimeRelays.find { it.relayId == relay.relayId }?.currentState
+                                    if (rtState != null) relay.copy(currentState = rtState) else relay
                                 }
                             )
                         }
@@ -310,11 +225,7 @@ class MeterViewModel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun startBackgroundAggregationIfNeeded(
-        userId: String,
-        installationId: String,
-        meterId: String
-    ) {
+    fun startBackgroundAggregationIfNeeded(userId: String, installationId: String, meterId: String) {
         if (realtimeJob?.isActive == true) return
         startRealtimeAggregation(userId, installationId, meterId)
     }
