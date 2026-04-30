@@ -30,6 +30,7 @@ import com.syme.ui.component.chart.ConsumptionInjectionBarChart
 import com.syme.ui.component.chart.InstallationComparisonChart
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
 import com.syme.ui.component.filter.FilterSection
+import com.syme.ui.component.filter.SegmentedControl
 import com.syme.ui.component.state.EmptyStatePlaceholder
 import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
@@ -256,18 +257,14 @@ fun ConsumptionScreen(
         BannerConsumption()
         Spacer(modifier = Modifier.height(20.dp))
 
-        TabRow(selectedTabIndex = selectedTabIndex) {
-            Tab(
-                selected = selectedTabIndex == 0,
-                onClick = { selectedTabIndex = 0 },
-                text = { Text(stringResource(R.string.tab_analysis)) }
-            )
-            Tab(
-                selected = selectedTabIndex == 1,
-                onClick = { selectedTabIndex = 1 },
-                text = { Text(stringResource(R.string.tab_planning)) }
-            )
-        }
+        SegmentedControl(
+            tabs = listOf(
+                stringResource(R.string.tab_analysis),
+                stringResource(R.string.tab_planning)
+            ),
+            selectedIndex = selectedTabIndex,
+            onTabSelected = { selectedTabIndex = it }
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -406,18 +403,14 @@ fun ConsumptionScreen(
                     .padding(16.dp)
             ) {
                 Column {
-                    TabRow(selectedTabIndex = selectedForm.ordinal) {
-                        Tab(
-                            selected = selectedForm == ConsumptionFormType.SUBSCRIPTION,
-                            onClick = { selectedForm = ConsumptionFormType.SUBSCRIPTION },
-                            text = { Text(stringResource(R.string.subscription_title)) }
-                        )
-                        Tab(
-                            selected = selectedForm == ConsumptionFormType.DEMAND,
-                            onClick = { selectedForm = ConsumptionFormType.DEMAND },
-                            text = { Text(stringResource(R.string.demand_title)) }
-                        )
-                    }
+                    SegmentedControl(
+                        tabs = listOf(
+                            stringResource(R.string.subscription_title),
+                            stringResource(R.string.demand_title)
+                        ),
+                        selectedIndex = selectedForm.ordinal,
+                        onTabSelected = { selectedForm = ConsumptionFormType.entries[it] }
+                    )
 
                     val lastSubscriptions = remember(planningConsumptions) {
                         planningConsumptions
