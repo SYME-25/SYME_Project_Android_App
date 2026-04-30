@@ -21,11 +21,15 @@ fun SegmentedControl(
     tabs: List<String>,
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    activeColor: Color = MaterialTheme.colorScheme.surface,
+    activeTextColor: Color = MaterialTheme.colorScheme.onSurface,
+    inactiveTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant
 ) {
     Surface(
         shape = RoundedCornerShape(10.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = containerColor,
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
@@ -38,19 +42,18 @@ fun SegmentedControl(
                         .weight(1f)
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onTabSelected(index) },
-                    color = if (selected) MaterialTheme.colorScheme.surface else Color.Transparent,
+                    color = if (selected) activeColor else Color.Transparent,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = title,
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 10.dp)
                             .fillMaxWidth(),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (selected) MaterialTheme.colorScheme.onSurface
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (selected) activeTextColor else inactiveTextColor
                     )
                 }
             }

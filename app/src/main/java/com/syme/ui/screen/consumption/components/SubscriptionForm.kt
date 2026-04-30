@@ -1,11 +1,9 @@
-package com.syme.ui.screen.consumption
+package com.syme.ui.screen.consumption.components
 
 import android.app.DatePickerDialog
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -23,7 +21,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +30,7 @@ import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.field.DateField
 import com.syme.ui.component.field.DropdownField
 import com.syme.ui.component.field.NumberField
+import com.syme.ui.component.filter.SegmentedControl
 import com.syme.utils.TimeUtils
 import java.util.*
 import kotlin.math.roundToInt
@@ -45,13 +43,10 @@ fun SubscriptionForm(
     moneyUnit: String = "FCFA",
     energyUnit: String = "kWh",
     onSubmit: (installation: String, start: Long, end: Long, energyWh: Double, powerKw: Double) -> Unit
-    //                                                                          ↑ nouveau paramètre
 ) {
     val colorPrimary = MaterialTheme.colorScheme.primary
     val colorAccent = MaterialTheme.colorScheme.secondary
-    val colorLightBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     val colorAccentBg = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-    val colorGray = MaterialTheme.colorScheme.secondary
 
     var selectedInstallation by remember { mutableStateOf("") }
     var startDate            by remember { mutableStateOf("") }
@@ -60,10 +55,9 @@ fun SubscriptionForm(
     var energy               by remember { mutableStateOf("") }
     var requestedPowerKw     by remember { mutableStateOf("") }
     var inputMode            by remember { mutableStateOf(InputMode.AMOUNT) }
-
-    var installationError by remember { mutableStateOf("") }
-    var startDateError    by remember { mutableStateOf("") }
-    var powerError        by remember { mutableStateOf("") }
+    var installationError    by remember { mutableStateOf("") }
+    var startDateError       by remember { mutableStateOf("") }
+    var powerError           by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val sdf     = remember { TimeUtils.dateFormat }
@@ -83,14 +77,12 @@ fun SubscriptionForm(
         derivedStateOf { sdf.format(Date(minStartMs)) }
     }
 
-    // ── Calculs croisés ───────────────────────────────────────────────────────
-    val amountValue  = amount.toDoubleOrNull() ?: 0.0
-    val energyValue  = energy.toDoubleOrNull() ?: 0.0
+    val amountValue   = amount.toDoubleOrNull() ?: 0.0
+    val energyValue   = energy.toDoubleOrNull() ?: 0.0
     val derivedEnergy = if (inputMode == InputMode.AMOUNT && kWhPrice > 0) amountValue / kWhPrice else energyValue
     val derivedAmount = if (inputMode == InputMode.ENERGY && kWhPrice > 0) energyValue * kWhPrice else amountValue
-    val powerValue   = requestedPowerKw.toDoubleOrNull() ?: 0.0
+    val powerValue    = requestedPowerKw.toDoubleOrNull() ?: 0.0
 
-    // DatePicker
     val startCalendar = remember { Calendar.getInstance() }
     val startDatePicker = DatePickerDialog(
         context,
@@ -118,7 +110,7 @@ fun SubscriptionForm(
             valid = false
         }
         if (powerValue <= 0) {
-            powerError = context.getString(R.string.consumption_error_installation_required) // réutilise ou crée une string dédiée
+            powerError = context.getString(R.string.consumption_error_power_required)
             valid = false
         }
         if (derivedEnergy <= 0) valid = false
@@ -134,7 +126,7 @@ fun SubscriptionForm(
     ) {
         item { Spacer(Modifier.height(24.dp)) }
 
-        // ── HEADER GRADIENT ───────────────────────────────────────────────────
+        // ── HEADER ───────────────────────────────────────────────────────────
         item {
             Box(
                 modifier = Modifier
@@ -164,9 +156,9 @@ fun SubscriptionForm(
 
         item { Spacer(Modifier.height(20.dp)) }
 
-        // ── INSTALLATION ──────────────────────────────────────────────────────
+        // ── INSTALLATION ─────────────────────────────────────────────────────
         item {
-            SectionLabel("Installation", Icons.Default.HomeWork, colorPrimary)
+            SectionLabel(stringResource(R.string.subscription_section_installation), Icons.Default.HomeWork, colorPrimary)
         }
         item {
             DropdownField(
@@ -201,12 +193,13 @@ fun SubscriptionForm(
 
         item { Spacer(Modifier.height(12.dp)) }
 
-        // ── DATES ─────────────────────────────────────────────────────────────
-        item { SectionLabel("Period", Icons.Default.DateRange, colorPrimary) }
+        // ── PÉRIODE ──────────────────────────────────────────────────────────
+        item {
+            SectionLabel(stringResource(R.string.subscription_section_period), Icons.Default.DateRange, colorPrimary)
+        }
         item {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Box(Modifier.weight(1f)) {
@@ -230,13 +223,15 @@ fun SubscriptionForm(
 
         item { Spacer(Modifier.height(12.dp)) }
 
-        // ── PUISSANCE ─────────────────────────────────────────────────────────
-        item { SectionLabel("Requested Power", Icons.Default.ElectricBolt, colorPrimary) }
+        // ── PUISSANCE ────────────────────────────────────────────────────────
+        item {
+            SectionLabel(stringResource(R.string.subscription_section_power), Icons.Default.ElectricBolt, colorPrimary)
+        }
         item {
             NumberField(
                 value = requestedPowerKw,
                 onValueChange = { requestedPowerKw = it },
-                label = "Power (kW)",
+                label = stringResource(R.string.subscription_label_power),
                 error = powerError
             )
         }
@@ -262,30 +257,36 @@ fun SubscriptionForm(
 
         item { Spacer(Modifier.height(16.dp)) }
 
-        // ── MODE TOGGLE ───────────────────────────────────────────────────────
-        item { SectionLabel("Budget", Icons.Default.Calculate, colorPrimary) }
+        // ── BUDGET ───────────────────────────────────────────────────────────
         item {
-            InputModeToggle(
-                selected = inputMode,
-                onSelect = {
-                    inputMode = it
+            SectionLabel(stringResource(R.string.subscription_section_budget), Icons.Default.Calculate, colorPrimary)
+        }
+        item {
+            SegmentedControl(
+                tabs = listOf(
+                    stringResource(R.string.subscription_toggle_money, moneyUnit),
+                    stringResource(R.string.subscription_toggle_energy, energyUnit)
+                ),
+                selectedIndex = inputMode.ordinal,
+                onTabSelected = {
+                    inputMode = InputMode.entries[it]
                     amount = ""; energy = ""
                 },
-                moneyUnit = moneyUnit,
-                energyUnit = energyUnit,
-                colorPrimary = colorPrimary,
-                colorAccentBg = colorAccentBg
+                modifier = Modifier.padding(horizontal = 25.dp),
+                activeColor = colorPrimary,
+                activeTextColor = MaterialTheme.colorScheme.onPrimary,
+                inactiveTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                containerColor = colorAccentBg
             )
         }
+
         item { Spacer(Modifier.height(8.dp)) }
 
-        // ── CHAMP ACTIF ───────────────────────────────────────────────────────
+        // ── CHAMP ACTIF ──────────────────────────────────────────────────────
         item {
             AnimatedContent(
                 targetState = inputMode,
-                transitionSpec = {
-                    fadeIn(tween(250)) togetherWith fadeOut(tween(200))
-                },
+                transitionSpec = { fadeIn(tween(250)) togetherWith fadeOut(tween(200)) },
                 label = "inputModeContent"
             ) { mode ->
                 if (mode == InputMode.AMOUNT) {
@@ -299,14 +300,14 @@ fun SubscriptionForm(
                     NumberField(
                         value = energy,
                         onValueChange = { energy = it },
-                        label = "Energy ($energyUnit)",
+                        label = stringResource(R.string.consumption_label_energy, energyUnit),
                         error = ""
                     )
                 }
             }
         }
 
-        // ── RÉSULTAT CALCULÉ ──────────────────────────────────────────────────
+        // ── RÉSULTAT ─────────────────────────────────────────────────────────
         item {
             AnimatedVisibility(
                 visible = derivedEnergy > 0 || derivedAmount > 0,
@@ -319,37 +320,28 @@ fun SubscriptionForm(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .clip(RoundedCornerShape(14.dp))
                         .background(
-                            Brush.horizontalGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.secondary,
-                                    MaterialTheme.colorScheme.primary
-                                )
-                            )
+                            Brush.horizontalGradient(listOf(colorAccent, colorPrimary))
                         )
                         .padding(horizontal = 20.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Énergie
                     ResultChip(
                         icon = Icons.Default.Bolt,
-                        label = "Energy",
-                        value = "${derivedEnergy.roundToInt()} $energyUnit"
+                        label = stringResource(R.string.result_chip_label_energy),
+                        value = stringResource(R.string.result_chip_value_energy, derivedEnergy.roundToInt(), energyUnit)
                     )
-                    // Diviseur
                     Box(Modifier.width(1.dp).height(36.dp).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)))
-                    // Montant
                     ResultChip(
                         icon = Icons.Default.Payments,
-                        label = "Amount",
-                        value = "${derivedAmount.roundToInt()} $moneyUnit"
+                        label = stringResource(R.string.result_chip_label_amount),
+                        value = stringResource(R.string.result_chip_value_amount, derivedAmount.roundToInt(), moneyUnit)
                     )
-                    // Tarif
                     Box(Modifier.width(1.dp).height(36.dp).background(Color.White.copy(alpha = 0.3f)))
                     ResultChip(
                         icon = Icons.Default.Tag,
-                        label = "Rate",
-                        value = "$kWhPrice $moneyUnit/kWh"
+                        label = stringResource(R.string.result_chip_label_rate),
+                        value = stringResource(R.string.result_chip_value_rate, kWhPrice.toString(), moneyUnit)
                     )
                 }
             }
@@ -357,7 +349,7 @@ fun SubscriptionForm(
 
         item { Spacer(Modifier.height(24.dp)) }
 
-        // ── SUBMIT ────────────────────────────────────────────────────────────
+        // ── SUBMIT ───────────────────────────────────────────────────────────
         item {
             AppButton(
                 text = stringResource(R.string.consumption_button_submit),
@@ -400,56 +392,6 @@ fun SectionLabel(text: String, icon: ImageVector, color: Color) {
             Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(14.dp))
         }
         Text(text = text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = color, letterSpacing = 0.4.sp)
-    }
-}
-
-@Composable
-private fun InputModeToggle(
-    selected: InputMode,
-    onSelect: (InputMode) -> Unit,
-    moneyUnit: String,
-    energyUnit: String,
-    colorPrimary: Color,
-    colorAccentBg: Color
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 25.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(colorAccentBg)
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        listOf(
-            InputMode.AMOUNT to "Enter $moneyUnit",
-            InputMode.ENERGY to "Enter kWh"
-        ).forEach { (mode, label) ->
-            val isSelected = selected == mode
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(9.dp))
-                    .background(
-                        if (isSelected) colorPrimary
-                        else MaterialTheme.colorScheme.surface
-                    )
-                    .clickable { onSelect(mode) }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = label,
-                    fontSize = 13.sp,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    }
-                )
-            }
-        }
     }
 }
 

@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -30,6 +29,8 @@ import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.field.DateField
 import com.syme.ui.component.field.DropdownField
 import com.syme.ui.component.field.NumberField
+import com.syme.ui.screen.consumption.components.ResultChip
+import com.syme.ui.screen.consumption.components.SectionLabel
 import com.syme.utils.TimeUtils
 import java.util.*
 
@@ -45,20 +46,20 @@ fun DemandForm(
     powerUnit: String = "kW",
     onSubmit: (installation: String, start: Long, end: Long, requestedPowerKw: Double) -> Unit
 ) {
-    val colorPrimary = MaterialTheme.colorScheme.primary
-    val colorAccent = MaterialTheme.colorScheme.secondary
+    val colorPrimary  = MaterialTheme.colorScheme.primary
+    val colorAccent   = MaterialTheme.colorScheme.secondary
     val colorAccentBg = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
 
-    var selectedInstallation  by remember { mutableStateOf("") }
-    var startDate             by remember { mutableStateOf("") }
-    var endDate               by remember { mutableStateOf("") }
-    var powerInput            by remember { mutableStateOf("") }
-    var selectedSuggestion    by remember { mutableStateOf<Double?>(null) }
-    var installationError     by remember { mutableStateOf("") }
-    var startDateError        by remember { mutableStateOf("") }
-    var endDateError          by remember { mutableStateOf("") }
-    var powerError            by remember { mutableStateOf("") }
-    var subscriptionMessage   by remember { mutableStateOf("") }
+    var selectedInstallation by remember { mutableStateOf("") }
+    var startDate            by remember { mutableStateOf("") }
+    var endDate              by remember { mutableStateOf("") }
+    var powerInput           by remember { mutableStateOf("") }
+    var selectedSuggestion   by remember { mutableStateOf<Double?>(null) }
+    var installationError    by remember { mutableStateOf("") }
+    var startDateError       by remember { mutableStateOf("") }
+    var endDateError         by remember { mutableStateOf("") }
+    var powerError           by remember { mutableStateOf("") }
+    var subscriptionMessage  by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val sdf     = remember { TimeUtils.dateFormat }
@@ -84,6 +85,7 @@ fun DemandForm(
     val hasSubscription by remember(selectedInstallation, hasSubscriptionByInstallation) {
         derivedStateOf { hasSubscriptionByInstallation[selectedInstallation] ?: false }
     }
+
     val demandCost = effectivePowerKw * kWPriceDemand
 
     fun parseDate(v: String): Long? = runCatching { sdf.parse(v)?.time }.getOrNull()
@@ -148,21 +150,14 @@ fun DemandForm(
     ) {
         item { Spacer(Modifier.height(24.dp)) }
 
-        // ── HEADER GRADIENT ───────────────────────────────────────────────────
+        // ── HEADER ───────────────────────────────────────────────────────────
         item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.secondary,
-                                MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    )
+                    .background(Brush.horizontalGradient(listOf(colorAccent, colorPrimary)))
                     .padding(horizontal = 20.dp, vertical = 20.dp)
             ) {
                 Column {
@@ -185,8 +180,10 @@ fun DemandForm(
 
         item { Spacer(Modifier.height(20.dp)) }
 
-        // ── INSTALLATION ──────────────────────────────────────────────────────
-        item { SectionLabel("Installation", Icons.Default.HomeWork, colorPrimary) }
+        // ── INSTALLATION ─────────────────────────────────────────────────────
+        item {
+            SectionLabel(stringResource(R.string.demand_section_installation), Icons.Default.HomeWork, colorPrimary)
+        }
         item {
             DropdownField(
                 value = selectedInstallation,
@@ -220,12 +217,13 @@ fun DemandForm(
 
         item { Spacer(Modifier.height(12.dp)) }
 
-        // ── DATES ─────────────────────────────────────────────────────────────
-        item { SectionLabel("Period", Icons.Default.DateRange, colorPrimary) }
+        // ── PÉRIODE ──────────────────────────────────────────────────────────
+        item {
+            SectionLabel(stringResource(R.string.demand_section_period), Icons.Default.DateRange, colorPrimary)
+        }
         item {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Box(Modifier.weight(1f)) {
@@ -255,10 +253,11 @@ fun DemandForm(
 
         item { Spacer(Modifier.height(12.dp)) }
 
-        // ── POWER SECTION ─────────────────────────────────────────────────────
-        item { SectionLabel(stringResource(R.string.demand_label_power), Icons.Default.ElectricBolt, colorPrimary) }
+        // ── PUISSANCE ────────────────────────────────────────────────────────
+        item {
+            SectionLabel(stringResource(R.string.demand_label_power), Icons.Default.ElectricBolt, colorPrimary)
+        }
 
-        // Chips de suggestion
         if (suggestedPowersKw.isNotEmpty()) {
             item {
                 Row(
@@ -291,11 +290,8 @@ fun DemandForm(
                                 text = "${suggestion.toInt()} $powerUnit",
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                }
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
                         }
                     }
@@ -313,7 +309,6 @@ fun DemandForm(
             }
         }
 
-        // Champ custom
         item {
             NumberField(
                 value = powerInput,
@@ -322,8 +317,6 @@ fun DemandForm(
                 error = powerError
             )
         }
-
-        // Warning power < subscribed
         item {
             Row(
                 modifier = Modifier
@@ -346,7 +339,7 @@ fun DemandForm(
 
         item { Spacer(Modifier.height(16.dp)) }
 
-        // ── RÉSULTAT COÛT ─────────────────────────────────────────────────────
+        // ── RÉSULTAT ─────────────────────────────────────────────────────────
         item {
             AnimatedVisibility(
                 visible = effectivePowerKw > 0,
@@ -358,34 +351,27 @@ fun DemandForm(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.secondary,
-                                    MaterialTheme.colorScheme.primary
-                                )
-                            )
-                        )
+                        .background(Brush.horizontalGradient(listOf(colorAccent, colorPrimary)))
                         .padding(horizontal = 20.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     ResultChip(
                         icon = Icons.Default.ElectricBolt,
-                        label = "Power",
-                        value = "${effectivePowerKw.toInt()} $powerUnit"
+                        label = stringResource(R.string.result_chip_label_power),
+                        value = stringResource(R.string.result_chip_value_power, effectivePowerKw.toInt(), powerUnit)
                     )
                     Box(Modifier.width(1.dp).height(36.dp).background(Color.White.copy(alpha = 0.3f)))
                     ResultChip(
                         icon = Icons.Default.Payments,
-                        label = "Est. Cost",
-                        value = "${demandCost.toInt()} $moneyUnit"
+                        label = stringResource(R.string.result_chip_label_estimated_cost),
+                        value = stringResource(R.string.result_chip_value_cost, demandCost.toInt(), moneyUnit)
                     )
                     Box(Modifier.width(1.dp).height(36.dp).background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)))
                     ResultChip(
                         icon = Icons.Default.Tag,
-                        label = "Rate",
-                        value = "$kWPriceDemand $moneyUnit/$powerUnit"
+                        label = stringResource(R.string.result_chip_label_rate),
+                        value = stringResource(R.string.result_chip_value_rate_demand, kWPriceDemand.toString(), moneyUnit, powerUnit)
                     )
                 }
             }
@@ -393,7 +379,7 @@ fun DemandForm(
 
         item { Spacer(Modifier.height(16.dp)) }
 
-        // ── ERREUR SUBSCRIPTION ───────────────────────────────────────────────
+        // ── MESSAGE ERREUR SUBSCRIPTION ──────────────────────────────────────
         if (subscriptionMessage.isNotEmpty()) {
             item {
                 Row(
@@ -405,12 +391,7 @@ fun DemandForm(
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Error,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = subscriptionMessage,
@@ -425,7 +406,7 @@ fun DemandForm(
 
         item { Spacer(Modifier.height(8.dp)) }
 
-        // ── SUBMIT ────────────────────────────────────────────────────────────
+        // ── SUBMIT ───────────────────────────────────────────────────────────
         item {
             AppButton(
                 text = stringResource(R.string.demand_button_submit),

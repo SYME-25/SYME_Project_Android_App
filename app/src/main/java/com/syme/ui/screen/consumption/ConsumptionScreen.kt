@@ -36,6 +36,7 @@ import com.syme.ui.component.text.SectionHeader
 import com.syme.ui.component.text.Title
 import com.syme.ui.screen.consumption.components.PeriodFilterSegmented
 import com.syme.ui.screen.consumption.components.PeriodSwitcher
+import com.syme.ui.screen.consumption.components.SubscriptionForm
 import com.syme.ui.snapshot.MessageAction
 import com.syme.ui.snapshot.MessageType
 import com.syme.ui.snapshot.globalMessageManager
@@ -449,7 +450,8 @@ fun ConsumptionScreen(
                                 installationsId = installationNames,
                                 lastSubscriptions = lastSubscriptions,
                                 onSubmit = { installationName, start, end, energyWh, powerKw ->
-                                    val installationId = installationsMap[installationName] ?: return@SubscriptionForm
+                                    val installationId = installationsMap[installationName]
+                                        ?: return@SubscriptionForm
                                     val now = System.currentTimeMillis()
                                     consumptionViewModel.addConsumption(
                                         userId, installationId,
@@ -470,14 +472,22 @@ fun ConsumptionScreen(
                                                     c.consumptionState != ConsumptionStateType.PAUSED
                                         }
                                         if (!hasActiveDemand) {
-                                            val installation = (installationState as? UiState.Success<List<Installation>>)
-                                                ?.data?.find { it.installationId == installationId }
+                                            val installation =
+                                                (installationState as? UiState.Success<List<Installation>>)
+                                                    ?.data?.find { it.installationId == installationId }
                                             if (installation != null && powerKw > 0.0) {
-                                                installationViewModel.update(userId, installation.copy(powerSubscribed = powerKw))
+                                                installationViewModel.update(
+                                                    userId,
+                                                    installation.copy(powerSubscribed = powerKw)
+                                                )
                                             }
                                         }
                                     }
-                                    globalMessageManager.showMessage(item = "Subscription", type = MessageType.SUCCESS, action = MessageAction.CREATE)
+                                    globalMessageManager.showMessage(
+                                        item = "Subscription",
+                                        type = MessageType.SUCCESS,
+                                        action = MessageAction.CREATE
+                                    )
                                     showFormDialog = false
                                 }
                             )

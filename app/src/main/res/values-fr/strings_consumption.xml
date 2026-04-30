@@ -74,4 +74,25 @@
 
     <string name="no_planning_title">Aucune planification</string>
     <string name="no_planning_description">Vous n\'avez pas encore planifié de consommation pour cette installation. Cliquez sur le bouton + pour commencer.</string>
+
+    <!-- Subscription Form -->
+    <string name="subscription_section_installation">Installation</string>
+    <string name="subscription_section_period">Période</string>
+    <string name="subscription_section_power">Puissance souscrite</string>
+    <string name="subscription_section_budget">Budget</string>
+
+    <string name="subscription_label_power">Puissance (kW)</string>
+    <string name="subscription_toggle_money">Saisir %s</string>
+    <string name="subscription_toggle_energy">Saisir %s</string>
+
+    <string name="result_chip_label_energy">Énergie</string>
+    <string name="result_chip_label_amount">Montant</string>
+    <string name="result_chip_label_rate">Tarif</string>
+    <string name="result_chip_value_energy">%1$d %2$s</string>
+    <string name="result_chip_value_amount">%1$d %2$s</string>
+    <string name="result_chip_value_rate">%1$s %2$s/kWh</string>
+
+    <string name="consumption_label_energy">Énergie (%s)</string>
+
+    <string name="consumption_error_power_required">La puissance est requise</string>
 </resources>
