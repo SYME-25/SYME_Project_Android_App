@@ -1,12 +1,21 @@
 package com.syme.ui.screen.appliance.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -14,10 +23,11 @@ import com.syme.R
 import com.syme.domain.mapper.labelResId
 import com.syme.domain.model.Appliance
 import com.syme.domain.model.Circuit
-import com.syme.domain.model.enumeration.ApplianceType
 import com.syme.ui.component.actionbutton.AppButton
 import com.syme.ui.component.compositionlocal.LocalCurrentUserSession
-import com.syme.ui.component.field.*
+import com.syme.ui.component.field.DropdownField
+import com.syme.ui.component.field.NameField
+import com.syme.ui.component.field.NumberField
 import com.syme.utils.buildTraceability
 import com.syme.utils.generateId
 
@@ -28,6 +38,7 @@ fun ApplianceForm(
     isEditMode: Boolean,
     onSaveAppliance: (Appliance) -> Unit
 ) {
+    val context = LocalContext.current
     val owner = LocalCurrentUserSession.current
 
     var currentAppliance by remember { mutableStateOf(item) }
@@ -52,6 +63,7 @@ fun ApplianceForm(
         it.circuitId.toString() == item.circuitId
     }?.name ?: circuits.firstOrNull()?.name.orEmpty()
 
+    var name by remember { mutableStateOf(if (isEditMode) item.name else "") }
     var selectedCircuit by remember { mutableStateOf(initialCircuitName) }
     var powerWatt by remember { mutableStateOf(if (isEditMode) item.powerWatt.toString() else "") }
     var powerFactor by remember { mutableStateOf(if (isEditMode) item.powerFactor.toString() else "") }
@@ -107,6 +119,16 @@ fun ApplianceForm(
             color = MaterialTheme.colorScheme.primary
         )
 
+        NameField(
+            value = name,
+            onValueChange = { name = it },
+            label = if (name.isBlank())
+                stringResource(item.type.labelResId)
+            else
+                stringResource(R.string.appliance_other_name_label),
+            error = ""
+        )
+
         DropdownField(
             value = selectedCircuit,
             onValueChange = { selectedCircuit = it },
@@ -149,10 +171,16 @@ fun ApplianceForm(
             text = buttonText,
             onClick = {
                 val circuitId = circuits.first { it.name == selectedCircuit }.circuitId
+                val qty = quantity.toIntOrNull() ?: 1
+
+                val baseName = name.trim().ifBlank {
+                    context.getString(currentAppliance.type.labelResId)
+                }
 
                 pendingAppliances = if (isEditMode) {
                     listOf(
                         currentAppliance.copy(
+                            name = baseName,
                             circuitId = circuitId.toString(),
                             powerWatt = parseFloat(powerWatt),
                             powerFactor = parseFloat(powerFactor),
@@ -164,10 +192,11 @@ fun ApplianceForm(
                         )
                     )
                 } else {
-                    (1..(quantity.toIntOrNull() ?: 1)).map { index ->
+                    (1..qty).map { index ->
                         currentAppliance.copy(
                             applianceId = generateId("A", selectedCircuit.take(1) + index),
                             circuitId = circuitId.toString(),
+                            name = if (qty > 1) "$baseName $index" else baseName,
                             powerWatt = parseFloat(powerWatt),
                             powerFactor = parseFloat(powerFactor),
                             usageHoursPerDay = parseFloat(usageHours),
